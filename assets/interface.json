@@ -42,7 +42,7 @@
         {
             "name": "Official",
             "label": "官方资源",
-            "path": ["resource"]
+            "path": "resource"
         }
     ],
     "group": [
