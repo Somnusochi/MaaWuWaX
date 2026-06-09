@@ -1,180 +1,107 @@
-// Package combat — screenanalyzer.go provides batch combat-state detection
-// by running TemplateMatch recognitions against a single screenshot.
 package combat
 
 import (
-	"fmt"
 	"image"
-	"sync"
-	"time"
 
 	maa "github.com/MaaXYZ/maa-framework-go/v4"
 	"github.com/rs/zerolog/log"
 )
 
-// ---------------------------------------------------------------------------
-// Detection labels
-// ---------------------------------------------------------------------------
-
-const (
-	LabelHasTarget    = "HasTarget"
-	LabelDodgePrompt  = "DodgePrompt"
-	LabelConFull      = "ConFull"
-	LabelLiberation   = "Liberation"
-	LabelChar1Alive   = "Char1Alive"
-	LabelChar2Alive   = "Char2Alive"
-	LabelChar3Alive   = "Char3Alive"
-	LabelPickUpF      = "PickUpF"
-	LabelInWorld      = "InWorld"
-	LabelDead         = "Dead"
-)
-
-// ---------------------------------------------------------------------------
-// Template recognition specs
-// ---------------------------------------------------------------------------
-
-type templateSpec struct {
-	label     string
-	template  string
-	roi       [4]int
-	threshold float64
-}
-
-var templateSpecs = []templateSpec{
-	{LabelHasTarget, "has_target.png", [4]int{400, 200, 800, 600}, 0.7},
-	{LabelDodgePrompt, "dodge_prompt.png", [4]int{500, 300, 280, 420}, 0.6},
-	{LabelConFull, "con_full_spectro.png", [4]int{0, 500, 400, 220}, 0.5},
-	{LabelLiberation, "box_liberation.png", [4]int{1000, 500, 280, 220}, 0.6},
-	{LabelChar1Alive, "char_1_text.png", [4]int{10, 570, 100, 130}, 0.5},
-	{LabelChar2Alive, "char_2_text.png", [4]int{10, 570, 100, 130}, 0.5},
-	{LabelChar3Alive, "char_3_text.png", [4]int{10, 570, 100, 130}, 0.5},
-	{LabelPickUpF, "pick_up_f.png", [4]int{300, 200, 680, 480}, 0.65},
-	{LabelInWorld, "minimap.png", [4]int{1050, 20, 200, 160}, 0.7},
-	{LabelDead, "dead_indicator.png", [4]int{400, 300, 480, 200}, 0.6},
-}
-
-// ---------------------------------------------------------------------------
-// Detection result
-// ---------------------------------------------------------------------------
-
-type detection struct {
-	label string
-	box   maa.Rect
-	hit   bool
-}
-
-// ---------------------------------------------------------------------------
-// ScreenAnalyzer — caches detection results for a single frame.
-// ---------------------------------------------------------------------------
-
+// ScreenAnalyzer — ok-ww CombatCheck port: one frame, batch detections.
 type ScreenAnalyzer struct {
-	mu         sync.Mutex
-	detections map[string]detection
-	frameTime  time.Time
+	HasTarget   bool
+	HasDodge    bool
+	HasHPBar    bool
+	HasBossHP   bool
+	PickupF     bool
+	CharAlive   [3]bool
+	ConcertoPct float64
+	RingElement int // -1 = unknown
 }
 
-var screenAnalyzer = &ScreenAnalyzer{
-	detections: make(map[string]detection),
-}
+var screenAnalyzer = &ScreenAnalyzer{RingElement: -1}
 
-// Update captures a screenshot and runs all template recognitions.
-func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) {
-	sa.mu.Lock()
-	defer sa.mu.Unlock()
-
-	sa.detections = make(map[string]detection, len(templateSpecs))
-	sa.frameTime = time.Now()
-
-	for _, spec := range templateSpecs {
-		d := runTemplateDetect(ctx, img, spec)
-		if d.hit {
-			sa.detections[d.label] = d
-		}
-	}
-
-	log.Debug().
-		Str("component", "ScreenAnalyzer").
-		Int("hits", len(sa.detections)).
-		Msg("frame analyzed")
-}
-
-// Has returns true if the given label was detected in the latest frame.
-func (sa *ScreenAnalyzer) Has(label string) bool {
-	sa.mu.Lock()
-	defer sa.mu.Unlock()
-	_, ok := sa.detections[label]
-	return ok
-}
-
-// HasTarget returns true if an enemy target is locked.
-func (sa *ScreenAnalyzer) HasTarget() bool { return sa.Has(LabelHasTarget) }
-
-// HasDodge returns true if a dodge prompt is visible.
-func (sa *ScreenAnalyzer) HasDodge() bool { return sa.Has(LabelDodgePrompt) }
-
-// HasConFull returns true if concerto energy is full.
-func (sa *ScreenAnalyzer) HasConFull() bool { return sa.Has(LabelConFull) }
-
-// HasLiberation returns true if liberation skill is available.
-func (sa *ScreenAnalyzer) HasLiberation() bool { return sa.Has(LabelLiberation) }
-
-// HasPickUp returns true if the F-key pickup icon is visible.
-func (sa *ScreenAnalyzer) HasPickUp() bool { return sa.Has(LabelPickUpF) }
-
-// IsInWorld returns true if the minimap is detected (character is in the open world).
-func (sa *ScreenAnalyzer) IsInWorld() bool { return sa.Has(LabelInWorld) }
-
-// IsDead returns true if the death/revive screen is detected.
-func (sa *ScreenAnalyzer) IsDead() bool { return sa.Has(LabelDead) }
-
-// CharAlive checks if a character slot (1-3) shows alive text.
-func (sa *ScreenAnalyzer) CharAlive(slot int) bool {
-	switch slot {
-	case 1:
-		return sa.Has(LabelChar1Alive)
-	case 2:
-		return sa.Has(LabelChar2Alive)
-	case 3:
-		return sa.Has(LabelChar3Alive)
-	default:
+// Update runs all recognition nodes against one frame.
+func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
+	if img == nil {
 		return false
 	}
-}
 
-// ---------------------------------------------------------------------------
-// Internal: run a single template recognition
-// ---------------------------------------------------------------------------
-
-func runTemplateDetect(ctx *maa.Context, img image.Image, spec templateSpec) detection {
-	entry := "__SA_" + spec.label
-	roi := spec.roi
-
-	detail, err := ctx.RunRecognition(
-		entry,
-		img,
-		formatOverride(entry, spec.template, spec.threshold, roi),
-	)
-	if err != nil || detail == nil || !detail.Hit {
-		return detection{label: spec.label, hit: false}
-	}
-	return detection{
-		label: spec.label,
-		box:   detail.Box,
-		hit:   true,
-	}
-}
-
-func formatOverride(entry, template string, threshold float64, roi [4]int) string {
-	return formatString(`{
-		"%s": {
+	// 1. Target lock (ok-ww: has_target, threshold 0.6)
+	detail, err := ctx.RunRecognition("__Combat_Target", img, `{
+		"__Combat_Target": {
 			"recognition": "TemplateMatch",
-			"template": "%s",
-			"threshold": %.2f,
-			"roi": [%d, %d, %d, %d]
+			"template": "has_target.png",
+			"threshold": 0.6
 		}
-	}`, entry, template, threshold, roi[0], roi[1], roi[2], roi[3])
+	}`)
+	sa.HasTarget = err == nil && detail != nil && detail.Hit
+
+	// 2. Dodge prompt (ok-ww: dodge_prompt, threshold 0.6)
+	detail, err = ctx.RunRecognition("__Combat_Dodge", img, `{
+		"__Combat_Dodge": {
+			"recognition": "TemplateMatch",
+			"template": "dodge_prompt.png",
+			"threshold": 0.6,
+			"roi": [500, 300, 280, 420]
+		}
+	}`)
+	sa.HasDodge = err == nil && detail != nil && detail.Hit
+
+	// 3. Red HP bar via ColorMatch (ok-ww: enemy_health_color_red)
+	detail, err = ctx.RunRecognition("__Combat_HP", img, `{
+		"__Combat_HP": {
+			"recognition": "ColorMatch",
+			"lower": [55, 55, 174],
+			"upper": [76, 85, 225],
+			"min_width": 12,
+			"min_height": 4
+		}
+	}`)
+	sa.HasHPBar = err == nil && detail != nil && detail.Hit
+
+	// 4. Boss HP bar
+	detail, err = ctx.RunRecognition("__Combat_BossHP", img, `{
+		"__Combat_BossHP": {
+			"recognition": "ColorMatch",
+			"lower": [4, 30, 245],
+			"upper": [75, 185, 255],
+			"roi": [360, 10, 560, 60]
+		}
+	}`)
+	sa.HasBossHP = err == nil && detail != nil && detail.Hit
+
+	// 5. F pickup prompt
+	detail, err = ctx.RunRecognition("__Combat_Pick", img, `{
+		"__Combat_Pick": {
+			"recognition": "TemplateMatch",
+			"template": "pick_up_f_hcenter_vcenter.png",
+			"threshold": 0.65
+		}
+	}`)
+	sa.PickupF = err == nil && detail != nil && detail.Hit
+
+	// 6. Character portraits
+	for i := range 3 {
+		tpl := []string{"char_1_text.png", "char_2_text.png", "char_3_text.png"}[i]
+		detail, err = ctx.RunRecognition("__Combat_Char"+string(rune('1'+i)), img, `{
+			"__Combat_Char`+string(rune('1'+i))+`": {
+				"recognition": "TemplateMatch",
+				"template": "`+tpl+`",
+				"threshold": 0.7
+			}
+		}`)
+		sa.CharAlive[i] = err == nil && detail != nil && detail.Hit
+	}
+
+	log.Debug().Str("component", "ScreenAnalyzer").
+		Bool("target", sa.HasTarget).Bool("hp", sa.HasHPBar).
+		Bool("boss", sa.HasBossHP).Bool("dodge", sa.HasDodge).Msg("frame")
+
+	return sa.InCombat()
 }
 
-func formatString(format string, args ...any) string {
-	return fmt.Sprintf(format, args...)
+// InCombat — ok-ww: has_target() OR check_health_bar()
+func (sa *ScreenAnalyzer) InCombat() bool {
+	return sa.HasTarget || sa.HasHPBar || sa.HasBossHP
 }
