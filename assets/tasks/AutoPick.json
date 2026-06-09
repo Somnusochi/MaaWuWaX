@@ -4,8 +4,13 @@
             "name": "AutoPick",
             "label": "自动拾取",
             "entry": "AutoPick_Main",
-            "controller": ["macOS", "macOS-Global"],
-            "group": ["trigger"]
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "open_world"
+            ]
         }
     ]
 }

@@ -47,28 +47,28 @@
     ],
     "group": [
         {
-            "name": "trigger",
-            "label": "后台触发器",
+            "name": "combat",
+            "label": "战斗",
             "default_expand": true
         },
         {
-            "name": "manual",
-            "label": "一次性任务",
+            "name": "open_world",
+            "label": "大世界",
             "default_expand": true
         },
         {
             "name": "daily",
-            "label": "日常任务",
+            "label": "日常",
             "default_expand": true
         },
         {
             "name": "farm",
-            "label": "刷取任务",
+            "label": "刷取",
             "default_expand": true
         },
         {
             "name": "domain",
-            "label": "副本刷取",
+            "label": "副本",
             "default_expand": true
         },
         {

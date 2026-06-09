@@ -4,9 +4,16 @@
             "name": "AutoRogue",
             "label": "半自动肉鸽",
             "entry": "Rogue_Main",
-            "controller": ["macOS", "macOS-Global"],
-            "group": ["farm"],
-            "option": ["RogueStopOnTreasure"]
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "farm"
+            ],
+            "option": [
+                "RogueStopOnTreasure"
+            ]
         }
     ],
     "option": {

@@ -4,9 +4,16 @@
             "name": "Forgery",
             "label": "凝素领域刷取",
             "entry": "Forgery_Main",
-            "controller": ["macOS", "macOS-Global"],
-            "group": ["domain"],
-            "option": ["ForgeryIndex"]
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "domain"
+            ],
+            "option": [
+                "ForgeryIndex"
+            ]
         }
     ],
     "option": {
@@ -15,21 +22,66 @@
             "label": "凝素领域选择",
             "default_case": "1",
             "cases": [
-                { "name": "1", "label": "凝素领域 1" },
-                { "name": "2", "label": "凝素领域 2" },
-                { "name": "3", "label": "凝素领域 3" },
-                { "name": "4", "label": "凝素领域 4" },
-                { "name": "5", "label": "凝素领域 5" },
-                { "name": "6", "label": "凝素领域 6" },
-                { "name": "7", "label": "凝素领域 7" },
-                { "name": "8", "label": "凝素领域 8" },
-                { "name": "9", "label": "凝素领域 9" },
-                { "name": "10", "label": "凝素领域 10" },
-                { "name": "11", "label": "凝素领域 11" },
-                { "name": "12", "label": "凝素领域 12" },
-                { "name": "13", "label": "凝素领域 13" },
-                { "name": "14", "label": "凝素领域 14" },
-                { "name": "15", "label": "凝素领域 15" }
+                {
+                    "name": "1",
+                    "label": "凝素领域 1"
+                },
+                {
+                    "name": "2",
+                    "label": "凝素领域 2"
+                },
+                {
+                    "name": "3",
+                    "label": "凝素领域 3"
+                },
+                {
+                    "name": "4",
+                    "label": "凝素领域 4"
+                },
+                {
+                    "name": "5",
+                    "label": "凝素领域 5"
+                },
+                {
+                    "name": "6",
+                    "label": "凝素领域 6"
+                },
+                {
+                    "name": "7",
+                    "label": "凝素领域 7"
+                },
+                {
+                    "name": "8",
+                    "label": "凝素领域 8"
+                },
+                {
+                    "name": "9",
+                    "label": "凝素领域 9"
+                },
+                {
+                    "name": "10",
+                    "label": "凝素领域 10"
+                },
+                {
+                    "name": "11",
+                    "label": "凝素领域 11"
+                },
+                {
+                    "name": "12",
+                    "label": "凝素领域 12"
+                },
+                {
+                    "name": "13",
+                    "label": "凝素领域 13"
+                },
+                {
+                    "name": "14",
+                    "label": "凝素领域 14"
+                },
+                {
+                    "name": "15",
+                    "label": "凝素领域 15"
+                }
             ]
         }
     }

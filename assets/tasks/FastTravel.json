@@ -4,8 +4,13 @@
             "name": "FastTravel",
             "label": "快速旅行",
             "entry": "FastTravel_Main",
-            "controller": ["macOS", "macOS-Global"],
-            "group": ["trigger"]
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "open_world"
+            ]
         }
     ]
 }

@@ -4,9 +4,16 @@
             "name": "Tacet",
             "label": "无音区刷取",
             "entry": "Tacet_Main",
-            "controller": ["macOS", "macOS-Global"],
-            "group": ["domain"],
-            "option": ["TacetIndex"]
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "domain"
+            ],
+            "option": [
+                "TacetIndex"
+            ]
         }
     ],
     "option": {
@@ -15,23 +22,74 @@
             "label": "无音区选择",
             "default_case": "1",
             "cases": [
-                { "name": "1", "label": "无音区 1" },
-                { "name": "2", "label": "无音区 2" },
-                { "name": "3", "label": "无音区 3" },
-                { "name": "4", "label": "无音区 4" },
-                { "name": "5", "label": "无音区 5" },
-                { "name": "6", "label": "无音区 6" },
-                { "name": "7", "label": "无音区 7" },
-                { "name": "8", "label": "无音区 8" },
-                { "name": "9", "label": "无音区 9" },
-                { "name": "10", "label": "无音区 10" },
-                { "name": "11", "label": "无音区 11" },
-                { "name": "12", "label": "无音区 12" },
-                { "name": "13", "label": "无音区 13" },
-                { "name": "14", "label": "无音区 14" },
-                { "name": "15", "label": "无音区 15" },
-                { "name": "16", "label": "无音区 16" },
-                { "name": "17", "label": "无音区 17" }
+                {
+                    "name": "1",
+                    "label": "无音区 1"
+                },
+                {
+                    "name": "2",
+                    "label": "无音区 2"
+                },
+                {
+                    "name": "3",
+                    "label": "无音区 3"
+                },
+                {
+                    "name": "4",
+                    "label": "无音区 4"
+                },
+                {
+                    "name": "5",
+                    "label": "无音区 5"
+                },
+                {
+                    "name": "6",
+                    "label": "无音区 6"
+                },
+                {
+                    "name": "7",
+                    "label": "无音区 7"
+                },
+                {
+                    "name": "8",
+                    "label": "无音区 8"
+                },
+                {
+                    "name": "9",
+                    "label": "无音区 9"
+                },
+                {
+                    "name": "10",
+                    "label": "无音区 10"
+                },
+                {
+                    "name": "11",
+                    "label": "无音区 11"
+                },
+                {
+                    "name": "12",
+                    "label": "无音区 12"
+                },
+                {
+                    "name": "13",
+                    "label": "无音区 13"
+                },
+                {
+                    "name": "14",
+                    "label": "无音区 14"
+                },
+                {
+                    "name": "15",
+                    "label": "无音区 15"
+                },
+                {
+                    "name": "16",
+                    "label": "无音区 16"
+                },
+                {
+                    "name": "17",
+                    "label": "无音区 17"
+                }
             ]
         }
     }

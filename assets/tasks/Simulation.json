@@ -4,9 +4,16 @@
             "name": "Simulation",
             "label": "模拟领域刷取",
             "entry": "Simulation_Main",
-            "controller": ["macOS", "macOS-Global"],
-            "group": ["domain"],
-            "option": ["MaterialSelection"]
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "domain"
+            ],
+            "option": [
+                "MaterialSelection"
+            ]
         }
     ],
     "option": {

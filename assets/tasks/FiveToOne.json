@@ -4,8 +4,13 @@
             "name": "FiveToOne",
             "label": "数据坞五合一",
             "entry": "FiveToOne_Main",
-            "controller": ["macOS", "macOS-Global"],
-            "group": ["echo"]
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "echo"
+            ]
         }
     ]
 }

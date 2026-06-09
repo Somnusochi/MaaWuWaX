@@ -4,9 +4,18 @@
             "name": "DailyRoutine",
             "label": "一键日常",
             "entry": "Daily_Main",
-            "controller": ["macOS", "macOS-Global"],
-            "group": ["manual"],
-            "option": ["ClaimMail", "ClaimBattlePass", "StaminaType"]
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "daily"
+            ],
+            "option": [
+                "ClaimMail",
+                "ClaimBattlePass",
+                "StaminaType"
+            ]
         }
     ],
     "option": {
@@ -17,11 +26,19 @@
             "cases": [
                 {
                     "name": "Yes",
-                    "pipeline_override": { "Daily_MailClick": { "enabled": true } }
+                    "pipeline_override": {
+                        "Daily_MailClick": {
+                            "enabled": true
+                        }
+                    }
                 },
                 {
                     "name": "No",
-                    "pipeline_override": { "Daily_MailClick": { "enabled": false } }
+                    "pipeline_override": {
+                        "Daily_MailClick": {
+                            "enabled": false
+                        }
+                    }
                 }
             ]
         },
@@ -32,11 +49,19 @@
             "cases": [
                 {
                     "name": "Yes",
-                    "pipeline_override": { "Daily_BattlePass": { "enabled": true } }
+                    "pipeline_override": {
+                        "Daily_BattlePass": {
+                            "enabled": true
+                        }
+                    }
                 },
                 {
                     "name": "No",
-                    "pipeline_override": { "Daily_BattlePass": { "enabled": false } }
+                    "pipeline_override": {
+                        "Daily_BattlePass": {
+                            "enabled": false
+                        }
+                    }
                 }
             ]
         },
@@ -48,17 +73,35 @@
                 {
                     "name": "tacet",
                     "label": "无音区",
-                    "pipeline_override": { "Daily_SpendStamina": { "custom_action_param": { "stamina_type": "tacet" } } }
+                    "pipeline_override": {
+                        "Daily_SpendStamina": {
+                            "custom_action_param": {
+                                "stamina_type": "tacet"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "forgery",
                     "label": "凝素领域",
-                    "pipeline_override": { "Daily_SpendStamina": { "custom_action_param": { "stamina_type": "forgery" } } }
+                    "pipeline_override": {
+                        "Daily_SpendStamina": {
+                            "custom_action_param": {
+                                "stamina_type": "forgery"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "simulation",
                     "label": "模拟领域",
-                    "pipeline_override": { "Daily_SpendStamina": { "custom_action_param": { "stamina_type": "simulation" } } }
+                    "pipeline_override": {
+                        "Daily_SpendStamina": {
+                            "custom_action_param": {
+                                "stamina_type": "simulation"
+                            }
+                        }
+                    }
                 }
             ]
         }

@@ -4,9 +4,16 @@
             "name": "FarmBoss",
             "label": "刷Boss",
             "entry": "EchoFarm_Main",
-            "controller": ["macOS", "macOS-Global"],
-            "group": ["farm"],
-            "option": ["BossType"]
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "farm"
+            ],
+            "option": [
+                "BossType"
+            ]
         }
     ],
     "option": {

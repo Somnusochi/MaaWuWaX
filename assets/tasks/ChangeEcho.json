@@ -4,9 +4,16 @@
             "name": "ChangeEcho",
             "label": "批量修改声骸主属性",
             "entry": "EchoChange_Main",
-            "controller": ["macOS", "macOS-Global"],
-            "group": ["echo"],
-            "option": ["EchoTargetStat"]
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "echo"
+            ],
+            "option": [
+                "EchoTargetStat"
+            ]
         }
     ],
     "option": {
@@ -20,7 +27,9 @@
                     "label": "攻击",
                     "pipeline_override": {
                         "EchoChange_SelectTarget": {
-                            "custom_action_param": {"target_stat": "攻击"}
+                            "custom_action_param": {
+                                "target_stat": "攻击"
+                            }
                         }
                     }
                 },
@@ -29,7 +38,9 @@
                     "label": "暴击",
                     "pipeline_override": {
                         "EchoChange_SelectTarget": {
-                            "custom_action_param": {"target_stat": "暴击"}
+                            "custom_action_param": {
+                                "target_stat": "暴击"
+                            }
                         }
                     }
                 },
@@ -38,7 +49,9 @@
                     "label": "暴击伤害",
                     "pipeline_override": {
                         "EchoChange_SelectTarget": {
-                            "custom_action_param": {"target_stat": "暴击伤害"}
+                            "custom_action_param": {
+                                "target_stat": "暴击伤害"
+                            }
                         }
                     }
                 },
@@ -47,7 +60,9 @@
                     "label": "生命",
                     "pipeline_override": {
                         "EchoChange_SelectTarget": {
-                            "custom_action_param": {"target_stat": "生命"}
+                            "custom_action_param": {
+                                "target_stat": "生命"
+                            }
                         }
                     }
                 },
@@ -56,7 +71,9 @@
                     "label": "防御",
                     "pipeline_override": {
                         "EchoChange_SelectTarget": {
-                            "custom_action_param": {"target_stat": "防御"}
+                            "custom_action_param": {
+                                "target_stat": "防御"
+                            }
                         }
                     }
                 },
@@ -65,7 +82,9 @@
                     "label": "共鸣效率",
                     "pipeline_override": {
                         "EchoChange_SelectTarget": {
-                            "custom_action_param": {"target_stat": "共鸣效率"}
+                            "custom_action_param": {
+                                "target_stat": "共鸣效率"
+                            }
                         }
                     }
                 }

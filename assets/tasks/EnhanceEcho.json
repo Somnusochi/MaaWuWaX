@@ -4,8 +4,13 @@
             "name": "EnhanceEcho",
             "label": "批量强化声骸",
             "entry": "EchoEnhance_Main",
-            "controller": ["macOS", "macOS-Global"],
-            "group": ["echo"],
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "echo"
+            ],
             "option": [
                 "EchoNeedDoubleCrit",
                 "EchoDoubleCritMin",

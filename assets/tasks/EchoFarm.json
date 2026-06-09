@@ -4,8 +4,13 @@
             "name": "EchoFarm",
             "label": "刷声骸",
             "entry": "EchoFarm_Main",
-            "controller": ["macOS", "macOS-Global"],
-            "group": ["manual"]
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "farm"
+            ]
         }
     ]
 }

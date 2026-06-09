@@ -4,8 +4,13 @@
             "name": "SkipDialog",
             "label": "跳过对话",
             "entry": "SkipDialog_Main",
-            "controller": ["macOS", "macOS-Global"],
-            "group": ["trigger"]
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "open_world"
+            ]
         }
     ]
 }
