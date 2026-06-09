@@ -1,0 +1,57 @@
+{
+    "Combat_RotationCombo": {
+        "action": "ClickKey",
+        "key": 12,
+        "post_delay": 150
+    },
+    "Combat_RotationSkill1": {
+        "action": "ClickKey",
+        "key": 14,
+        "post_delay": 150
+    },
+    "Combat_RotationSkill2": {
+        "action": "ClickKey",
+        "key": 17,
+        "post_delay": 150
+    },
+    "Combat_RotationLiberation": {
+        "action": "ClickKey",
+        "key": 15,
+        "post_delay": 1000
+    },
+    "Combat_RotationEcho": {
+        "action": "ClickKey",
+        "key": 17,
+        "post_delay": 500
+    },
+    "Combat_TabLock": {
+        "action": "ClickKey",
+        "key": 48,
+        "post_delay": 100
+    },
+    "Combat_Approach": {
+        "action": "ClickKey",
+        "key": 13,
+        "post_delay": 300
+    },
+    "Combat_Dodge": {
+        "action": "ClickKey",
+        "key": 56,
+        "post_delay": 200
+    },
+    "Combat_SwitchChar1": {
+        "action": "ClickKey",
+        "key": 18,
+        "post_delay": 500
+    },
+    "Combat_SwitchChar2": {
+        "action": "ClickKey",
+        "key": 19,
+        "post_delay": 500
+    },
+    "Combat_SwitchChar3": {
+        "action": "ClickKey",
+        "key": 20,
+        "post_delay": 500
+    }
+}

@@ -1,0 +1,36 @@
+{
+    "Daily_BP_Open": {
+        "action": "ClickKey",
+        "key": 53,
+        "post_delay": 1000,
+        "next": ["Daily_BP_FindTab"]
+    },
+    "Daily_BP_FindTab": {
+        "recognition": "OCR",
+        "expected": "先约电台",
+        "roi": [0, 0, 400, 720],
+        "action": "Click",
+        "next": ["Daily_BP_Claim"],
+        "post_delay": 1000
+    },
+    "Daily_BP_Claim": {
+        "recognition": "OCR",
+        "expected": "领取",
+        "action": "Click",
+        "next": ["Daily_BP_ClaimMore", "Daily_BP_Close"],
+        "post_delay": 800
+    },
+    "Daily_BP_ClaimMore": {
+        "recognition": "OCR",
+        "expected": "领取",
+        "action": "Click",
+        "next": ["Daily_BP_Close"],
+        "post_delay": 800
+    },
+    "Daily_BP_Close": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": [],
+        "post_delay": 500
+    }
+}

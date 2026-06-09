@@ -1,0 +1,66 @@
+{
+    "task": [
+        {
+            "name": "DailyRoutine",
+            "label": "一键日常",
+            "entry": "Daily_Main",
+            "controller": ["macOS", "macOS-Global"],
+            "group": ["manual"],
+            "option": ["ClaimMail", "ClaimBattlePass", "StaminaType"]
+        }
+    ],
+    "option": {
+        "ClaimMail": {
+            "type": "switch",
+            "label": "领取邮件",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": { "Daily_MailClick": { "enabled": true } }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": { "Daily_MailClick": { "enabled": false } }
+                }
+            ]
+        },
+        "ClaimBattlePass": {
+            "type": "switch",
+            "label": "领取战令",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": { "Daily_BattlePass": { "enabled": true } }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": { "Daily_BattlePass": { "enabled": false } }
+                }
+            ]
+        },
+        "StaminaType": {
+            "type": "select",
+            "label": "体力消耗方式",
+            "default_case": "tacet",
+            "cases": [
+                {
+                    "name": "tacet",
+                    "label": "无音区",
+                    "pipeline_override": { "Daily_SpendStamina": { "custom_action_param": { "stamina_type": "tacet" } } }
+                },
+                {
+                    "name": "forgery",
+                    "label": "凝素领域",
+                    "pipeline_override": { "Daily_SpendStamina": { "custom_action_param": { "stamina_type": "forgery" } } }
+                },
+                {
+                    "name": "simulation",
+                    "label": "模拟领域",
+                    "pipeline_override": { "Daily_SpendStamina": { "custom_action_param": { "stamina_type": "simulation" } } }
+                }
+            ]
+        }
+    }
+}

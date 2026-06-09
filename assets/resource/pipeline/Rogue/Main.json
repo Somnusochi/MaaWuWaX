@@ -1,0 +1,197 @@
+{
+    "Rogue_Main": {
+        "next": ["Rogue_HandleUI", "Rogue_InCombat"],
+        "post_delay": 500
+    },
+    "Rogue_HandleUI": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "交易",
+                "roi": [10, 20, 180, 80]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Trade",
+                "roi": [10, 20, 180, 80]
+            }
+        ],
+        "action": "ClickKey",
+        "key": 53,
+        "post_delay": 2000,
+        "next": ["Rogue_Main"]
+    },
+    "Rogue_EntranceTitle": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "千道门扉"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "异想"
+            }
+        ],
+        "action": "Click",
+        "target": [1050, 640, 100, 50],
+        "next": ["Rogue_Main"],
+        "post_delay": 2000
+    },
+    "Rogue_ContinueExplore": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "退出确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Exit Confirm"
+            }
+        ],
+        "action": "Click",
+        "target": [860, 440, 100, 50],
+        "next": ["Rogue_Main"],
+        "post_delay": 2000
+    },
+    "Rogue_GainEcho": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "获得",
+                "roi": [550, 130, 180, 80]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Gain",
+                "roi": [550, 130, 180, 80]
+            }
+        ],
+        "action": "Click",
+        "target": [640, 580, 100, 50],
+        "next": ["Rogue_Main"],
+        "post_delay": 2000
+    },
+    "Rogue_BuffSelect": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "隐喻获得"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Metaphor"
+            }
+        ],
+        "action": "Custom",
+        "custom_action": "RogueBuffSelect",
+        "next": ["Rogue_ConfirmBuff"],
+        "post_delay": 1000
+    },
+    "Rogue_ConfirmBuff": {
+        "action": "Click",
+        "target": [1050, 680, 100, 30],
+        "next": ["Rogue_Main"],
+        "post_delay": 1000
+    },
+    "Rogue_ChallengeEnd": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "挑战结束"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge End"
+            }
+        ],
+        "next": [],
+        "post_delay": 1000
+    },
+    "Rogue_InCombat": {
+        "recognition": "TemplateMatch",
+        "template": "has_target.png",
+        "threshold": 0.6,
+        "next": ["Rogue_Fight"],
+        "post_delay": 500
+    },
+    "Rogue_Fight": {
+        "action": "Custom",
+        "custom_action": "CombatMain",
+        "next": ["Rogue_PostFight"],
+        "timeout": 120000,
+        "timeout_next": ["Rogue_Main"]
+    },
+    "Rogue_PostFight": {
+        "next": ["Rogue_PressF", "Rogue_FindGate", "Rogue_TreasureReward", "Rogue_StaminaNotEnough", "Rogue_Main"],
+        "post_delay": 500
+    },
+    "Rogue_PressF": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.6,
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["Rogue_Main"],
+        "post_delay": 1000
+    },
+    "Rogue_FindGate": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "前往下一",
+                "roi": [50, 150, 200, 50]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "记忆区",
+                "roi": [50, 150, 200, 50]
+            }
+        ],
+        "action": "Custom",
+        "custom_action": "DirectionWalk",
+        "custom_action_param": "{\"direction\": \"forward\", \"duration_ms\": 3000, \"sprint\": true}",
+        "next": ["Rogue_PressF", "Rogue_Main"],
+        "post_delay": 500
+    },
+    "Rogue_TreasureReward": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "领取奖励",
+                "roi": [280, 200, 200, 80]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Claim Reward"
+            }
+        ],
+        "action": "Click",
+        "next": ["Rogue_Main"],
+        "post_delay": 1500
+    },
+    "Rogue_StaminaNotEnough": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "补充结晶"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Refill"
+            }
+        ],
+        "action": "ClickKey",
+        "key": 53,
+        "next": ["Rogue_Main"],
+        "post_delay": 1000
+    }
+}

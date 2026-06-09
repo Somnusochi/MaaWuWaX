@@ -1,0 +1,37 @@
+{
+    "Daily_Stamina_Check": {
+        "recognition": "Custom",
+        "custom_recognition": "StaminaReader",
+        "next": ["Daily_Stamina_Has", "Daily_Stamina_Low"],
+        "post_delay": 500
+    },
+    "Daily_Stamina_Has": {
+        "action": "DoNothing",
+        "next": []
+    },
+    "Daily_Stamina_Low": {
+        "action": "DoNothing",
+        "next": []
+    },
+    "Daily_NavTacet": {
+        "action": "DoNothing",
+        "next": ["Daily_Stamina_RunTacet"]
+    },
+    "Daily_Stamina_RunTacet": {
+        "next": ["Tacet_Main"]
+    },
+    "Daily_NavForgery": {
+        "action": "DoNothing",
+        "next": ["Daily_Stamina_RunForgery"]
+    },
+    "Daily_Stamina_RunForgery": {
+        "next": ["Forgery_Main"]
+    },
+    "Daily_NavSimulation": {
+        "action": "DoNothing",
+        "next": ["Daily_Stamina_RunSimulation"]
+    },
+    "Daily_Stamina_RunSimulation": {
+        "next": ["Simulation_Main"]
+    }
+}

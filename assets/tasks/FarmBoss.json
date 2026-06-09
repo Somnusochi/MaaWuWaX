@@ -1,0 +1,29 @@
+{
+    "task": [
+        {
+            "name": "FarmBoss",
+            "label": "刷Boss",
+            "entry": "EchoFarm_Main",
+            "controller": ["macOS", "macOS-Global"],
+            "group": ["farm"],
+            "option": ["BossType"]
+        }
+    ],
+    "option": {
+        "BossType": {
+            "type": "select",
+            "label": "Boss类型",
+            "default_case": "boss",
+            "cases": [
+                {
+                    "name": "boss",
+                    "label": "Boss挑战"
+                },
+                {
+                    "name": "weekly",
+                    "label": "周本挑战"
+                }
+            ]
+        }
+    }
+}

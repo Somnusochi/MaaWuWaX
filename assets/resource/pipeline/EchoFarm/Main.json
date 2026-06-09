@@ -1,0 +1,58 @@
+{
+    "EchoFarm_Main": {
+        "next": ["EchoFarm_Navigate"]
+    },
+    "EchoFarm_Navigate": {
+        "recognition": "Custom",
+        "custom_recognition": "MinimapNavigate",
+        "next": ["EchoFarm_Combat", "EchoFarm_Navigate"],
+        "post_delay": 500,
+        "timeout": 60000,
+        "timeout_next": ["EchoFarm_TeleportNext"]
+    },
+    "EchoFarm_Combat": {
+        "recognition": "TemplateMatch",
+        "template": "has_target.png",
+        "threshold": 0.7,
+        "next": ["EchoFarm_Fight", "EchoFarm_ScanEcho"]
+    },
+    "EchoFarm_Fight": {
+        "action": "Custom",
+        "custom_action": "CombatMain",
+        "next": ["EchoFarm_CheckDead", "EchoFarm_Fight"],
+        "timeout": 120000,
+        "timeout_next": ["EchoFarm_TeleportNext"]
+    },
+    "EchoFarm_CheckDead": {
+        "recognition": "Custom",
+        "custom_recognition": "CombatState",
+        "next": ["EchoFarm_ScanEcho", "EchoFarm_Fight"]
+    },
+    "EchoFarm_ScanEcho": {
+        "recognition": "TemplateMatch",
+        "template": "echo_orb.png",
+        "threshold": 0.6,
+        "next": ["EchoFarm_Collect", "EchoFarm_CheckNext", "EchoFarm_Navigate"],
+        "post_delay": 1000,
+        "timeout": 30000,
+        "timeout_next": ["EchoFarm_TeleportNext"]
+    },
+    "EchoFarm_Collect": {
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["EchoFarm_ScanEcho"],
+        "post_delay": 300
+    },
+    "EchoFarm_CheckNext": {
+        "recognition": "TemplateMatch",
+        "template": "boss_check_mark.png",
+        "threshold": 0.7,
+        "next": ["EchoFarm_TeleportNext"]
+    },
+    "EchoFarm_TeleportNext": {
+        "action": "Custom",
+        "custom_action": "TeleportBoss",
+        "next": ["EchoFarm_Navigate"],
+        "post_delay": 3000
+    }
+}

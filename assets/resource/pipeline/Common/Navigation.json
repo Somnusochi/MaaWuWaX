@@ -1,0 +1,62 @@
+{
+    "Nav_OpenF2Book": {
+        "action": "ClickKey",
+        "key": 120,
+        "post_delay": 2000,
+        "next": ["Nav_BookOpen"]
+    },
+    "Nav_BookOpen": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_boss.png",
+        "threshold": 0.6,
+        "next": ["Nav_SelectBoss", "Nav_SelectQuest", "Nav_SelectTacet"]
+    },
+    "Nav_SelectBoss": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_boss.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "post_delay": 500,
+        "next": []
+    },
+    "Nav_SelectQuest": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_quest.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "post_delay": 500,
+        "next": []
+    },
+    "Nav_SelectTacet": {
+        "recognition": "TemplateMatch",
+        "template": "book_wuyin.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "post_delay": 500,
+        "next": []
+    },
+    "Nav_ClickTravel": {
+        "recognition": "TemplateMatch",
+        "template": "gray_teleport.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "post_delay": 3000,
+        "next": []
+    },
+    "Nav_WaitInWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "post_delay": 1000,
+        "next": [],
+        "timeout": 30000,
+        "timeout_next": []
+    },
+    "Nav_CloseBook": {
+        "action": "ClickKey",
+        "key": 53,
+        "post_delay": 1000,
+        "next": []
+    }
+}

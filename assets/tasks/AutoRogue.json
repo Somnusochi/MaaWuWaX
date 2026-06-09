@@ -1,0 +1,32 @@
+{
+    "task": [
+        {
+            "name": "AutoRogue",
+            "label": "半自动肉鸽",
+            "entry": "Rogue_Main",
+            "controller": ["macOS", "macOS-Global"],
+            "group": ["farm"],
+            "option": ["RogueStopOnTreasure"]
+        }
+    ],
+    "option": {
+        "RogueStopOnTreasure": {
+            "type": "switch",
+            "label": "发现宝藏时停止",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "Rogue_TreasureReward": {
+                            "next": []
+                        }
+                    }
+                },
+                {
+                    "name": "No"
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,6 @@
+# Build artifacts
+go-service
+*.exe
+*.dll
+*.dylib
+*.so

@@ -1,0 +1,37 @@
+{
+    "SkipDialog_Main": {
+        "next": ["SkipDialog_CheckSkip", "SkipDialog_CheckAuto", "SkipDialog_CheckArrow"]
+    },
+    "SkipDialog_CheckSkip": {
+        "recognition": "TemplateMatch",
+        "template": "skip_btn.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["SkipDialog_ConfirmSkip", "SkipDialog_Main"],
+        "post_delay": 500
+    },
+    "SkipDialog_ConfirmSkip": {
+        "recognition": "TemplateMatch",
+        "template": "skip_confirm.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["SkipDialog_Main"],
+        "post_delay": 500
+    },
+    "SkipDialog_CheckAuto": {
+        "recognition": "TemplateMatch",
+        "template": "auto_play.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["SkipDialog_Main"],
+        "post_delay": 300
+    },
+    "SkipDialog_CheckArrow": {
+        "recognition": "TemplateMatch",
+        "template": "dialog_arrow.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": ["SkipDialog_Main"],
+        "post_delay": 200
+    }
+}

@@ -1,0 +1,138 @@
+{
+    "Popup_MonthlyCard": {
+        "recognition": "TemplateMatch",
+        "template": "monthly_card.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "post_delay": 1500,
+        "next": []
+    },
+    "Popup_GenericClose": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_close.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "关闭"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Close"
+            }
+        ],
+        "action": "Click",
+        "post_delay": 800,
+        "next": []
+    },
+    "Popup_GenericConfirm": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确定"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            }
+        ],
+        "action": "Click",
+        "post_delay": 800,
+        "next": []
+    },
+    "Popup_DismissAll": {
+        "next": ["Popup_DontShowAgain", "Popup_LoginReward", "Popup_EventAnnounce", "Popup_MonthlyCard", "Popup_GenericClose", "Popup_GenericConfirm"]
+    },
+    "Popup_DontShowAgain": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "不再提示"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "不再显示"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Don't show"
+            }
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "next": ["Popup_GenericConfirm"]
+    },
+    "Popup_LoginReward": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "登录奖励"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Login Reward"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "签到"
+            }
+        ],
+        "action": "Click",
+        "post_delay": 1500,
+        "next": []
+    },
+    "Popup_EventAnnounce": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "活动公告"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Event"
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "event_announce.png",
+                "threshold": 0.6
+            }
+        ],
+        "action": "ClickKey",
+        "key": 53,
+        "post_delay": 800,
+        "next": []
+    },
+    "Popup_StaminaRefill": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "补充结晶"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Refill"
+            }
+        ],
+        "action": "ClickKey",
+        "key": 53,
+        "post_delay": 500,
+        "next": []
+    }
+}

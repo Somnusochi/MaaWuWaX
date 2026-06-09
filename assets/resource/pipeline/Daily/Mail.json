@@ -1,0 +1,30 @@
+{
+    "Daily_Mail_Open": {
+        "action": "ClickKey",
+        "key": 53,
+        "post_delay": 1000,
+        "next": ["Daily_Mail_FindTab"]
+    },
+    "Daily_Mail_FindTab": {
+        "recognition": "OCR",
+        "expected": "邮件",
+        "roi": [0, 0, 400, 720],
+        "action": "Click",
+        "next": ["Daily_Mail_ClaimAll"],
+        "post_delay": 1000
+    },
+    "Daily_Mail_ClaimAll": {
+        "recognition": "TemplateMatch",
+        "template": "btn_claim_all.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["Daily_Mail_Close"],
+        "post_delay": 1500
+    },
+    "Daily_Mail_Close": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": [],
+        "post_delay": 500
+    }
+}

@@ -1,0 +1,93 @@
+{
+    "task": [
+        {
+            "name": "EnhanceEcho",
+            "label": "批量强化声骸",
+            "entry": "EchoEnhance_Main",
+            "controller": ["macOS", "macOS-Global"],
+            "group": ["echo"],
+            "option": [
+                "EchoNeedDoubleCrit",
+                "EchoDoubleCritMin",
+                "EchoValidStatsCount",
+                "EchoPauseOnSuccess"
+            ]
+        }
+    ],
+    "option": {
+        "EchoNeedDoubleCrit": {
+            "type": "switch",
+            "label": "必须有双爆",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "EchoEnhance_Evaluate": {
+                            "custom_action_param": {
+                                "need_double_crit": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "EchoEnhance_Evaluate": {
+                            "custom_action_param": {
+                                "need_double_crit": false
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "EchoDoubleCritMin": {
+            "type": "input",
+            "label": "双爆总计最低值",
+            "default_case": "13.8",
+            "cases": [
+                {
+                    "name": "13.8",
+                    "pipeline_override": {
+                        "EchoEnhance_Evaluate": {
+                            "custom_action_param": {
+                                "double_crit_min": 13.8
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "EchoValidStatsCount": {
+            "type": "input",
+            "label": "有效词条最低数量",
+            "default_case": "3",
+            "cases": [
+                {
+                    "name": "3",
+                    "pipeline_override": {
+                        "EchoEnhance_Evaluate": {
+                            "custom_action_param": {
+                                "valid_stats_min": 3
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "EchoPauseOnSuccess": {
+            "type": "switch",
+            "label": "成功时暂停",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes"
+                },
+                {
+                    "name": "No"
+                }
+            ]
+        }
+    }
+}

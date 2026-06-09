@@ -1,0 +1,11 @@
+{
+    "task": [
+        {
+            "name": "FastTravel",
+            "label": "快速旅行",
+            "entry": "FastTravel_Main",
+            "controller": ["macOS", "macOS-Global"],
+            "group": ["trigger"]
+        }
+    ]
+}

@@ -1,0 +1,104 @@
+{
+    "interface_version": 2,
+    "name": "MaaWuWaX",
+    "label": "MaaWuWaX - 鸣潮助手",
+    "title": "MaaWuWaX",
+    "description": "基于 MaaFramework 的鸣潮自动化助手 (macOS)",
+    "github": "https://github.com/MaaWuWaX/MaaWuWaX",
+    "license": "AGPL-3.0",
+    "version": "0.2.0",
+    "languages": {
+        "zh_cn": "locales/zh_cn.json",
+        "en_us": "locales/en_us.json"
+    },
+    "agent": [
+        {
+            "name": "GoService",
+            "child_exec": "agent/go-service",
+            "child_args": []
+        }
+    ],
+    "controller": [
+        {
+            "name": "macOS",
+            "label": "macOS (ScreenCaptureKit)",
+            "type": "MacOS",
+            "macos": {
+                "screencap": "ScreenCaptureKit",
+                "input": "PostToPid"
+            }
+        },
+        {
+            "name": "macOS-Global",
+            "label": "macOS (Global Input)",
+            "type": "MacOS",
+            "macos": {
+                "screencap": "ScreenCaptureKit",
+                "input": "GlobalEvent"
+            }
+        }
+    ],
+    "resource": [
+        {
+            "name": "Official",
+            "label": "官方资源",
+            "path": ["resource"]
+        }
+    ],
+    "group": [
+        {
+            "name": "trigger",
+            "label": "后台触发器",
+            "default_expand": true
+        },
+        {
+            "name": "manual",
+            "label": "一次性任务",
+            "default_expand": true
+        },
+        {
+            "name": "daily",
+            "label": "日常任务",
+            "default_expand": true
+        },
+        {
+            "name": "farm",
+            "label": "刷取任务",
+            "default_expand": true
+        },
+        {
+            "name": "domain",
+            "label": "副本刷取",
+            "default_expand": true
+        },
+        {
+            "name": "echo",
+            "label": "声骸管理",
+            "default_expand": true
+        },
+        {
+            "name": "other",
+            "label": "其他",
+            "default_expand": false
+        }
+    ],
+    "task": [],
+    "import": [
+        "tasks/AutoCombat.json",
+        "tasks/AutoPick.json",
+        "tasks/SkipDialog.json",
+        "tasks/AutoLogin.json",
+        "tasks/FastTravel.json",
+        "tasks/DailyRoutine.json",
+        "tasks/NightmareNest.json",
+        "tasks/Tacet.json",
+        "tasks/Forgery.json",
+        "tasks/Simulation.json",
+        "tasks/EchoFarm.json",
+        "tasks/FarmBoss.json",
+        "tasks/AutoRogue.json",
+        "tasks/EnhanceEcho.json",
+        "tasks/ChangeEcho.json",
+        "tasks/FiveToOne.json"
+    ]
+}

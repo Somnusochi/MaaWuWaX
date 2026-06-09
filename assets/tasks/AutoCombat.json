@@ -1,0 +1,11 @@
+{
+    "task": [
+        {
+            "name": "AutoCombat",
+            "label": "自动战斗",
+            "entry": "Combat_Main",
+            "controller": ["macOS", "macOS-Global"],
+            "group": ["trigger"]
+        }
+    ]
+}

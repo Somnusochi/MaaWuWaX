@@ -1,0 +1,67 @@
+{
+    "FastTravel_Main": {
+        "next": ["FastTravel_DetectTeleport", "FastTravel_Main"]
+    },
+    "FastTravel_DetectTeleport": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "gray_teleport.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "fast_travel_custom.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "custom_teleport_hcenter_vcenter.png",
+                "threshold": 0.6
+            }
+        ],
+        "action": "Click",
+        "next": ["FastTravel_ConfirmTravel"],
+        "post_delay": 1500
+    },
+    "FastTravel_ConfirmTravel": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "快速旅行"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Travel"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "前往"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Proceed"
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "boss_proceed.png",
+                "threshold": 0.7
+            }
+        ],
+        "action": "Click",
+        "next": ["FastTravel_WaitLoad"],
+        "post_delay": 3000
+    },
+    "FastTravel_WaitLoad": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": [],
+        "timeout": 30000,
+        "timeout_next": [],
+        "post_delay": 1000
+    }
+}

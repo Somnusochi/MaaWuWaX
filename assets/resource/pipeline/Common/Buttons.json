@@ -1,0 +1,87 @@
+{
+    "Btn_YellowConfirm": {
+        "recognition": "TemplateMatch",
+        "template": "btn_yellow_confirm.png",
+        "threshold": 0.75,
+        "action": "Click"
+    },
+    "Btn_WhiteConfirm": {
+        "recognition": "TemplateMatch",
+        "template": "btn_white_confirm.png",
+        "threshold": 0.75,
+        "action": "Click"
+    },
+    "Btn_Cancel": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_cancel.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "取消"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Cancel"
+            }
+        ],
+        "action": "Click"
+    },
+    "Btn_Close": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_close.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "关闭"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Close"
+            }
+        ],
+        "action": "Click"
+    },
+    "Btn_Esc": {
+        "action": "ClickKey",
+        "key": 53,
+        "post_delay": 800
+    },
+    "Btn_ClaimAll": {
+        "recognition": "TemplateMatch",
+        "template": "btn_claim_all.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "post_delay": 1500
+    },
+    "Btn_Confirm": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确定"
+            }
+        ],
+        "action": "Click"
+    }
+}

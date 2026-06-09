@@ -1,0 +1,11 @@
+{
+    "task": [
+        {
+            "name": "AutoLogin",
+            "label": "自动登录",
+            "entry": "Login_Main",
+            "controller": ["macOS", "macOS-Global"],
+            "group": ["trigger"]
+        }
+    ]
+}

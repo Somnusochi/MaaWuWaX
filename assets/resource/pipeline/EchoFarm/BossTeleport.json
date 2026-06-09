@@ -1,0 +1,70 @@
+{
+    "EchoFarm_OpenBook": {
+        "action": "ClickKey",
+        "key": 120,
+        "next": ["EchoFarm_BookOpen"],
+        "post_delay": 2000
+    },
+    "EchoFarm_BookOpen": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_boss.png",
+        "threshold": 0.6,
+        "next": ["EchoFarm_SelectBossTab"],
+        "post_delay": 500
+    },
+    "EchoFarm_SelectBossTab": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_boss.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": ["EchoFarm_ClickProceed"],
+        "post_delay": 500
+    },
+    "EchoFarm_ClickProceed": {
+        "recognition": "TemplateMatch",
+        "template": "boss_proceed.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["EchoFarm_ClickTeleport"],
+        "post_delay": 1000
+    },
+    "EchoFarm_ClickTeleport": {
+        "recognition": "TemplateMatch",
+        "template": "gray_teleport.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["EchoFarm_WaitWorldLoad"],
+        "post_delay": 3000
+    },
+    "EchoFarm_WaitWorldLoad": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": [],
+        "timeout": 30000,
+        "timeout_next": [],
+        "post_delay": 1000
+    },
+    "EchoFarm_WeeklyBossTab": {
+        "action": "ClickKey",
+        "key": 120,
+        "next": ["EchoFarm_WaitBook"],
+        "post_delay": 2000
+    },
+    "EchoFarm_WaitBook": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_boss.png",
+        "threshold": 0.6,
+        "next": ["EchoFarm_SelectWeeklyTab"],
+        "post_delay": 500
+    },
+    "EchoFarm_SelectWeeklyTab": {
+        "recognition": "TemplateMatch",
+        "template": "book_zhange.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": ["EchoFarm_ClickProceed"],
+        "post_delay": 500
+    }
+}

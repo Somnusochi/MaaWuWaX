@@ -1,0 +1,75 @@
+{
+    "task": [
+        {
+            "name": "ChangeEcho",
+            "label": "批量修改声骸主属性",
+            "entry": "EchoChange_Main",
+            "controller": ["macOS", "macOS-Global"],
+            "group": ["echo"],
+            "option": ["EchoTargetStat"]
+        }
+    ],
+    "option": {
+        "EchoTargetStat": {
+            "type": "select",
+            "label": "目标属性",
+            "default_case": "attack",
+            "cases": [
+                {
+                    "name": "attack",
+                    "label": "攻击",
+                    "pipeline_override": {
+                        "EchoChange_SelectTarget": {
+                            "custom_action_param": {"target_stat": "攻击"}
+                        }
+                    }
+                },
+                {
+                    "name": "crit_rate",
+                    "label": "暴击",
+                    "pipeline_override": {
+                        "EchoChange_SelectTarget": {
+                            "custom_action_param": {"target_stat": "暴击"}
+                        }
+                    }
+                },
+                {
+                    "name": "crit_dmg",
+                    "label": "暴击伤害",
+                    "pipeline_override": {
+                        "EchoChange_SelectTarget": {
+                            "custom_action_param": {"target_stat": "暴击伤害"}
+                        }
+                    }
+                },
+                {
+                    "name": "hp",
+                    "label": "生命",
+                    "pipeline_override": {
+                        "EchoChange_SelectTarget": {
+                            "custom_action_param": {"target_stat": "生命"}
+                        }
+                    }
+                },
+                {
+                    "name": "def",
+                    "label": "防御",
+                    "pipeline_override": {
+                        "EchoChange_SelectTarget": {
+                            "custom_action_param": {"target_stat": "防御"}
+                        }
+                    }
+                },
+                {
+                    "name": "con_eff",
+                    "label": "共鸣效率",
+                    "pipeline_override": {
+                        "EchoChange_SelectTarget": {
+                            "custom_action_param": {"target_stat": "共鸣效率"}
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

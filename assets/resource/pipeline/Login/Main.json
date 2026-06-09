@@ -1,0 +1,17 @@
+{
+    "Login_Main": {
+        "next": ["Login_CheckWorld", "Login_HandleScreen"]
+    },
+    "Login_CheckWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "next": []
+    },
+    "Login_HandleScreen": {
+        "recognition": "Custom",
+        "custom_recognition": "LoginScreenDetect",
+        "next": ["Login_Main"],
+        "post_delay": 2000
+    }
+}

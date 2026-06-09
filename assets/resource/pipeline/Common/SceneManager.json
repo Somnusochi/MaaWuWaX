@@ -1,0 +1,142 @@
+{
+    "Scene_DetectInWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": ["Scene_InWorld"],
+        "post_delay": 500
+    },
+    "Scene_InWorld": {
+        "action": "DoNothing",
+        "next": []
+    },
+    "Scene_DetectDialog": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "dialog_3_dots.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "message.png",
+                "threshold": 0.7
+            }
+        ],
+        "next": [],
+        "post_delay": 300
+    },
+    "Scene_DetectMenu": {
+        "recognition": "TemplateMatch",
+        "template": "esc_setting.png",
+        "threshold": 0.7,
+        "next": [],
+        "post_delay": 300
+    },
+    "Scene_EnsureMain": {
+        "action": "ClickKey",
+        "key": 53,
+        "post_delay": 1000,
+        "next": ["Scene_DetectInWorld", "Scene_EnsureMain"]
+    },
+    "Scene_OpenF2Book": {
+        "action": "ClickKey",
+        "key": 120,
+        "post_delay": 2000,
+        "next": ["Scene_BookOpen"]
+    },
+    "Scene_BookOpen": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_boss.png",
+        "threshold": 0.6,
+        "next": [],
+        "post_delay": 500
+    },
+    "Scene_DetectInRealm": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "realm_indicator.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "OCR",
+                "expected": "挑战",
+                "roi": [0, 0, 200, 100]
+            }
+        ],
+        "next": ["Scene_InRealm"],
+        "post_delay": 500
+    },
+    "Scene_InRealm": {
+        "action": "DoNothing",
+        "next": []
+    },
+    "Scene_DetectInCombat": {
+        "recognition": "And",
+        "all_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "has_target.png",
+                "threshold": 0.6,
+                "roi": [400, 200, 800, 600]
+            }
+        ],
+        "next": ["Scene_InCombat"],
+        "post_delay": 300
+    },
+    "Scene_InCombat": {
+        "action": "DoNothing",
+        "next": []
+    },
+    "Scene_DetectDead": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "复活",
+                "roi": [400, 300, 480, 200]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Revive"
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "dead_indicator.png",
+                "threshold": 0.6
+            }
+        ],
+        "next": ["Scene_HandleDead"],
+        "post_delay": 500
+    },
+    "Scene_HandleDead": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "复活"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Revive"
+            }
+        ],
+        "action": "Click",
+        "next": ["Scene_WaitAfterRevive"],
+        "post_delay": 3000
+    },
+    "Scene_WaitAfterRevive": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": [],
+        "timeout": 15000,
+        "timeout_next": [],
+        "post_delay": 1000
+    }
+}

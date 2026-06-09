@@ -1,0 +1,11 @@
+{
+    "task": [
+        {
+            "name": "NightmareNest",
+            "label": "梦魇巢穴",
+            "entry": "NightmareNest_Main",
+            "controller": ["macOS", "macOS-Global"],
+            "group": ["manual"]
+        }
+    ]
+}

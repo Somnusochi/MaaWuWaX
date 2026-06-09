@@ -1,0 +1,69 @@
+{
+    "FiveToOne_Main": {
+        "next": ["FiveToOne_EnsureWorld"]
+    },
+    "FiveToOne_EnsureWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": ["FiveToOne_OpenMenu"],
+        "post_delay": 500
+    },
+    "FiveToOne_OpenMenu": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": ["FiveToOne_WaitMenu"],
+        "post_delay": 1000
+    },
+    "FiveToOne_WaitMenu": {
+        "recognition": "OCR",
+        "expected": "数据坞",
+        "next": ["FiveToOne_ClickDataDock"],
+        "post_delay": 500
+    },
+    "FiveToOne_ClickDataDock": {
+        "action": "Click",
+        "next": ["FiveToOne_WaitDataDock"],
+        "post_delay": 1000
+    },
+    "FiveToOne_WaitDataDock": {
+        "recognition": "OCR",
+        "expected": "数据坞",
+        "roi": [0, 0, 200, 100],
+        "next": ["FiveToOne_ClickFusionTab"],
+        "post_delay": 500
+    },
+    "FiveToOne_ClickFusionTab": {
+        "action": "Click",
+        "target": [50, 400, 30, 30],
+        "next": ["FiveToOne_ClickBatchFusion"],
+        "post_delay": 500
+    },
+    "FiveToOne_ClickBatchFusion": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "批量融合",
+                "roi": [900, 600, 380, 120]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Batch Fuse"
+            }
+        ],
+        "action": "Click",
+        "next": ["FiveToOne_LoopMerge"],
+        "post_delay": 1000
+    },
+    "FiveToOne_LoopMerge": {
+        "action": "Custom",
+        "custom_action": "FiveToOneMerge",
+        "next": ["FiveToOne_Done"],
+        "post_delay": 500
+    },
+    "FiveToOne_Done": {
+        "next": []
+    }
+}

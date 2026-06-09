@@ -1,0 +1,184 @@
+{
+    "Forgery_Main": {
+        "next": ["Forgery_EnsureWorld"]
+    },
+    "Forgery_EnsureWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": ["Forgery_OpenBook"],
+        "post_delay": 500
+    },
+    "Forgery_OpenBook": {
+        "action": "ClickKey",
+        "key": 120,
+        "next": ["Forgery_BookOpen"],
+        "post_delay": 2000
+    },
+    "Forgery_BookOpen": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_boss.png",
+        "threshold": 0.6,
+        "next": ["Forgery_SelectForgeryTab"],
+        "post_delay": 500
+    },
+    "Forgery_SelectForgeryTab": {
+        "recognition": "TemplateMatch",
+        "template": "book_qiangdi.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": ["Forgery_SelectTarget"],
+        "post_delay": 500
+    },
+    "Forgery_SelectTarget": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_boss.png",
+        "threshold": 0.5,
+        "action": "Click",
+        "next": ["Forgery_ClickTravel"],
+        "post_delay": 500
+    },
+    "Forgery_ClickTravel": {
+        "recognition": "TemplateMatch",
+        "template": "gray_teleport.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["Forgery_WaitLoad"],
+        "post_delay": 3000
+    },
+    "Forgery_WaitLoad": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": ["Forgery_WalkToDomain"],
+        "timeout": 30000,
+        "timeout_next": [],
+        "post_delay": 1000
+    },
+    "Forgery_WalkToDomain": {
+        "action": "ClickKey",
+        "key": 13,
+        "next": ["Forgery_EnterDomain"],
+        "post_delay": 5000
+    },
+    "Forgery_EnterDomain": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "gray_start_battle.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "挑战"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge"
+            }
+        ],
+        "action": "Click",
+        "next": ["Forgery_ConfirmEnter"],
+        "post_delay": 2000
+    },
+    "Forgery_ConfirmEnter": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_yellow_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            }
+        ],
+        "action": "Click",
+        "next": ["Forgery_Fight"],
+        "post_delay": 3000
+    },
+    "Forgery_Fight": {
+        "action": "Custom",
+        "custom_action": "CombatMain",
+        "next": ["Forgery_CheckComplete", "Forgery_Loot"],
+        "post_delay": 500
+    },
+    "Forgery_Loot": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["Forgery_CheckComplete", "Forgery_Fight"],
+        "post_delay": 500
+    },
+    "Forgery_CheckComplete": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "挑战完成"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge Complete"
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "claim_btn.png",
+                "threshold": 0.6
+            }
+        ],
+        "next": ["Forgery_HandleReward"],
+        "post_delay": 1000
+    },
+    "Forgery_HandleReward": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "gem_add_stamina.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "OCR",
+                "expected": "消耗体力"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Spend Stamina"
+            }
+        ],
+        "action": "Click",
+        "next": ["Forgery_ConfirmStamina", "Forgery_Done"],
+        "post_delay": 1000
+    },
+    "Forgery_ConfirmStamina": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_yellow_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            }
+        ],
+        "action": "Click",
+        "next": ["Forgery_Fight"],
+        "post_delay": 2000
+    },
+    "Forgery_Done": {
+        "next": []
+    }
+}

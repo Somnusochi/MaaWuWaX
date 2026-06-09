@@ -1,0 +1,33 @@
+{
+    "task": [
+        {
+            "name": "Simulation",
+            "label": "模拟领域刷取",
+            "entry": "Simulation_Main",
+            "controller": ["macOS", "macOS-Global"],
+            "group": ["domain"],
+            "option": ["MaterialSelection"]
+        }
+    ],
+    "option": {
+        "MaterialSelection": {
+            "type": "select",
+            "label": "材料选择",
+            "default_case": "shell_credit",
+            "cases": [
+                {
+                    "name": "resonator_exp",
+                    "label": "共鸣者经验"
+                },
+                {
+                    "name": "weapon_exp",
+                    "label": "武器经验"
+                },
+                {
+                    "name": "shell_credit",
+                    "label": "贝币"
+                }
+            ]
+        }
+    }
+}

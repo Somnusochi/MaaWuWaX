@@ -1,0 +1,86 @@
+{
+    "Daily_Main": {
+        "next": ["Daily_EnsureWorld", "Daily_HandlePopups"]
+    },
+    "Daily_HandlePopups": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "monthly_card.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "关闭"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Close"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确定"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            }
+        ],
+        "action": "Click",
+        "next": ["Daily_Main"]
+    },
+    "Daily_EnsureWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "next": ["Daily_OpenBook"],
+        "post_delay": 1000
+    },
+    "Daily_OpenBook": {
+        "action": "ClickKey",
+        "key": 120,
+        "next": ["Daily_CheckProgress"],
+        "post_delay": 2000
+    },
+    "Daily_CheckProgress": {
+        "recognition": "OCR",
+        "roi": [150, 100, 500, 100],
+        "expected": "/180",
+        "next": ["Daily_SpendStamina", "Daily_ClaimRewards"]
+    },
+    "Daily_SpendStamina": {
+        "action": "Custom",
+        "custom_action": "SpendStamina",
+        "next": ["Daily_ClaimRewards"]
+    },
+    "Daily_ClaimRewards": {
+        "recognition": "TemplateMatch",
+        "template": "claim_btn.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["Daily_ClaimMail"],
+        "post_delay": 2000
+    },
+    "Daily_ClaimMail": {
+        "recognition": "Custom",
+        "custom_recognition": "IsMailEnabled",
+        "action": "ClickKey",
+        "key": 53,
+        "post_delay": 1500,
+        "next": ["Daily_MailClick", "Daily_BattlePass"]
+    },
+    "Daily_MailClick": {
+        "action": "Custom",
+        "custom_action": "ClaimMail",
+        "next": ["Daily_BattlePass"]
+    },
+    "Daily_BattlePass": {
+        "action": "Custom",
+        "custom_action": "ClaimBattlePass",
+        "next": ["Daily_Done"]
+    },
+    "Daily_Done": {
+        "next": []
+    }
+}
