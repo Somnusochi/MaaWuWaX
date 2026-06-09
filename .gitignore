@@ -453,3 +453,4 @@ tools/ImageCropper/**/*.png
 config
 debug/maafw/
 /mxu
+/maafw/
