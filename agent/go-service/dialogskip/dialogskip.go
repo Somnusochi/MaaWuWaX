@@ -1,24 +1,36 @@
-// Package dialogskip implements dialog-skip Custom Recognition for Wuthering Waves.
-// The basic dialog skip logic (skip button, auto-play, arrow click) is handled by Pipeline JSON.
-// This package provides additional Go-level detection for edge cases.
+// Package dialogskip — ok-ww port: SkipDialogTask + SkipBaseTask.
+// Pipeline handles the base flow; Go handles detection edge cases.
 package dialogskip
 
 import (
 	maa "github.com/MaaXYZ/maa-framework-go/v4"
-	"github.com/rs/zerolog/log"
 )
 
-// IsMailEnabledRecognition is a stub that always returns enabled=true.
-// In production, this should check whether the mail icon has a red dot or is visible.
+// IsMailEnabledRecognition — ok-ww: checks for red notification dot on mail icon.
 type IsMailEnabledRecognition struct{}
 
 var _ maa.CustomRecognitionRunner = &IsMailEnabledRecognition{}
 
 func (r *IsMailEnabledRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
-	// TODO: Actually check mail icon visibility / red dot.
-	log.Debug().Str("component", "IsMailEnabled").Msg("returning enabled=true (stub)")
+	// ok-ww: check for red_dot template on mail icon (threshold 0.6)
+	detail, err := ctx.RunRecognition("__Mail_RedDot", arg.Img, `{
+		"__Mail_RedDot": {
+			"recognition": "TemplateMatch",
+			"template": "red_dot.png",
+			"threshold": 0.6,
+			"roi": [810, 640, 30, 30]
+		}
+	}`)
+	enabled := err == nil && detail != nil && detail.Hit
+
+	if enabled {
+		return &maa.CustomRecognitionResult{
+			Box:    maa.Rect{810, 640, 30, 30},
+			Detail: `{"enabled":true}`,
+		}, true
+	}
 	return &maa.CustomRecognitionResult{
 		Box:    maa.Rect{0, 0, 1, 1},
-		Detail: `{"enabled":true}`,
-	}, true
+		Detail: `{"enabled":false}`,
+	}, false
 }
