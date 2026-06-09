@@ -451,4 +451,5 @@ install
 tools/ImageCropper/**/*.png
 
 config
-debug
+debug/maafw/
+/mxu
