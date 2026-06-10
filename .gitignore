@@ -1,6 +1,22 @@
 # docs
 docs/node_modules
 docs/.vuepress/.temp
+
+# local workspace metadata
+.claude/
+.qoder/
+openspec/
+
+# local migration notes
+docs/zh_cn/Report.md
+docs/zh_cn/OK-WW迁移计划.md
+docs/zh_cn/ok-ww-port-plan.md
+
+# MaaWuWaX generated caches / build outputs
+.cache/
+debug/
+agent/cpp-algo/build/
+agent/cpp-algo/debug/
 # Prerequisites
 *.d
 

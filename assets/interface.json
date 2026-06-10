@@ -15,10 +15,6 @@
         {
             "child_exec": "agent/go-service",
             "child_args": []
-        },
-        {
-            "child_exec": "agent/cpp-algo",
-            "child_args": []
         }
     ],
     "controller": [

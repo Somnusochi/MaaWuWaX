@@ -8,7 +8,8 @@ Current status:
 - Source skeleton has been ported from MaaEnd.
 - `MaaUtils` is required as a submodule at `agent/cpp-algo/MaaUtils`.
 - Third-party MaaDeps are downloaded through `tools/maadeps-download.py`.
-- Do not add `agent/cpp-algo` to `assets/interface.json` until the release/install workflow builds and installs the `cpp-algo` executable.
+- `assets/interface.json` intentionally keeps only the Go agent until the release/install workflow builds and installs the `cpp-algo` executable.
+- Local build outputs live under `agent/cpp-algo/build/` and must stay out of git.
 
 Bootstrap:
 
