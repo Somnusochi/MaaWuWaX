@@ -13,12 +13,10 @@
     },
     "agent": [
         {
-            "name": "GoService",
             "child_exec": "agent/go-service",
             "child_args": []
         },
         {
-            "name": "CppAlgo",
             "child_exec": "agent/cpp-algo",
             "child_args": []
         }
