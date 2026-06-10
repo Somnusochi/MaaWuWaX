@@ -2,7 +2,7 @@
     "task": [
         {
             "name": "DailyRoutine",
-            "label": "一键日常",
+            "label": "$task.DailyRoutine.label",
             "entry": "Daily_Main",
             "controller": [
                 "macOS",
@@ -21,7 +21,7 @@
     "option": {
         "ClaimMail": {
             "type": "switch",
-            "label": "领取邮件",
+            "label": "$task.DailyRoutine.option.ClaimMail.label",
             "default_case": "Yes",
             "cases": [
                 {
@@ -30,7 +30,8 @@
                         "Daily_MailClick": {
                             "enabled": true
                         }
-                    }
+                    },
+                    "label": "是"
                 },
                 {
                     "name": "No",
@@ -38,13 +39,14 @@
                         "Daily_MailClick": {
                             "enabled": false
                         }
-                    }
+                    },
+                    "label": "否"
                 }
             ]
         },
         "ClaimBattlePass": {
             "type": "switch",
-            "label": "领取战令",
+            "label": "$task.DailyRoutine.option.ClaimBattlePass.label",
             "default_case": "Yes",
             "cases": [
                 {
@@ -53,7 +55,8 @@
                         "Daily_BattlePass": {
                             "enabled": true
                         }
-                    }
+                    },
+                    "label": "是"
                 },
                 {
                     "name": "No",
@@ -61,47 +64,499 @@
                         "Daily_BattlePass": {
                             "enabled": false
                         }
-                    }
+                    },
+                    "label": "否"
                 }
             ]
         },
         "StaminaType": {
             "type": "select",
-            "label": "体力消耗方式",
+            "label": "$task.DailyRoutine.option.StaminaType.label",
             "default_case": "tacet",
             "cases": [
                 {
                     "name": "tacet",
-                    "label": "无音区",
+                    "option": [
+                        "TacetSuppressionIndex"
+                    ],
                     "pipeline_override": {
-                        "Daily_SpendStamina": {
+                        "Daily_Stamina_Has": {
                             "custom_action_param": {
                                 "stamina_type": "tacet"
                             }
                         }
-                    }
+                    },
+                    "label": "$task.DailyRoutine.option.StaminaType.cases.tacet.label"
                 },
                 {
                     "name": "forgery",
-                    "label": "凝素领域",
+                    "option": [
+                        "ForgeryChallengeIndex"
+                    ],
                     "pipeline_override": {
-                        "Daily_SpendStamina": {
+                        "Daily_Stamina_Has": {
                             "custom_action_param": {
                                 "stamina_type": "forgery"
                             }
                         }
-                    }
+                    },
+                    "label": "$task.DailyRoutine.option.StaminaType.cases.forgery.label"
                 },
                 {
                     "name": "simulation",
-                    "label": "模拟领域",
+                    "option": [
+                        "SimulationMaterial"
+                    ],
                     "pipeline_override": {
-                        "Daily_SpendStamina": {
+                        "Daily_Stamina_Has": {
                             "custom_action_param": {
                                 "stamina_type": "simulation"
                             }
                         }
-                    }
+                    },
+                    "label": "$task.DailyRoutine.option.StaminaType.cases.simulation.label"
+                },
+                {
+                    "name": "none",
+                    "label": "$task.DailyRoutine.option.StaminaType.cases.none.label"
+                }
+            ]
+        },
+        "TacetSuppressionIndex": {
+            "type": "select",
+            "label": "$task.DailyRoutine.option.TacetSuppressionIndex.label",
+            "default_case": "1",
+            "cases": [
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 1,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "1"
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 2,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "2"
+                },
+                {
+                    "name": "3",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 3,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "3"
+                },
+                {
+                    "name": "4",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 4,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "4"
+                },
+                {
+                    "name": "5",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 5,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "5"
+                },
+                {
+                    "name": "6",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 6,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "6"
+                },
+                {
+                    "name": "7",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 7,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "7"
+                },
+                {
+                    "name": "8",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 8,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "8"
+                },
+                {
+                    "name": "9",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 9,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "9"
+                },
+                {
+                    "name": "10",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 10,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "10"
+                },
+                {
+                    "name": "11",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 11,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "11"
+                },
+                {
+                    "name": "12",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 12,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "12"
+                },
+                {
+                    "name": "13",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 13,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "13"
+                },
+                {
+                    "name": "14",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 14,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "14"
+                },
+                {
+                    "name": "15",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 15,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "15"
+                },
+                {
+                    "name": "16",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 16,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "16"
+                },
+                {
+                    "name": "17",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 17,
+                                "total_number": 17
+                            }
+                        }
+                    },
+                    "label": "17"
+                }
+            ]
+        },
+        "ForgeryChallengeIndex": {
+            "type": "select",
+            "label": "$task.DailyRoutine.option.ForgeryChallengeIndex.label",
+            "default_case": "1",
+            "cases": [
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 1,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "1"
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 2,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "2"
+                },
+                {
+                    "name": "3",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 3,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "3"
+                },
+                {
+                    "name": "4",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 4,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "4"
+                },
+                {
+                    "name": "5",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 5,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "5"
+                },
+                {
+                    "name": "6",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 6,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "6"
+                },
+                {
+                    "name": "7",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 7,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "7"
+                },
+                {
+                    "name": "8",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 8,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "8"
+                },
+                {
+                    "name": "9",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 9,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "9"
+                },
+                {
+                    "name": "10",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 10,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "10"
+                },
+                {
+                    "name": "11",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 11,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "11"
+                },
+                {
+                    "name": "12",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 12,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "12"
+                },
+                {
+                    "name": "13",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 13,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "13"
+                },
+                {
+                    "name": "14",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 14,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "14"
+                },
+                {
+                    "name": "15",
+                    "pipeline_override": {
+                        "Forgery_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 15,
+                                "total_number": 15
+                            }
+                        }
+                    },
+                    "label": "15"
+                }
+            ]
+        },
+        "SimulationMaterial": {
+            "type": "select",
+            "label": "$task.DailyRoutine.option.SimulationMaterial.label",
+            "default_case": "shell_credit",
+            "cases": [
+                {
+                    "name": "resonator_exp",
+                    "pipeline_override": {
+                        "Simulation_SelectMaterial": {
+                            "custom_action_param": {
+                                "material": "resonator_exp"
+                            }
+                        }
+                    },
+                    "label": "共鸣者经验"
+                },
+                {
+                    "name": "weapon_exp",
+                    "pipeline_override": {
+                        "Simulation_SelectMaterial": {
+                            "custom_action_param": {
+                                "material": "weapon_exp"
+                            }
+                        }
+                    },
+                    "label": "武器经验"
+                },
+                {
+                    "name": "shell_credit",
+                    "pipeline_override": {
+                        "Simulation_SelectMaterial": {
+                            "custom_action_param": {
+                                "material": "shell_credit"
+                            }
+                        }
+                    },
+                    "label": "贝币"
                 }
             ]
         }

@@ -2,7 +2,7 @@
     "task": [
         {
             "name": "AutoPick",
-            "label": "自动拾取",
+            "label": "$task.AutoPick.label",
             "entry": "AutoPick_Main",
             "controller": [
                 "macOS",

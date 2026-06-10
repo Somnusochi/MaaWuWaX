@@ -1,0 +1,16 @@
+{
+    "task": [
+        {
+            "name": "MouseReset",
+            "label": "$task.MouseReset.label",
+            "entry": "MouseReset_Main",
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "diagnosis"
+            ]
+        }
+    ]
+}

@@ -2,7 +2,7 @@
     "task": [
         {
             "name": "ChangeEcho",
-            "label": "批量修改声骸主属性",
+            "label": "$task.ChangeEcho.label",
             "entry": "EchoChange_Main",
             "controller": [
                 "macOS",
@@ -19,15 +19,20 @@
     "option": {
         "EchoTargetStat": {
             "type": "select",
-            "label": "目标属性",
+            "label": "$option.EchoTargetStat.label",
             "default_case": "attack",
             "cases": [
                 {
                     "name": "attack",
-                    "label": "攻击",
+                    "label": "$option.EchoTargetStat.cases.attack.label",
                     "pipeline_override": {
                         "EchoChange_SelectTarget": {
                             "custom_action_param": {
+                                "target_stat": "攻击"
+                            }
+                        },
+                        "EchoChange_CheckCurrentStat": {
+                            "custom_recognition_param": {
                                 "target_stat": "攻击"
                             }
                         }
@@ -35,10 +40,15 @@
                 },
                 {
                     "name": "crit_rate",
-                    "label": "暴击",
+                    "label": "$option.EchoTargetStat.cases.crit_rate.label",
                     "pipeline_override": {
                         "EchoChange_SelectTarget": {
                             "custom_action_param": {
+                                "target_stat": "暴击"
+                            }
+                        },
+                        "EchoChange_CheckCurrentStat": {
+                            "custom_recognition_param": {
                                 "target_stat": "暴击"
                             }
                         }
@@ -46,10 +56,15 @@
                 },
                 {
                     "name": "crit_dmg",
-                    "label": "暴击伤害",
+                    "label": "$option.EchoTargetStat.cases.crit_dmg.label",
                     "pipeline_override": {
                         "EchoChange_SelectTarget": {
                             "custom_action_param": {
+                                "target_stat": "暴击伤害"
+                            }
+                        },
+                        "EchoChange_CheckCurrentStat": {
+                            "custom_recognition_param": {
                                 "target_stat": "暴击伤害"
                             }
                         }
@@ -57,10 +72,15 @@
                 },
                 {
                     "name": "hp",
-                    "label": "生命",
+                    "label": "$option.EchoTargetStat.cases.hp.label",
                     "pipeline_override": {
                         "EchoChange_SelectTarget": {
                             "custom_action_param": {
+                                "target_stat": "生命"
+                            }
+                        },
+                        "EchoChange_CheckCurrentStat": {
+                            "custom_recognition_param": {
                                 "target_stat": "生命"
                             }
                         }
@@ -68,10 +88,15 @@
                 },
                 {
                     "name": "def",
-                    "label": "防御",
+                    "label": "$option.EchoTargetStat.cases.def.label",
                     "pipeline_override": {
                         "EchoChange_SelectTarget": {
                             "custom_action_param": {
+                                "target_stat": "防御"
+                            }
+                        },
+                        "EchoChange_CheckCurrentStat": {
+                            "custom_recognition_param": {
                                 "target_stat": "防御"
                             }
                         }
@@ -79,11 +104,112 @@
                 },
                 {
                     "name": "con_eff",
-                    "label": "共鸣效率",
+                    "label": "$option.EchoTargetStat.cases.con_eff.label",
                     "pipeline_override": {
                         "EchoChange_SelectTarget": {
                             "custom_action_param": {
                                 "target_stat": "共鸣效率"
+                            }
+                        },
+                        "EchoChange_CheckCurrentStat": {
+                            "custom_recognition_param": {
+                                "target_stat": "共鸣效率"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "glacio",
+                    "label": "$option.EchoTargetStat.cases.glacio.label",
+                    "pipeline_override": {
+                        "EchoChange_SelectTarget": {
+                            "custom_action_param": {
+                                "target_stat": "冷凝伤害加成"
+                            }
+                        },
+                        "EchoChange_CheckCurrentStat": {
+                            "custom_recognition_param": {
+                                "target_stat": "冷凝伤害加成"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "fusion",
+                    "label": "$option.EchoTargetStat.cases.fusion.label",
+                    "pipeline_override": {
+                        "EchoChange_SelectTarget": {
+                            "custom_action_param": {
+                                "target_stat": "热熔伤害加成"
+                            }
+                        },
+                        "EchoChange_CheckCurrentStat": {
+                            "custom_recognition_param": {
+                                "target_stat": "热熔伤害加成"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "electro",
+                    "label": "$option.EchoTargetStat.cases.electro.label",
+                    "pipeline_override": {
+                        "EchoChange_SelectTarget": {
+                            "custom_action_param": {
+                                "target_stat": "导电伤害加成"
+                            }
+                        },
+                        "EchoChange_CheckCurrentStat": {
+                            "custom_recognition_param": {
+                                "target_stat": "导电伤害加成"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "aero",
+                    "label": "$option.EchoTargetStat.cases.aero.label",
+                    "pipeline_override": {
+                        "EchoChange_SelectTarget": {
+                            "custom_action_param": {
+                                "target_stat": "气动伤害加成"
+                            }
+                        },
+                        "EchoChange_CheckCurrentStat": {
+                            "custom_recognition_param": {
+                                "target_stat": "气动伤害加成"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "spectro",
+                    "label": "$option.EchoTargetStat.cases.spectro.label",
+                    "pipeline_override": {
+                        "EchoChange_SelectTarget": {
+                            "custom_action_param": {
+                                "target_stat": "衍射伤害加成"
+                            }
+                        },
+                        "EchoChange_CheckCurrentStat": {
+                            "custom_recognition_param": {
+                                "target_stat": "衍射伤害加成"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "havoc",
+                    "label": "$option.EchoTargetStat.cases.havoc.label",
+                    "pipeline_override": {
+                        "EchoChange_SelectTarget": {
+                            "custom_action_param": {
+                                "target_stat": "湮灭伤害加成"
+                            }
+                        },
+                        "EchoChange_CheckCurrentStat": {
+                            "custom_recognition_param": {
+                                "target_stat": "湮灭伤害加成"
                             }
                         }
                     }

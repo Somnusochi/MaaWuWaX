@@ -2,14 +2,14 @@
     "task": [
         {
             "name": "AutoRogue",
-            "label": "半自动肉鸽",
+            "label": "$task.AutoRogue.label",
             "entry": "Rogue_Main",
             "controller": [
                 "macOS",
                 "macOS-Global"
             ],
             "group": [
-                "farm"
+                "daily"
             ],
             "option": [
                 "RogueStopOnTreasure"
@@ -19,19 +19,30 @@
     "option": {
         "RogueStopOnTreasure": {
             "type": "switch",
-            "label": "发现宝藏时停止",
+            "label": "$option.RogueStopOnTreasure.label",
             "default_case": "No",
             "cases": [
                 {
                     "name": "Yes",
                     "pipeline_override": {
                         "Rogue_TreasureReward": {
-                            "next": []
+                            "custom_action_param": {
+                                "stop_on_treasure": true,
+                                "max_claims": 2
+                            }
                         }
                     }
                 },
                 {
-                    "name": "No"
+                    "name": "No",
+                    "pipeline_override": {
+                        "Rogue_TreasureReward": {
+                            "custom_action_param": {
+                                "stop_on_treasure": false,
+                                "max_claims": 2
+                            }
+                        }
+                    }
                 }
             ]
         }

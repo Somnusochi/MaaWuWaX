@@ -2,7 +2,7 @@
     "task": [
         {
             "name": "SkipDialog",
-            "label": "跳过对话",
+            "label": "$task.SkipDialog.label",
             "entry": "SkipDialog_Main",
             "controller": [
                 "macOS",

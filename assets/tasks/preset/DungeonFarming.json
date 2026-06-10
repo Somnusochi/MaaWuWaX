@@ -1,0 +1,8 @@
+{
+    "preset": [{
+        "name": "DungeonFarming",
+        "label": "副本刷取",
+        "description": "无音区 / 凝素领域 / 模拟领域 刷取",
+        "task": [{"name": "RealTime", "option": {"AutoCombat": "Yes"}}, {"name": "Tacet"}, {"name": "Forgery"}, {"name": "Simulation"}]
+    }]
+}

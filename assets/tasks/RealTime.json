@@ -1,0 +1,194 @@
+{
+    "task": [
+        {
+            "name": "RealTime",
+            "label": "$task.RealTime.label",
+            "entry": "RealTime_Main",
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "realtime"
+            ],
+            "option": [
+                "AutoCombat",
+                "RealTimeCombatUseLiberation",
+                "AutoPick",
+                "SkipDialog",
+                "FastTravel",
+                "AutoLogin",
+                "MouseReset"
+            ]
+        }
+    ],
+    "option": {
+        "AutoCombat": {
+            "type": "switch",
+            "label": "$option.AutoCombat.label",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "RealTime_Combat": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "RealTime_Combat": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
+        },
+        "AutoPick": {
+            "type": "switch",
+            "label": "$option.AutoPick.label",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "RealTime_Pick": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "RealTime_Pick": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
+        },
+        "RealTimeCombatUseLiberation": {
+            "type": "switch",
+            "label": "$option.RealTimeCombatUseLiberation.label",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "RealTime_Combat": {
+                            "custom_action_param": {
+                                "use_liberation": true,
+                                "auto_target": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "RealTime_Combat": {
+                            "custom_action_param": {
+                                "use_liberation": false,
+                                "auto_target": true
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "SkipDialog": {
+            "type": "switch",
+            "label": "$option.SkipDialog.label",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "RealTime_Skip": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "RealTime_Skip": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
+        },
+        "FastTravel": {
+            "type": "switch",
+            "label": "$option.FastTravel.label",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "RealTime_Travel": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "RealTime_Travel": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
+        },
+        "AutoLogin": {
+            "type": "switch",
+            "label": "$option.AutoLogin.label",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "RealTime_Login": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "RealTime_Login": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
+        },
+        "MouseReset": {
+            "type": "switch",
+            "label": "$option.MouseReset.label",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "RealTime_Mouse": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "RealTime_Mouse": {
+                            "enabled": false
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

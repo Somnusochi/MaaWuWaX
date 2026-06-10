@@ -1,0 +1,22 @@
+{
+    "preset": [
+        {
+            "name": "RealtimeAssist",
+            "label": "实时辅助（推荐）",
+            "description": "一键开启自动战斗、拾取、跳过对话",
+            "task": [
+                {
+                    "name": "RealTime",
+                    "option": {
+                        "AutoCombat": "Yes",
+                        "AutoPick": "Yes",
+                        "SkipDialog": "Yes",
+                        "FastTravel": "No",
+                        "AutoLogin": "Yes",
+                        "MouseReset": "No"
+                    }
+                }
+            ]
+        }
+    ]
+}

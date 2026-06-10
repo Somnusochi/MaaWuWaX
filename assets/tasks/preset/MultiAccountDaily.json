@@ -1,0 +1,8 @@
+{
+    "preset": [{
+        "name": "MultiAccountDaily",
+        "label": "多账号日常",
+        "description": "多账号自动切换 + 每个账号执行日常",
+        "task": [{"name": "RealTime", "option": {"AutoLogin": "Yes"}}, {"name": "MultiAccountDaily"}]
+    }]
+}

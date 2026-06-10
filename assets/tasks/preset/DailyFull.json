@@ -1,0 +1,28 @@
+{
+    "preset": [
+        {
+            "name": "DailyFull",
+            "label": "全套日常",
+            "description": "日常任务 + 消耗体力 + 领取邮件战令",
+            "task": [
+                {
+                    "name": "RealTime",
+                    "option": {
+                        "AutoLogin": "Yes"
+                    }
+                },
+                {
+                    "name": "DailyRoutine",
+                    "option": {
+                        "ClaimMail": "Yes",
+                        "ClaimBattlePass": "Yes",
+                        "StaminaType": "tacet",
+                        "TacetSuppressionIndex": "1",
+                        "ForgeryChallengeIndex": "1",
+                        "SimulationMaterial": "shell_credit"
+                    }
+                }
+            ]
+        }
+    ]
+}

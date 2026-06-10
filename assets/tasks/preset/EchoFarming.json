@@ -1,0 +1,22 @@
+{
+    "preset": [
+        {
+            "name": "EchoFarming",
+            "label": "声骸刷取",
+            "description": "自动战斗 + 声骸刷取循环",
+            "task": [
+                {
+                    "name": "RealTime",
+                    "option": {
+                        "AutoCombat": "Yes",
+                        "AutoPick": "Yes",
+                        "SkipDialog": "Yes"
+                    }
+                },
+                {
+                    "name": "EchoFarm"
+                }
+            ]
+        }
+    ]
+}

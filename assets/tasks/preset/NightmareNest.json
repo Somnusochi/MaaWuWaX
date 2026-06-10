@@ -1,0 +1,8 @@
+{
+    "preset": [{
+        "name": "NightmareNest",
+        "label": "梦魇巢穴",
+        "description": "自动刷所有梦魇净化与残象巢穴",
+        "task": [{"name": "RealTime", "option": {"AutoCombat": "Yes"}}, {"name": "NightmareNest"}]
+    }]
+}

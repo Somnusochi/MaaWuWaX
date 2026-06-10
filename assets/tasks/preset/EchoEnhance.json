@@ -1,0 +1,8 @@
+{
+    "preset": [{
+        "name": "EchoEnhance",
+        "label": "声骸管理",
+        "description": "强化声骸 / 修改主属性 / 五合一合成",
+        "task": [{"name": "EnhanceEcho"}, {"name": "ChangeEcho"}, {"name": "FiveToOne"}]
+    }]
+}

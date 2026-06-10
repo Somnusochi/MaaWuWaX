@@ -2,7 +2,7 @@
     "task": [
         {
             "name": "Tacet",
-            "label": "无音区刷取",
+            "label": "$task.Tacet.label",
             "entry": "Tacet_Main",
             "controller": [
                 "macOS",
@@ -19,76 +19,212 @@
     "option": {
         "TacetIndex": {
             "type": "select",
-            "label": "无音区选择",
+            "label": "$option.TacetIndex.label",
             "default_case": "1",
             "cases": [
                 {
                     "name": "1",
-                    "label": "无音区 1"
+                    "label": "无音区 1",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 1,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "2",
-                    "label": "无音区 2"
+                    "label": "无音区 2",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 2,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "3",
-                    "label": "无音区 3"
+                    "label": "无音区 3",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 3,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "4",
-                    "label": "无音区 4"
+                    "label": "无音区 4",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 4,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "5",
-                    "label": "无音区 5"
+                    "label": "无音区 5",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 5,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "6",
-                    "label": "无音区 6"
+                    "label": "无音区 6",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 6,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "7",
-                    "label": "无音区 7"
+                    "label": "无音区 7",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 7,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "8",
-                    "label": "无音区 8"
+                    "label": "无音区 8",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 8,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "9",
-                    "label": "无音区 9"
+                    "label": "无音区 9",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 9,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "10",
-                    "label": "无音区 10"
+                    "label": "无音区 10",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 10,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "11",
-                    "label": "无音区 11"
+                    "label": "无音区 11",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 11,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "12",
-                    "label": "无音区 12"
+                    "label": "无音区 12",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 12,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "13",
-                    "label": "无音区 13"
+                    "label": "无音区 13",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 13,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "14",
-                    "label": "无音区 14"
+                    "label": "无音区 14",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 14,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "15",
-                    "label": "无音区 15"
+                    "label": "无音区 15",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 15,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "16",
-                    "label": "无音区 16"
+                    "label": "无音区 16",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 16,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "17",
-                    "label": "无音区 17"
+                    "label": "无音区 17",
+                    "pipeline_override": {
+                        "Tacet_SelectTarget": {
+                            "custom_action_param": {
+                                "serial_number": 17,
+                                "total_number": 17
+                            }
+                        }
+                    }
                 }
             ]
         }

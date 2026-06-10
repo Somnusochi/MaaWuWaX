@@ -1,0 +1,16 @@
+{
+    "task": [
+        {
+            "name": "Diagnosis",
+            "label": "$task.Diagnosis.label",
+            "entry": "Diagnosis_Main",
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "diagnosis"
+            ]
+        }
+    ]
+}

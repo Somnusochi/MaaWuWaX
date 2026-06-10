@@ -2,14 +2,14 @@
     "task": [
         {
             "name": "AutoLogin",
-            "label": "自动登录",
+            "label": "$task.AutoLogin.label",
             "entry": "Login_Main",
             "controller": [
                 "macOS",
                 "macOS-Global"
             ],
             "group": [
-                "daily"
+                "open_world"
             ]
         }
     ]

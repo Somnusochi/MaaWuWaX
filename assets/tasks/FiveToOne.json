@@ -2,7 +2,7 @@
     "task": [
         {
             "name": "FiveToOne",
-            "label": "数据坞五合一",
+            "label": "$task.FiveToOne.label",
             "entry": "FiveToOne_Main",
             "controller": [
                 "macOS",
@@ -10,7 +10,53 @@
             ],
             "group": [
                 "echo"
+            ],
+            "option": [
+                "FiveToOneKeepConfig",
+                "FiveToOneMaxRoundsPerSet"
             ]
         }
-    ]
+    ],
+    "option": {
+        "FiveToOneKeepConfig": {
+            "type": "input",
+            "label": "$option.FiveToOneKeepConfig.label",
+            "inputs": [
+                {
+                    "name": "KeepConfig",
+                    "label": "套装主属性保留表",
+                    "description": "示例: {\"凝夜白霜\":[\"暴击率\",\"暴击伤害\"]}; 未写入的主属性会被选择合成。",
+                    "pipeline_type": "string",
+                    "default": "{}"
+                }
+            ],
+            "pipeline_override": {
+                "FiveToOne_LoopMerge": {
+                    "custom_action_param": {
+                        "keep_config": "{KeepConfig}"
+                    }
+                }
+            }
+        },
+        "FiveToOneMaxRoundsPerSet": {
+            "type": "input",
+            "label": "$option.FiveToOneMaxRoundsPerSet.label",
+            "inputs": [
+                {
+                    "name": "MaxRoundsPerSet",
+                    "label": "最多轮数",
+                    "pipeline_type": "int",
+                    "verify": "^\\d+$",
+                    "default": "20"
+                }
+            ],
+            "pipeline_override": {
+                "FiveToOne_LoopMerge": {
+                    "custom_action_param": {
+                        "max_rounds_per_set": "{MaxRoundsPerSet}"
+                    }
+                }
+            }
+        }
+    }
 }

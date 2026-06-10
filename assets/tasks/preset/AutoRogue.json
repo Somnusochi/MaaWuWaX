@@ -1,0 +1,8 @@
+{
+    "preset": [{
+        "name": "AutoRogue",
+        "label": "半自动肉鸽",
+        "description": "周本肉鸽模式半自动战斗",
+        "task": [{"name": "RealTime", "option": {"AutoCombat": "Yes"}}, {"name": "AutoRogue"}]
+    }]
+}

@@ -2,7 +2,7 @@
     "task": [
         {
             "name": "EchoFarm",
-            "label": "刷声骸",
+            "label": "刷4C(大世界/副本)",
             "entry": "EchoFarm_Main",
             "controller": [
                 "macOS",
@@ -10,7 +10,260 @@
             ],
             "group": [
                 "farm"
+            ],
+            "option": [
+                "TeleportToBoss",
+                "BossType",
+                "RepeatFarmCount",
+                "CombatWaitTime",
+                "EchoPickupMethod",
+                "EchoUseLiberation",
+                "EchoSwitchHealer"
             ]
         }
-    ]
+    ],
+    "option": {
+        "TeleportToBoss": {
+            "type": "select",
+            "label": "传送至Boss",
+            "default_case": "no",
+            "cases": [
+                {
+                    "name": "no",
+                    "label": "否"
+                },
+                {
+                    "name": "weekly",
+                    "label": "战歌重奏",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_type": "weekly"
+                            }
+                        }
+                    },
+                    "option": [
+                        "BossIndex",
+                        "BossLevel"
+                    ]
+                },
+                {
+                    "name": "boss",
+                    "label": "讨伐强敌",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_type": "boss"
+                            }
+                        }
+                    },
+                    "option": [
+                        "BossIndex",
+                        "BossLevel",
+                        "BossProfile"
+                    ]
+                }
+            ]
+        },
+        "BossType": {
+            "type": "select",
+            "label": "Boss类型",
+            "default_case": "weekly",
+            "cases": [
+                {
+                    "name": "weekly",
+                    "label": "战歌重奏 (9个)",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "enabled": true,
+                            "custom_action_param": {
+                                "boss_type": "weekly",
+                                "total_number": 9
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "boss",
+                    "label": "讨伐强敌 (20个)",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "enabled": true,
+                            "custom_action_param": {
+                                "boss_type": "boss",
+                                "total_number": 20
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "BossIndex": {
+            "type": "input",
+            "label": "Boss序号 (从上到下)",
+            "input_filter": "[1-9][0-9]?",
+            "inputs": [
+                {
+                    "name": "value",
+                    "default": "1",
+                    "pipeline_type": "string"
+                }
+            ]
+        },
+        "BossLevel": {
+            "type": "select",
+            "label": "Boss等级",
+            "default_case": "80",
+            "cases": [
+                {
+                    "name": "50",
+                    "label": "50 级"
+                },
+                {
+                    "name": "60",
+                    "label": "60 级"
+                },
+                {
+                    "name": "70",
+                    "label": "70 级"
+                },
+                {
+                    "name": "80",
+                    "label": "80 级"
+                },
+                {
+                    "name": "90",
+                    "label": "90 级"
+                }
+            ]
+        },
+        "BossProfile": {
+            "type": "select",
+            "label": "Boss配置",
+            "default_case": "other",
+            "cases": [
+                {
+                    "name": "other",
+                    "label": "其它"
+                },
+                {
+                    "name": "hyvatia",
+                    "label": "海维夏"
+                },
+                {
+                    "name": "fallacy",
+                    "label": "无归的谬误"
+                },
+                {
+                    "name": "sentryconstruct",
+                    "label": "异构武装"
+                },
+                {
+                    "name": "lorelei",
+                    "label": "罗蕾莱"
+                },
+                {
+                    "name": "lionessofglory",
+                    "label": "荣耀狮像"
+                },
+                {
+                    "name": "fenrico",
+                    "label": "芬莱克"
+                },
+                {
+                    "name": "namelessexplorer",
+                    "label": "无铭探索者"
+                },
+                {
+                    "name": "nightmarehecate",
+                    "label": "梦魇·赫卡忒"
+                }
+            ]
+        },
+        "RepeatFarmCount": {
+            "type": "input",
+            "label": "刷多少次",
+            "input_filter": "[0-9]+",
+            "inputs": [
+                {
+                    "name": "value",
+                    "default": "10000",
+                    "pipeline_type": "string"
+                }
+            ]
+        },
+        "CombatWaitTime": {
+            "type": "input",
+            "label": "战斗开始前等待时间(秒)",
+            "input_filter": "[0-9]+",
+            "inputs": [
+                {
+                    "name": "value",
+                    "default": "0",
+                    "pipeline_type": "string"
+                }
+            ]
+        },
+        "EchoPickupMethod": {
+            "type": "select",
+            "label": "搜索声骸方法",
+            "default_case": "walk",
+            "cases": [
+                {
+                    "name": "walk",
+                    "label": "后退再前进"
+                },
+                {
+                    "name": "run_in_circle",
+                    "label": "转圈奔跑"
+                },
+                {
+                    "name": "yolo",
+                    "label": "Yolo模型"
+                }
+            ]
+        },
+        "EchoUseLiberation": {
+            "type": "switch",
+            "label": "使用共鸣解放",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "EchoFarm_Fight": {
+                            "custom_action_param": {
+                                "use_liberation": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "EchoFarm_Fight": {
+                            "custom_action_param": {
+                                "use_liberation": false
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "EchoSwitchHealer": {
+            "type": "switch",
+            "label": "战斗结束后切换到治疗角色",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "label": "是"
+                },
+                {
+                    "name": "No",
+                    "label": "否"
+                }
+            ]
+        }
+    }
 }

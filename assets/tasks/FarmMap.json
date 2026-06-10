@@ -1,0 +1,47 @@
+{
+    "task": [
+        {
+            "name": "FarmMap",
+            "label": "$task.FarmMap.label",
+            "entry": "FarmMap_Main",
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "open_world"
+            ],
+            "option": [
+                {
+                    "name": "FarmMapMaxStepDistance",
+                    "label": "$option.FarmMapMaxStepDistance.label",
+                    "type": "int",
+                    "default": 144,
+                    "pipeline_override": {
+                        "FarmMap_LoadPath": {
+                            "custom_action_param": {
+                                "max_step_distance": 144,
+                                "min_stars": 3
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "FarmMapReachDistance",
+                    "label": "$option.FarmMapReachDistance.label",
+                    "type": "int",
+                    "default": 24,
+                    "pipeline_override": {
+                        "FarmMap_Walk": {
+                            "custom_action_param": {
+                                "reach_distance": 24,
+                                "search_radius": 280,
+                                "walk_ms": 850
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

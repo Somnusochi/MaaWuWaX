@@ -2,7 +2,7 @@
     "task": [
         {
             "name": "Simulation",
-            "label": "模拟领域刷取",
+            "label": "$task.Simulation.label",
             "entry": "Simulation_Main",
             "controller": [
                 "macOS",
@@ -19,20 +19,41 @@
     "option": {
         "MaterialSelection": {
             "type": "select",
-            "label": "材料选择",
+            "label": "$option.MaterialSelection.label",
             "default_case": "shell_credit",
             "cases": [
                 {
                     "name": "resonator_exp",
-                    "label": "共鸣者经验"
+                    "label": "$option.MaterialSelection.cases.resonator_exp.label",
+                    "pipeline_override": {
+                        "Simulation_SelectMaterial": {
+                            "custom_action_param": {
+                                "material": "resonator_exp"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "weapon_exp",
-                    "label": "武器经验"
+                    "label": "$option.MaterialSelection.cases.weapon_exp.label",
+                    "pipeline_override": {
+                        "Simulation_SelectMaterial": {
+                            "custom_action_param": {
+                                "material": "weapon_exp"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "shell_credit",
-                    "label": "贝币"
+                    "label": "$option.MaterialSelection.cases.shell_credit.label",
+                    "pipeline_override": {
+                        "Simulation_SelectMaterial": {
+                            "custom_action_param": {
+                                "material": "shell_credit"
+                            }
+                        }
+                    }
                 }
             ]
         }

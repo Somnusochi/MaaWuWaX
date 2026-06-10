@@ -2,15 +2,79 @@
     "task": [
         {
             "name": "NightmareNest",
-            "label": "梦魇巢穴",
+            "label": "$task.NightmareNest.label",
             "entry": "NightmareNest_Main",
             "controller": [
                 "macOS",
                 "macOS-Global"
             ],
             "group": [
-                "domain"
+                "daily"
+            ],
+            "option": [
+                "NightmareNestType",
+                "NightmareCaptureMode"
             ]
         }
-    ]
+    ],
+    "option": {
+        "NightmareNestType": {
+            "type": "select",
+            "label": "$option.NightmareNestType.label",
+            "default_case": "both",
+            "cases": [
+                {
+                    "name": "both",
+                    "label": "$option.NightmareNestType.cases.both.label"
+                },
+                {
+                    "name": "nightmare",
+                    "label": "$option.NightmareNestType.cases.nightmare.label",
+                    "pipeline_override": {
+                        "NightmareNest_ScrollMengyan": {
+                            "on_error": [
+                                "NightmareNest_Done"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "canxiang",
+                    "label": "$option.NightmareNestType.cases.canxiang.label",
+                    "pipeline_override": {
+                        "NightmareNest_BookOpen": {
+                            "next": [
+                                "NightmareNest_SelectCanxiang"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "NightmareCaptureMode": {
+            "type": "switch",
+            "label": "$option.NightmareCaptureMode.label",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "No"
+                },
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "NightmareNest_EchoNotification": {
+                            "next": [
+                                "NightmareNest_Done"
+                            ]
+                        },
+                        "NightmareNest_CollectEcho": {
+                            "next": [
+                                "NightmareNest_Done"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    }
 }

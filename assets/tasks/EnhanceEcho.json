@@ -2,7 +2,7 @@
     "task": [
         {
             "name": "EnhanceEcho",
-            "label": "批量强化声骸",
+            "label": "$task.EnhanceEcho.label",
             "entry": "EchoEnhance_Main",
             "controller": [
                 "macOS",
@@ -14,7 +14,11 @@
             "option": [
                 "EchoNeedDoubleCrit",
                 "EchoDoubleCritMin",
+                "EchoFirstCritMin",
                 "EchoValidStatsCount",
+                "EchoFirstMustBeValid",
+                "EchoAllValidBeforeCrit",
+                "EchoValidStatsPreset",
                 "EchoPauseOnSuccess"
             ]
         }
@@ -22,7 +26,7 @@
     "option": {
         "EchoNeedDoubleCrit": {
             "type": "switch",
-            "label": "必须有双爆",
+            "label": "$option.EchoNeedDoubleCrit.label",
             "default_case": "Yes",
             "cases": [
                 {
@@ -49,32 +53,141 @@
         },
         "EchoDoubleCritMin": {
             "type": "input",
-            "label": "双爆总计最低值",
-            "default_case": "13.8",
+            "label": "$option.EchoDoubleCritMin.label",
+            "inputs": [
+                {
+                    "name": "value",
+                    "default": "13.8",
+                    "pipeline_type": "string"
+                }
+            ]
+        },
+        "EchoValidStatsCount": {
+            "type": "input",
+            "label": "$option.EchoValidStatsCount.label",
+            "inputs": [
+                {
+                    "name": "value",
+                    "default": "3",
+                    "pipeline_type": "string"
+                }
+            ]
+        },
+        "EchoFirstCritMin": {
+            "type": "input",
+            "label": "$option.EchoFirstCritMin.label",
+            "inputs": [
+                {
+                    "name": "value",
+                    "default": "6.9",
+                    "pipeline_type": "string"
+                }
+            ]
+        },
+        "EchoFirstMustBeValid": {
+            "type": "switch",
+            "label": "$option.EchoFirstMustBeValid.label",
+            "default_case": "Yes",
             "cases": [
                 {
-                    "name": "13.8",
+                    "name": "Yes",
                     "pipeline_override": {
                         "EchoEnhance_Evaluate": {
                             "custom_action_param": {
-                                "double_crit_min": 13.8
+                                "first_must_be_valid": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "EchoEnhance_Evaluate": {
+                            "custom_action_param": {
+                                "first_must_be_valid": false
                             }
                         }
                     }
                 }
             ]
         },
-        "EchoValidStatsCount": {
-            "type": "input",
-            "label": "有效词条最低数量",
-            "default_case": "3",
+        "EchoAllValidBeforeCrit": {
+            "type": "switch",
+            "label": "$option.EchoAllValidBeforeCrit.label",
+            "default_case": "Yes",
             "cases": [
                 {
-                    "name": "3",
+                    "name": "Yes",
                     "pipeline_override": {
                         "EchoEnhance_Evaluate": {
                             "custom_action_param": {
-                                "valid_stats_min": 3
+                                "all_valid_before_crit": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "EchoEnhance_Evaluate": {
+                            "custom_action_param": {
+                                "all_valid_before_crit": false
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "EchoValidStatsPreset": {
+            "type": "select",
+            "label": "$option.EchoValidStatsPreset.label",
+            "default_case": "crit_atk",
+            "cases": [
+                {
+                    "name": "crit_atk",
+                    "label": "$option.EchoValidStatsPreset.cases.crit_atk.label",
+                    "pipeline_override": {
+                        "EchoEnhance_Evaluate": {
+                            "custom_action_param": {
+                                "valid_stats": [
+                                    "暴击",
+                                    "暴击伤害",
+                                    "攻击百分比"
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "crit_energy",
+                    "label": "$option.EchoValidStatsPreset.cases.crit_energy.label",
+                    "pipeline_override": {
+                        "EchoEnhance_Evaluate": {
+                            "custom_action_param": {
+                                "valid_stats": [
+                                    "暴击",
+                                    "暴击伤害",
+                                    "攻击百分比",
+                                    "共鸣效率"
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "support",
+                    "label": "$option.EchoValidStatsPreset.cases.support.label",
+                    "pipeline_override": {
+                        "EchoEnhance_Evaluate": {
+                            "custom_action_param": {
+                                "valid_stats": [
+                                    "暴击",
+                                    "暴击伤害",
+                                    "攻击百分比",
+                                    "共鸣效率",
+                                    "生命百分比",
+                                    "防御百分比"
+                                ]
                             }
                         }
                     }
@@ -83,14 +196,28 @@
         },
         "EchoPauseOnSuccess": {
             "type": "switch",
-            "label": "成功时暂停",
+            "label": "$option.EchoPauseOnSuccess.label",
             "default_case": "Yes",
             "cases": [
                 {
-                    "name": "Yes"
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "EchoEnhance_Evaluate": {
+                            "custom_action_param": {
+                                "pause_on_success": true
+                            }
+                        }
+                    }
                 },
                 {
-                    "name": "No"
+                    "name": "No",
+                    "pipeline_override": {
+                        "EchoEnhance_Evaluate": {
+                            "custom_action_param": {
+                                "pause_on_success": false
+                            }
+                        }
+                    }
                 }
             ]
         }

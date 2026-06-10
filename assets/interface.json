@@ -16,6 +16,11 @@
             "name": "GoService",
             "child_exec": "agent/go-service",
             "child_args": []
+        },
+        {
+            "name": "CppAlgo",
+            "child_exec": "agent/cpp-algo",
+            "child_args": []
         }
     ],
     "controller": [
@@ -42,54 +47,65 @@
         {
             "name": "Official",
             "label": "官方资源",
-            "path": "resource"
+            "path": [
+                "resource"
+            ]
         }
     ],
     "group": [
         {
+            "name": "realtime",
+            "label": "$group.realtime.label",
+            "default_expand": true
+        },
+        {
             "name": "combat",
-            "label": "战斗",
+            "label": "$group.combat.label",
             "default_expand": true
         },
         {
             "name": "open_world",
-            "label": "大世界",
+            "label": "$group.open_world.label",
             "default_expand": true
         },
         {
             "name": "daily",
-            "label": "日常",
+            "label": "$group.daily.label",
             "default_expand": true
         },
         {
             "name": "farm",
-            "label": "刷取",
+            "label": "$group.farm.label",
             "default_expand": true
         },
         {
             "name": "domain",
-            "label": "副本",
+            "label": "$group.domain.label",
             "default_expand": true
         },
         {
             "name": "echo",
-            "label": "声骸管理",
+            "label": "$group.echo.label",
             "default_expand": true
         },
         {
-            "name": "other",
-            "label": "其他",
+            "name": "diagnosis",
+            "label": "$group.diagnosis.label",
             "default_expand": false
         }
     ],
     "task": [],
     "import": [
+        "tasks/RealTime.json",
         "tasks/AutoCombat.json",
         "tasks/AutoPick.json",
         "tasks/SkipDialog.json",
-        "tasks/AutoLogin.json",
         "tasks/FastTravel.json",
+        "tasks/FarmMap.json",
+        "tasks/AutoLogin.json",
+        "tasks/MouseReset.json",
         "tasks/DailyRoutine.json",
+        "tasks/MultiAccountDaily.json",
         "tasks/NightmareNest.json",
         "tasks/Tacet.json",
         "tasks/Forgery.json",
@@ -99,6 +115,15 @@
         "tasks/AutoRogue.json",
         "tasks/EnhanceEcho.json",
         "tasks/ChangeEcho.json",
-        "tasks/FiveToOne.json"
+        "tasks/FiveToOne.json",
+        "tasks/Diagnosis.json",
+        "tasks/preset/RealtimeAssist.json",
+        "tasks/preset/DailyFull.json",
+        "tasks/preset/EchoFarming.json",
+        "tasks/preset/MultiAccountDaily.json",
+        "tasks/preset/DungeonFarming.json",
+        "tasks/preset/NightmareNest.json",
+        "tasks/preset/AutoRogue.json",
+        "tasks/preset/EchoEnhance.json"
     ]
 }

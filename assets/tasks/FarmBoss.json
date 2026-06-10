@@ -2,7 +2,7 @@
     "task": [
         {
             "name": "FarmBoss",
-            "label": "刷Boss",
+            "label": "$task.FarmBoss.label",
             "entry": "EchoFarm_Main",
             "controller": [
                 "macOS",
@@ -12,23 +12,210 @@
                 "farm"
             ],
             "option": [
-                "BossType"
+                "BossType",
+                "BossName",
+                "BossProfile",
+                "BossIndex",
+                "BossLevel"
             ]
         }
     ],
     "option": {
         "BossType": {
             "type": "select",
-            "label": "Boss类型",
+            "label": "$option.BossType.label",
             "default_case": "boss",
             "cases": [
                 {
                     "name": "boss",
-                    "label": "Boss挑战"
+                    "label": "$option.BossType.cases.boss.label",
+                    "pipeline_override": {
+                        "EchoFarm_Main": {
+                            "next": [
+                                "EchoFarm_TeleportNext"
+                            ]
+                        },
+                        "EchoFarm_TeleportNext": {
+                            "custom_action_param": {
+                                "boss_type": "boss",
+                                "total_number": 20
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "weekly",
-                    "label": "周本挑战"
+                    "label": "$option.BossType.cases.weekly.label",
+                    "pipeline_override": {
+                        "EchoFarm_Main": {
+                            "next": [
+                                "EchoFarm_TeleportNext"
+                            ]
+                        },
+                        "EchoFarm_TeleportNext": {
+                            "custom_action_param": {
+                                "boss_type": "weekly",
+                                "total_number": 9
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "BossName": {
+            "type": "input",
+            "label": "$option.BossName.label",
+            "inputs": [
+                {
+                    "name": "BossName",
+                    "label": "OCR名称",
+                    "description": "可选。填写后优先在索拉指南列表 OCR 查找 Boss 名称，找不到时回退到列表序号。",
+                    "default": ""
+                }
+            ],
+            "pipeline_override": {
+                "EchoFarm_TeleportNext": {
+                    "custom_action_param": {
+                        "boss_name": "{BossName}"
+                    }
+                }
+            }
+        },
+        "BossProfile": {
+            "type": "select",
+            "label": "$option.BossProfile.label",
+            "default_case": "Other",
+            "cases": [
+                {
+                    "name": "Other",
+                    "label": "$option.BossProfile.cases.Other.label"
+                },
+                {
+                    "name": "Fallacy",
+                    "label": "$option.BossProfile.cases.Fallacy.label",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportNext": {
+                            "custom_action_param": {
+                                "boss_profile": "fallacy"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Fenrico",
+                    "label": "$option.BossProfile.cases.Fenrico.label",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportNext": {
+                            "custom_action_param": {
+                                "boss_profile": "fenrico"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "NamelessExplorer",
+                    "label": "$option.BossProfile.cases.NamelessExplorer.label",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportNext": {
+                            "custom_action_param": {
+                                "boss_profile": "nameless_explorer"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "SentryConstruct",
+                    "label": "$option.BossProfile.cases.SentryConstruct.label",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportNext": {
+                            "custom_action_param": {
+                                "boss_profile": "sentry_construct"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Hyvatia",
+                    "label": "$option.BossProfile.cases.Hyvatia.label",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportNext": {
+                            "custom_action_param": {
+                                "boss_profile": "hyvatia"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "BossIndex": {
+            "type": "input",
+            "label": "$option.BossIndex.label",
+            "inputs": [
+                {
+                    "name": "BossIndex",
+                    "label": "列表序号",
+                    "description": "F2索拉指南中从上到下的序号，强敌最多20，周本最多9。",
+                    "pipeline_type": "int",
+                    "verify": "^\\d+$",
+                    "default": "1"
+                }
+            ],
+            "pipeline_override": {
+                "EchoFarm_TeleportNext": {
+                    "custom_action_param": {
+                        "serial_number": "{BossIndex}"
+                    }
+                }
+            }
+        },
+        "BossLevel": {
+            "type": "select",
+            "label": "$option.BossLevel.label",
+            "default_case": "80",
+            "cases": [
+                {
+                    "name": "50",
+                    "label": "50 级",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportNext": {
+                            "custom_action_param": {
+                                "boss_level": "50"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "60",
+                    "label": "60 级",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportNext": {
+                            "custom_action_param": {
+                                "boss_level": "60"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "70",
+                    "label": "70 级",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportNext": {
+                            "custom_action_param": {
+                                "boss_level": "70"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "80",
+                    "label": "80 级",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportNext": {
+                            "custom_action_param": {
+                                "boss_level": "80"
+                            }
+                        }
+                    }
                 }
             ]
         }

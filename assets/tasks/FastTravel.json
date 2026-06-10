@@ -2,7 +2,7 @@
     "task": [
         {
             "name": "FastTravel",
-            "label": "快速旅行",
+            "label": "$task.FastTravel.label",
             "entry": "FastTravel_Main",
             "controller": [
                 "macOS",

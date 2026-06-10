@@ -1,0 +1,83 @@
+{
+    "task": [
+        {
+            "name": "MultiAccountDaily",
+            "label": "$task.MultiAccountDaily.label",
+            "entry": "Daily_Main",
+            "controller": [
+                "macOS",
+                "macOS-Global"
+            ],
+            "group": [
+                "daily"
+            ],
+            "option": [
+                "MultiAccountCount"
+            ],
+            "pipeline_override": {
+                "Daily_Done": {
+                    "next": [
+                        "MultiAccountDaily_Switch"
+                    ]
+                }
+            }
+        }
+    ],
+    "option": {
+        "MultiAccountCount": {
+            "type": "select",
+            "label": "$option.MultiAccountCount.label",
+            "default_case": "2",
+            "cases": [
+                {
+                    "name": "2",
+                    "label": "2 个账号",
+                    "pipeline_override": {
+                        "MultiAccountDaily_Switch": {
+                            "custom_action_param": {
+                                "max_accounts": 2
+                            }
+                        },
+                        "MultiAccountDaily_SkipFailed": {
+                            "custom_action_param": {
+                                "max_accounts": 2
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "3",
+                    "label": "3 个账号",
+                    "pipeline_override": {
+                        "MultiAccountDaily_Switch": {
+                            "custom_action_param": {
+                                "max_accounts": 3
+                            }
+                        },
+                        "MultiAccountDaily_SkipFailed": {
+                            "custom_action_param": {
+                                "max_accounts": 3
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "4",
+                    "label": "4 个账号",
+                    "pipeline_override": {
+                        "MultiAccountDaily_Switch": {
+                            "custom_action_param": {
+                                "max_accounts": 4
+                            }
+                        },
+                        "MultiAccountDaily_SkipFailed": {
+                            "custom_action_param": {
+                                "max_accounts": 4
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}
