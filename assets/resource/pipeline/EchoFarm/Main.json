@@ -19,13 +19,7 @@
             "EchoFarm_Combat",
             "EchoFarm_Navigate"
         ],
-        "post_delay": 3000,
-        "on_error": [
-            "EchoFarm_DetectDead",
-            "EchoFarm_ScanEcho",
-            "EchoFarm_Combat",
-            "EchoFarm_Navigate"
-        ]
+        "post_delay": 3000
     },
     "EchoFarm_Navigate": {
         "recognition": "Custom",

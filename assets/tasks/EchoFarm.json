@@ -13,7 +13,7 @@
             ],
             "option": [
                 "TeleportToBoss",
-                "BossType",
+                "EchoFarmBossType",
                 "RepeatFarmCount",
                 "CombatWaitTime",
                 "EchoPickupMethod",
@@ -43,8 +43,8 @@
                         }
                     },
                     "option": [
-                        "BossIndex",
-                        "BossLevel"
+                        "EchoFarmBossIndex",
+                        "EchoFarmBossLevel"
                     ]
                 },
                 {
@@ -58,14 +58,14 @@
                         }
                     },
                     "option": [
-                        "BossIndex",
-                        "BossLevel",
-                        "BossProfile"
+                        "EchoFarmBossIndex",
+                        "EchoFarmBossLevel",
+                        "EchoFarmBossProfile"
                     ]
                 }
             ]
         },
-        "BossType": {
+        "EchoFarmBossType": {
             "type": "select",
             "label": "Boss类型",
             "default_case": "weekly",
@@ -98,7 +98,7 @@
                 }
             ]
         },
-        "BossIndex": {
+        "EchoFarmBossIndex": {
             "type": "input",
             "label": "Boss序号 (从上到下)",
             "input_filter": "[1-9][0-9]?",
@@ -110,7 +110,7 @@
                 }
             ]
         },
-        "BossLevel": {
+        "EchoFarmBossLevel": {
             "type": "select",
             "label": "Boss等级",
             "default_case": "80",
@@ -137,7 +137,7 @@
                 }
             ]
         },
-        "BossProfile": {
+        "EchoFarmBossProfile": {
             "type": "select",
             "label": "Boss配置",
             "default_case": "other",

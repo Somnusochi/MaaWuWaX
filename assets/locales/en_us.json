@@ -147,5 +147,11 @@
     "task.DailyRoutine.option.StaminaType.cases.tacet.label": "Tacet Suppression",
     "task.DailyRoutine.option.StaminaType.cases.forgery.label": "Forgery Challenge",
     "task.DailyRoutine.option.StaminaType.cases.simulation.label": "Simulation Challenge",
-    "task.DailyRoutine.option.StaminaType.cases.none.label": "None"
+    "task.DailyRoutine.option.StaminaType.cases.none.label": "None",
+    "task.DailyRoutine.option.ClaimMail.label": "Claim Mail",
+    "task.DailyRoutine.option.ClaimBattlePass.label": "Battle Pass",
+    "task.DailyRoutine.option.StaminaType.label": "Which to Farm",
+    "task.DailyRoutine.option.TacetSuppressionIndex.label": "Which Tacet Suppression to Farm",
+    "task.DailyRoutine.option.ForgeryChallengeIndex.label": "Which Forgery Challenge to Farm",
+    "task.DailyRoutine.option.SimulationMaterial.label": "Material Selection"
 }
