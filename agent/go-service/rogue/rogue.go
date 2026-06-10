@@ -206,6 +206,11 @@ type rogueBuffChoice struct {
 	Box  maa.Rect
 }
 
+type rogueBuffOCRPiece struct {
+	Text string
+	Box  maa.Rect
+}
+
 func defaultRogueBuffParam() rogueBuffParam {
 	return rogueBuffParam{
 		Blacklist: []string{"雷暴", "旋风", "矛盾晶体"},
@@ -332,6 +337,22 @@ func (a *RogueBuffSelectAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) 
 }
 
 func rogueBuffChoices(detail *maa.RecognitionDetail) []rogueBuffChoice {
+	pieces := rogueBuffOCRPieces(detail)
+	if len(pieces) == 0 {
+		return nil
+	}
+	grouped := groupRogueBuffCards(pieces)
+	if len(grouped) > 0 {
+		return grouped
+	}
+	choices := make([]rogueBuffChoice, 0, len(pieces))
+	for _, piece := range pieces {
+		choices = append(choices, rogueBuffChoice{Text: piece.Text, Box: piece.Box})
+	}
+	return choices
+}
+
+func rogueBuffOCRPieces(detail *maa.RecognitionDetail) []rogueBuffOCRPiece {
 	if detail == nil || detail.Results == nil {
 		return nil
 	}
@@ -339,7 +360,7 @@ func rogueBuffChoices(detail *maa.RecognitionDetail) []rogueBuffChoice {
 	if len(results) == 0 {
 		results = detail.Results.All
 	}
-	choices := make([]rogueBuffChoice, 0, len(results))
+	choices := make([]rogueBuffOCRPiece, 0, len(results))
 	for _, result := range results {
 		ocr, ok := result.AsOCR()
 		if !ok || ocr == nil {
@@ -349,9 +370,74 @@ func rogueBuffChoices(detail *maa.RecognitionDetail) []rogueBuffChoice {
 		if text == "" {
 			continue
 		}
-		choices = append(choices, rogueBuffChoice{Text: text, Box: ocr.Box})
+		choices = append(choices, rogueBuffOCRPiece{Text: text, Box: ocr.Box})
 	}
 	return choices
+}
+
+func groupRogueBuffCards(pieces []rogueBuffOCRPiece) []rogueBuffChoice {
+	type agg struct {
+		texts []string
+		box   maa.Rect
+		count int
+	}
+	var buckets [3]agg
+	for _, piece := range pieces {
+		cx := piece.Box[0] + piece.Box[2]/2
+		idx := 1
+		switch {
+		case cx < 507:
+			idx = 0
+		case cx > 773:
+			idx = 2
+		}
+		bucket := &buckets[idx]
+		if bucket.count == 0 {
+			bucket.box = piece.Box
+		} else {
+			bucket.box = mergeRogueRects(bucket.box, piece.Box)
+		}
+		bucket.texts = append(bucket.texts, piece.Text)
+		bucket.count++
+	}
+
+	choices := make([]rogueBuffChoice, 0, 3)
+	for _, bucket := range buckets {
+		if bucket.count == 0 {
+			continue
+		}
+		text := normalizeRogueBuffText(strings.Join(bucket.texts, ""))
+		if text == "" {
+			continue
+		}
+		choices = append(choices, rogueBuffChoice{
+			Text: text,
+			Box:  bucket.box,
+		})
+	}
+	return choices
+}
+
+func mergeRogueRects(a, b maa.Rect) maa.Rect {
+	left := minInt(a[0], b[0])
+	top := minInt(a[1], b[1])
+	right := maxInt(a[0]+a[2], b[0]+b[2])
+	bottom := maxInt(a[1]+a[3], b[1]+b[3])
+	return maa.Rect{left, top, right - left, bottom - top}
+}
+
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 func normalizeRogueBuffText(text string) string {

@@ -14,6 +14,7 @@
             "option": [
                 "AutoCombat",
                 "RealTimeCombatUseLiberation",
+                "RealTimeCombatSwitchHealer",
                 "AutoPick",
                 "SkipDialog",
                 "FastTravel",
@@ -79,8 +80,7 @@
                     "pipeline_override": {
                         "RealTime_Combat": {
                             "custom_action_param": {
-                                "use_liberation": true,
-                                "auto_target": true
+                                "use_liberation": true
                             }
                         }
                     }
@@ -90,8 +90,34 @@
                     "pipeline_override": {
                         "RealTime_Combat": {
                             "custom_action_param": {
-                                "use_liberation": false,
-                                "auto_target": true
+                                "use_liberation": false
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "RealTimeCombatSwitchHealer": {
+            "type": "switch",
+            "label": "战后切治疗",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "RealTime_Combat": {
+                            "custom_action_param": {
+                                "switch_healer": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "RealTime_Combat": {
+                            "custom_action_param": {
+                                "switch_healer": false
                             }
                         }
                     }

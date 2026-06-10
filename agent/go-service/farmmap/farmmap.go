@@ -174,6 +174,62 @@ func (r *PathDoneRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionAr
 	}, true
 }
 
+type LocateRecognition struct{}
+
+var _ maa.CustomRecognitionRunner = &LocateRecognition{}
+
+func (r *LocateRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
+	farmState.Lock()
+	state := farmState.state
+	farmState.Unlock()
+	if state.bigMap == nil || state.miniMapBox.W <= 0 || state.miniMapBox.H <= 0 {
+		log.Warn().Str("component", "MapLocateRecognition").Msg("farm-map state is not initialized")
+		return nil, false
+	}
+
+	img := minicv.ImageConvertRGBA(arg.Img)
+	if img == nil {
+		return nil, false
+	}
+
+	radius := 280
+	if arg.CustomRecognitionParam != "" {
+		var param struct {
+			SearchRadius int `json:"search_radius"`
+		}
+		if err := sonic.Unmarshal([]byte(arg.CustomRecognitionParam), &param); err != nil {
+			log.Warn().Err(err).Str("component", "MapLocateRecognition").Msg("failed to parse param")
+		} else if param.SearchRadius > 0 {
+			radius = param.SearchRadius
+		}
+	}
+
+	loc, ok := findLocationInBigMap(state, img, radius)
+	if !ok {
+		log.Warn().Str("component", "MapLocateRecognition").Int("search_radius", radius).Msg("failed to locate minimap position")
+		return nil, false
+	}
+
+	if state.tracker != nil {
+		state.tracker.Update(loc)
+	}
+	state.myBox = loc.scale(1.3)
+	saveState(state)
+
+	payload, _ := sonic.Marshal(map[string]any{
+		"status":        "success",
+		"x":             loc.X,
+		"y":             loc.Y,
+		"width":         loc.W,
+		"height":        loc.H,
+		"search_radius": radius,
+	})
+	return &maa.CustomRecognitionResult{
+		Box:    maa.Rect{loc.X, loc.Y, loc.W, loc.H},
+		Detail: string(payload),
+	}, true
+}
+
 type WalkStepAction struct{}
 
 var _ maa.CustomActionRunner = &WalkStepAction{}

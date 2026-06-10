@@ -145,7 +145,7 @@
     },
     "FarmMap_Walk": {
         "action": "Custom",
-        "custom_action": "MapNavigatorCompatible",
+        "custom_action": "FarmMapWalkStep",
         "custom_action_param": {
             "reach_distance": 24,
             "search_radius": 280,
@@ -154,10 +154,10 @@
         "next": [
             "FarmMap_Loop"
         ],
-        "post_delay": 200,
         "on_error": [
-            "FarmMap_WalkGo"
-        ]
+            "FarmMap_Locate"
+        ],
+        "post_delay": 200
     },
     "FarmMap_WalkGo": {
         "action": "Custom",
@@ -175,6 +175,9 @@
     "FarmMap_Locate": {
         "recognition": "Custom",
         "custom_recognition": "MapLocateRecognition",
+        "custom_recognition_param": {
+            "search_radius": 420
+        },
         "next": [
             "FarmMap_Loop"
         ],

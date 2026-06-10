@@ -1,6 +1,25 @@
 package combat
+
 import "time"
+
 func performGalbrena(c combatActor) {
-	c.heavy(550*time.Millisecond); c.echo(); c.skill()
-	if c.liberation() { c.attackFor(900*time.Millisecond) }; c.attackFor(500*time.Millisecond); c.requestSwitch()
+	if !c.state.flag {
+		c.heavy(1440 * time.Millisecond)
+		c.forwardAttackFor(600 * time.Millisecond)
+		c.state.flag = true
+	}
+
+	c.echo()
+	if c.skill() {
+		c.state.phaseUntil = time.Now().Add(10 * time.Second)
+	}
+	if c.liberation() {
+		c.attackFor(1 * time.Second)
+	}
+	if !c.state.phaseUntil.IsZero() && time.Now().Before(c.state.phaseUntil) {
+		c.attackFor(1 * time.Second)
+	}
+	c.attackFor(1 * time.Second)
+	c.skill()
+	c.requestSwitch()
 }

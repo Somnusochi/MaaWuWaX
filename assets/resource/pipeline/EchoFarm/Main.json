@@ -1,8 +1,20 @@
 {
     "EchoFarm_Main": {
-        "next": [
-            "EchoFarm_TeleportBoss"
-        ]
+        "next": ["EchoFarm_ResetLoop"]
+    },
+    "EchoFarm_ResetLoop": {
+        "action": "Custom",
+        "custom_action": "EchoFarmResetLoop",
+        "next": ["EchoFarm_NextRound"]
+    },
+    "EchoFarm_NextRound": {
+        "action": "Custom",
+        "custom_action": "EchoFarmNextRound",
+        "custom_action_param": {
+            "max_rounds": 10000
+        },
+        "next": ["EchoFarm_TeleportBoss"],
+        "on_error": ["EchoFarm_Done"]
     },
     "EchoFarm_TeleportBoss": {
         "action": "Custom",
@@ -33,7 +45,7 @@
         "post_delay": 500,
         "timeout": 60000,
         "on_error": [
-            "EchoFarm_TeleportNext"
+            "EchoFarm_NextRound"
         ]
     },
     "EchoFarm_Combat": {
@@ -55,7 +67,7 @@
         ],
         "timeout": 120000,
         "on_error": [
-            "EchoFarm_TeleportNext"
+            "EchoFarm_NextRound"
         ]
     },
     "EchoFarm_DetectDead": {
@@ -64,7 +76,7 @@
         "threshold": 0.6,
         "action": "Click",
         "next": [
-            "EchoFarm_TeleportNext"
+            "EchoFarm_NextRound"
         ],
         "post_delay": 3000
     },
@@ -74,7 +86,7 @@
         "threshold": 0.6,
         "action": "Click",
         "next": [
-            "EchoFarm_TeleportNext"
+            "EchoFarm_NextRound"
         ],
         "post_delay": 3000
     },
@@ -83,7 +95,7 @@
         "any_of": [
             {
                 "recognition": "Custom",
-                "custom_recognition": "EchoDetectRecognition"
+                "custom_recognition": "EchoOrbDetect"
             },
             {
                 "recognition": "TemplateMatch",
@@ -124,13 +136,14 @@
         "post_delay": 1000,
         "timeout": 30000,
         "on_error": [
-            "EchoFarm_TeleportNext"
+            "EchoFarm_NextRound"
         ]
     },
     "EchoFarm_Collect": {
         "action": "Custom",
-        "custom_action": "PickEnhanced",
+        "custom_action": "EchoFarmCollect",
         "custom_action_param": {
+            "method": "walk",
             "max_attempts": 4
         },
         "next": [
@@ -144,20 +157,10 @@
         "template": "boss_check_mark.png",
         "threshold": 0.7,
         "next": [
-            "EchoFarm_TeleportNext"
+            "EchoFarm_NextRound"
         ]
     },
-    "EchoFarm_TeleportNext": {
-        "action": "Custom",
-        "custom_action": "TeleportBoss",
-        "custom_action_param": {
-            "boss_type": "boss"
-        },
-        "next": [
-            "EchoFarm_DetectDead",
-            "EchoFarm_ScanEcho",
-            "EchoFarm_Navigate"
-        ],
-        "post_delay": 3000
+    "EchoFarm_Done": {
+        "next": []
     }
 }

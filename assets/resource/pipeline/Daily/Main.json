@@ -78,12 +78,33 @@
     "Daily_CheckProgress": {
         "recognition": "Custom",
         "custom_recognition": "DailyProgress",
-        "next": ["Daily_SpendStamina", "Daily_ClaimRewards"],
+        "next": ["Daily_CheckNightmare", "Daily_SpendStamina", "Daily_ClaimRewards"],
         "timeout": 8000
+    },
+    "Daily_CheckNightmare": {
+        "recognition": "Custom",
+        "custom_recognition": "DailyNeedsNightmare",
+        "custom_recognition_param": {
+            "nightmare_mode": "none"
+        },
+        "next": ["Daily_RunNightmare"],
+        "on_error": ["Daily_SpendStamina"]
+    },
+    "Daily_RunNightmare": {
+        "action": "Custom",
+        "custom_action": "RunNightmareNest",
+        "custom_action_param": {
+            "nightmare_mode": "capture"
+        },
+        "next": ["Daily_SpendStamina"],
+        "on_error": ["Daily_SpendStamina"]
     },
     "Daily_SpendStamina": {
         "recognition": "Custom",
         "custom_recognition": "DailyNeedsStamina",
+        "custom_recognition_param": {
+            "stamina_type": "tacet"
+        },
         "next": ["Daily_Stamina_Check"],
         "on_error": ["Daily_ClaimRewards"]
     },

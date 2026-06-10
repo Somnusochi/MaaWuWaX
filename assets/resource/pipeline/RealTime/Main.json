@@ -9,7 +9,8 @@
         "custom_action": "CombatMain",
         "custom_action_param": {
             "auto_target": true,
-            "use_liberation": true
+            "use_liberation": true,
+            "switch_healer": false
         },
         "enabled": true,
         "next": ["RealTime_Main"]

@@ -113,9 +113,20 @@
         "action": "Click",
         "next": [
             "EchoEnhance_HandlePopups",
-            "EchoEnhance_Evaluate"
+            "EchoEnhance_ReadStats"
         ],
         "post_delay": 500
+    },
+    "EchoEnhance_ReadStats": {
+        "recognition": "Custom",
+        "custom_recognition": "EchoStatReader",
+        "next": [
+            "EchoEnhance_Evaluate"
+        ],
+        "on_error": [
+            "EchoEnhance_Evaluate"
+        ],
+        "post_delay": 200
     },
     "EchoEnhance_Evaluate": {
         "action": "Custom",

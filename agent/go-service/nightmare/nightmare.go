@@ -144,7 +144,7 @@ func (r *NestScrollRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognition
 	}
 
 	ctrl := ctx.GetTasker().GetController()
-	var lastOCRText string
+	lastFingerprint := nestOCRFingerprint(ctx)
 
 	for page := 1; page <= param.MaxPages; page++ {
 		if ctx.GetTasker().Stopping() {
@@ -153,11 +153,9 @@ func (r *NestScrollRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognition
 
 		log.Debug().Int("page", page).Str("component", "NestScroll").Msg("scrolling book")
 
-		// Scroll down by clicking on the scroll bar at a position proportional to page.
-		barTop := 112
-		barBottom := 634
-		y := barTop + (barBottom-barTop)*page/(param.MaxPages+1)
-		ctrl.PostClick(1246, int32(y)).Wait()
+		// Match ok-ww more closely: repeatedly click the mid-lower scroll area
+		// instead of distributing clicks linearly across the whole bar.
+		ctrl.PostClick(1246, 389).Wait()
 		time.Sleep(1000 * time.Millisecond)
 
 		// OCR scan after scrolling.
@@ -170,16 +168,18 @@ func (r *NestScrollRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognition
 			return result, true
 		}
 
-		// Check if we've reached the bottom (same OCR result as last time).
-		currentText := nestOCRText(ctx)
-		if currentText != "" && currentText == lastOCRText {
+		// Check if we've reached the bottom by comparing the stable OCR fingerprint.
+		currentFingerprint := nestOCRFingerprint(ctx)
+		if currentFingerprint != "" && currentFingerprint == lastFingerprint {
 			log.Info().
 				Int("page", page).
 				Str("component", "NestScroll").
-				Msg("reached end of list (same OCR result)")
+				Msg("reached end of list (same page fingerprint)")
 			return nil, false
 		}
-		lastOCRText = currentText
+		if currentFingerprint != "" {
+			lastFingerprint = currentFingerprint
+		}
 	}
 
 	log.Info().
@@ -231,8 +231,8 @@ func nestScanPage(ctx *maa.Context) (*maa.CustomRecognitionResult, bool) {
 	return nil, false
 }
 
-// nestOCRText returns the concatenated OCR text of the current page for end-of-list detection.
-func nestOCRText(ctx *maa.Context) string {
+// nestOCRFingerprint returns a stable page fingerprint for end-of-list detection.
+func nestOCRFingerprint(ctx *maa.Context) string {
 	detail, err := ctx.RunRecognition(
 		"__NestScroll_OCREnd",
 		nil,
@@ -246,7 +246,26 @@ func nestOCRText(ctx *maa.Context) string {
 	if err != nil || detail == nil || !detail.Hit {
 		return ""
 	}
-	return detail.DetailJson
+	items := nightmareOCRItems(detail)
+	if len(items) == 0 {
+		return strings.TrimSpace(detail.DetailJson)
+	}
+	parts := make([]string, 0, len(items))
+	for _, item := range items {
+		text := normalizeNightmareOCR(item.text)
+		if text == "" {
+			continue
+		}
+		parts = append(parts, fmt.Sprintf("%s@%d", text, item.box[1]/10))
+	}
+	return strings.Join(parts, "|")
+}
+
+func normalizeNightmareOCR(text string) string {
+	text = strings.TrimSpace(strings.Trim(text, `"`))
+	text = strings.ReplaceAll(text, " ", "")
+	text = strings.ReplaceAll(text, "\n", "")
+	return text
 }
 
 // ---------------------------------------------------------------------------

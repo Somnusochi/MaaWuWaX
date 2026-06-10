@@ -13,7 +13,8 @@
             ],
             "option": [
                 "CombatAutoTarget",
-                "CombatUseLiberation"
+                "CombatUseLiberation",
+                "CombatSwitchHealer"
             ]
         }
     ],
@@ -66,6 +67,33 @@
                         "Combat_Engage": {
                             "custom_action_param": {
                                 "use_liberation": false
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "CombatSwitchHealer": {
+            "type": "switch",
+            "label": "战斗结束后切换治疗角色",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "Combat_Engage": {
+                            "custom_action_param": {
+                                "switch_healer": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "Combat_Engage": {
+                            "custom_action_param": {
+                                "switch_healer": false
                             }
                         }
                     }

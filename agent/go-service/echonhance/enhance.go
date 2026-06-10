@@ -358,6 +358,10 @@ type EchoChangeSelectAction struct{}
 
 var _ maa.CustomActionRunner = &EchoChangeSelectAction{}
 
+var echoChangeState struct {
+	successCount int
+}
+
 type echoChangeParam struct {
 	TargetStat string `json:"target_stat"`
 }
@@ -488,6 +492,41 @@ func echoChangeTextMatches(text string, target string) bool {
 	return strings.Contains(text, target)
 }
 
+type EchoChangeResetAction struct{}
+
+var _ maa.CustomActionRunner = &EchoChangeResetAction{}
+
+func (a *EchoChangeResetAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
+	echoChangeState.successCount = 0
+	log.Info().Str("component", "EchoChange").Msg("reset change-echo counters")
+	return true
+}
+
+type EchoChangeRecordSuccessAction struct{}
+
+var _ maa.CustomActionRunner = &EchoChangeRecordSuccessAction{}
+
+func (a *EchoChangeRecordSuccessAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
+	echoChangeState.successCount++
+	log.Info().
+		Str("component", "EchoChange").
+		Int("success_count", echoChangeState.successCount).
+		Msg("echo main stat changed")
+	return true
+}
+
+type EchoChangeSummaryAction struct{}
+
+var _ maa.CustomActionRunner = &EchoChangeSummaryAction{}
+
+func (a *EchoChangeSummaryAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
+	log.Info().
+		Str("component", "EchoChange").
+		Int("success_count", echoChangeState.successCount).
+		Msg("change-echo task finished")
+	return true
+}
+
 // ---------------------------------------------------------------------------
 // FiveToOneMergeAction — performs repeated batch fusion in the Data Dock screen.
 // ---------------------------------------------------------------------------
@@ -495,6 +534,12 @@ func echoChangeTextMatches(text string, target string) bool {
 type FiveToOneMergeAction struct{}
 
 var _ maa.CustomActionRunner = &FiveToOneMergeAction{}
+
+var fiveToOneState struct {
+	setsProcessed int
+	fusions       int
+	shortages     int
+}
 
 type fiveToOneParam struct {
 	MaxRounds        int                 `json:"max_rounds"`
@@ -526,6 +571,10 @@ func (a *FiveToOneMergeAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) b
 		param.MaxRoundsPerSet = param.MaxRounds
 	}
 
+	fiveToOneState.setsProcessed = 0
+	fiveToOneState.fusions = 0
+	fiveToOneState.shortages = 0
+
 	claimHandled := false
 	for _, setName := range fiveToOneSets {
 		if ctx.GetTasker().Stopping() {
@@ -537,9 +586,15 @@ func (a *FiveToOneMergeAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) b
 		if !a.mergeSet(ctx, setName, 2, &claimHandled, param) && !param.ContinueOnOCRErr {
 			return true
 		}
+		fiveToOneState.setsProcessed++
 	}
 
-	log.Info().Str("component", "FiveToOneMerge").Msg("all configured sets processed")
+	log.Info().
+		Str("component", "FiveToOneMerge").
+		Int("sets_processed", fiveToOneState.setsProcessed).
+		Int("fusions", fiveToOneState.fusions).
+		Int("shortages", fiveToOneState.shortages).
+		Msg("all configured sets processed")
 	return true
 }
 
@@ -672,11 +727,14 @@ func (a *FiveToOneMergeAction) runMergeLoop(ctx *maa.Context, claimHandled *bool
 		if !a.hasResult(ctx) {
 			if a.hasBatchFusion(ctx) {
 				ctrl.PostClick(333, 655).Wait()
+				fiveToOneState.shortages++
 				log.Info().
 					Str("component", "FiveToOneMerge").
 					Str("set", setName).
 					Int("step", step).
 					Int("rounds", round).
+					Int("fusions", fiveToOneState.fusions).
+					Int("shortages", fiveToOneState.shortages).
 					Msg("not enough echoes")
 				return
 			}
@@ -688,6 +746,7 @@ func (a *FiveToOneMergeAction) runMergeLoop(ctx *maa.Context, claimHandled *bool
 		time.Sleep(600 * time.Millisecond)
 		ctrl.PostClick(870, 655).Wait()
 		time.Sleep(800 * time.Millisecond)
+		fiveToOneState.fusions++
 	}
 
 	log.Info().

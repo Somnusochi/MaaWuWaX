@@ -93,6 +93,95 @@ func (r *DailyNeedsStaminaRecognition) Run(ctx *maa.Context, arg *maa.CustomReco
 	}, true
 }
 
+type nightmareModeParam struct {
+	NightmareMode string `json:"nightmare_mode"`
+}
+
+// DailyNeedsNightmareRecognition gates optional NightmareNest routing.
+type DailyNeedsNightmareRecognition struct{}
+
+var _ maa.CustomRecognitionRunner = &DailyNeedsNightmareRecognition{}
+
+func (r *DailyNeedsNightmareRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
+	param := nightmareModeParam{NightmareMode: "none"}
+	if arg != nil && arg.CustomRecognitionParam != "" {
+		if err := sonic.Unmarshal([]byte(arg.CustomRecognitionParam), &param); err != nil {
+			log.Warn().Err(err).Str("component", "DailyNeedsNightmare").Msg("failed to parse param")
+		}
+	}
+	if param.NightmareMode == "" || param.NightmareMode == "none" {
+		return nil, false
+	}
+	if lastDailyProgress >= 180 || lastDailyRewardReady {
+		log.Info().
+			Str("component", "DailyNeedsNightmare").
+			Str("mode", param.NightmareMode).
+			Int("daily_progress", lastDailyProgress).
+			Bool("daily_reward_ready", lastDailyRewardReady).
+			Msg("skip nightmare routing")
+		return nil, false
+	}
+
+	return &maa.CustomRecognitionResult{
+		Box:    maa.Rect{0, 0, 1, 1},
+		Detail: fmt.Sprintf(`{"nightmare_mode":%q,"needs_nightmare":true}`, param.NightmareMode),
+	}, true
+}
+
+type runNightmareNestParam struct {
+	NightmareMode string `json:"nightmare_mode"`
+}
+
+// RunNightmareNestAction runs NightmareNest with lightweight pipeline overrides.
+type RunNightmareNestAction struct{}
+
+var _ maa.CustomActionRunner = &RunNightmareNestAction{}
+
+func (a *RunNightmareNestAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
+	param := runNightmareNestParam{NightmareMode: "capture"}
+	if arg != nil && arg.CustomActionParam != "" {
+		if err := sonic.Unmarshal([]byte(arg.CustomActionParam), &param); err != nil {
+			log.Warn().Err(err).Str("component", "RunNightmareNest").Msg("failed to parse param")
+		}
+	}
+
+	patch := map[string]any{}
+	switch param.NightmareMode {
+	case "nightmare":
+		patch["NightmareNest_ScrollMengyan"] = map[string]any{
+			"on_error": []string{"NightmareNest_Done"},
+		}
+	case "canxiang":
+		patch["NightmareNest_BookOpen"] = map[string]any{
+			"next": []string{"NightmareNest_SelectCanxiang"},
+		}
+	case "capture":
+		patch["NightmareNest_EchoNotification"] = map[string]any{
+			"next": []string{"NightmareNest_Done"},
+		}
+		patch["NightmareNest_CollectEcho"] = map[string]any{
+			"next": []string{"NightmareNest_Done"},
+		}
+	case "all":
+		// default NightmareNest behavior already means both pages.
+	}
+	if len(patch) > 0 {
+		if err := ctx.OverridePipeline(patch); err != nil {
+			log.Warn().Err(err).Str("component", "RunNightmareNest").Msg("failed to override nightmare pipeline")
+			return false
+		}
+	}
+
+	detail, err := ctx.RunTask("NightmareNest_Main")
+	if err != nil || detail == nil || !detail.Status.Success() {
+		log.Warn().Err(err).Str("component", "RunNightmareNest").Str("mode", param.NightmareMode).Msg("NightmareNest run failed")
+		return false
+	}
+
+	log.Info().Str("component", "RunNightmareNest").Str("mode", param.NightmareMode).Msg("NightmareNest run completed")
+	return true
+}
+
 // ---------------------------------------------------------------------------
 // ClaimMailAction — navigates to mail page and claims all.
 // ---------------------------------------------------------------------------

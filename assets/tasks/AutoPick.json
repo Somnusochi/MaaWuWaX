@@ -10,7 +10,37 @@
             ],
             "group": [
                 "open_world"
+            ],
+            "option": [
+                "AutoPickFilter"
             ]
         }
-    ]
+    ],
+    "option": {
+        "AutoPickFilter": {
+            "type": "input",
+            "label": "拾取文本过滤",
+            "inputs": [
+                {
+                    "name": "Whitelist",
+                    "label": "白名单",
+                    "description": "逗号分隔，匹配到这些文本时允许交互。",
+                    "default": "吸收,Absorb"
+                },
+                {
+                    "name": "Blacklist",
+                    "label": "黑名单",
+                    "description": "逗号分隔，匹配到这些文本时禁止交互。",
+                    "default": "开始合成,领取奖励,Claim,合成台"
+                }
+            ],
+            "pipeline_override": {
+                "AutoPick_Filter": {
+                    "custom_recognition_param": {
+                        "blacklist": "{Blacklist}"
+                    }
+                }
+            }
+        }
+    }
 }

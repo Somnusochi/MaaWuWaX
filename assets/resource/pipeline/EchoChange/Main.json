@@ -1,6 +1,19 @@
 {
     "EchoChange_Main": {
         "next": [
+            "EchoChange_ResetStats"
+        ],
+        "post_delay": 500
+    },
+    "EchoChange_ResetStats": {
+        "action": "Custom",
+        "custom_action": "EchoChangeReset",
+        "next": [
+            "EchoChange_LoopStart"
+        ]
+    },
+    "EchoChange_LoopStart": {
+        "next": [
             "EchoChange_CheckLevel0"
         ],
         "post_delay": 500
@@ -156,9 +169,16 @@
             }
         ],
         "next": [
-            "EchoChange_Esc"
+            "EchoChange_RecordSuccess"
         ],
         "post_delay": 500
+    },
+    "EchoChange_RecordSuccess": {
+        "action": "Custom",
+        "custom_action": "EchoChangeRecordSuccess",
+        "next": [
+            "EchoChange_Esc"
+        ]
     },
     "EchoChange_Esc": {
         "action": "ClickKey",
@@ -178,7 +198,7 @@
             100
         ],
         "next": [
-            "EchoChange_Main"
+            "EchoChange_LoopStart"
         ],
         "timeout": 5000,
         "post_delay": 300,
@@ -187,6 +207,8 @@
         ]
     },
     "EchoChange_Done": {
+        "action": "Custom",
+        "custom_action": "EchoChangeSummary",
         "next": []
     }
 }

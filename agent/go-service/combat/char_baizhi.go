@@ -1,5 +1,13 @@
 package combat
+
 import "time"
+
 func performBaizhi(c combatActor) {
-	c.attackFor(700*time.Millisecond); c.liberation(); c.skill(); c.echo(); c.requestSwitch()
+	if c.recentlySwitchedIn(1800 * time.Millisecond) {
+		c.attackFor(1200 * time.Millisecond)
+	}
+	c.liberation()
+	c.skill()
+	c.echo()
+	c.requestSwitch()
 }

@@ -502,7 +502,11 @@ func (a *TeleportBossAction) afterRealmEnter(ctx *maa.Context, param bossTelepor
 
 func (a *TeleportBossAction) waitForBossProfile(param bossTeleportParam) {
 	if param.CombatWaitMs > 0 {
-		time.Sleep(time.Duration(param.CombatWaitMs) * time.Millisecond)
+		wait := time.Duration(param.CombatWaitMs) * time.Millisecond
+		if param.CombatWaitMs <= 120 {
+			wait = time.Duration(param.CombatWaitMs) * time.Second
+		}
+		time.Sleep(wait)
 		return
 	}
 	switch normalizeBossBookText(param.BossProfile) {

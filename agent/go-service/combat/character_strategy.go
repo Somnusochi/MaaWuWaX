@@ -14,9 +14,11 @@ type combatCharState struct {
 	lastHeavy      time.Time
 	lastLiberation time.Time
 	lastResonance  time.Time
-	lastBuff       time.Time // support buff tracking (Chisa)
+	lastBuff       time.Time     // support buff tracking (Chisa)
 	introTime      time.Duration // Aemeath intro timer
 	flag           bool
+	flag2          bool
+	phaseUntil     time.Time
 }
 
 type combatActor struct {
@@ -161,4 +163,19 @@ func (c combatActor) sleep(duration time.Duration) {
 		return
 	}
 	time.Sleep(duration)
+}
+
+func (c combatActor) recentlySwitchedIn(window time.Duration) bool {
+	if window <= 0 {
+		window = 1500 * time.Millisecond
+	}
+	idx := c.slot.Index
+	if idx < 0 || idx >= len(c.action.lastSwitchIn) {
+		return c.state.lastPerform.IsZero()
+	}
+	ts := c.action.lastSwitchIn[idx]
+	if ts.IsZero() {
+		return c.state.lastPerform.IsZero()
+	}
+	return time.Since(ts) <= window
 }

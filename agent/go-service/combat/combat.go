@@ -59,7 +59,16 @@ type CombatMainAction struct {
 type combatMainParam struct {
 	UseLiberation bool `json:"use_liberation"`
 	AutoTarget    bool `json:"auto_target"`
+	SwitchHealer  bool `json:"switch_healer"`
 }
+
+type switchPriority int
+
+const (
+	switchPriorityNo   switchPriority = -1
+	switchPriorityAuto switchPriority = 0
+	switchPriorityMust switchPriority = 2
+)
 
 func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
 	param := combatMainParam{UseLiberation: true, AutoTarget: true}
@@ -93,6 +102,20 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 
 	// ── Out of combat ──
 	if !screenAnalyzer.InCombat() {
+		if param.SwitchHealer && time.Since(a.lastSwitch) > 2*time.Second {
+			current := a.currentSlot()
+			if current.Role != roleHealer {
+				for i, slot := range screenAnalyzer.CharSlots {
+					if slot.Role == roleHealer && slot.Alive && i != screenAnalyzer.CurrentIdx {
+						ctx.RunAction(switchActionName(i), roi, "", nil)
+						a.lastSwitchIn[i] = now
+						a.lastSwitch = now
+						time.Sleep(300 * time.Millisecond)
+						return true
+					}
+				}
+			}
+		}
 		if screenAnalyzer.PickupF {
 			ctx.RunAction("Combat_LootAction", roi, "", nil)
 			time.Sleep(250 * time.Millisecond)
@@ -198,6 +221,28 @@ func (a *CombatMainAction) chooseSwitchTarget(now time.Time) int {
 		return -1
 	}
 
+	must := make([]int, 0, len(candidates))
+	filtered := make([]int, 0, len(candidates))
+	for _, idx := range candidates {
+		switch a.characterSwitchPriority(idx, current, now) {
+		case switchPriorityMust:
+			must = append(must, idx)
+		case switchPriorityNo:
+			continue
+		default:
+			filtered = append(filtered, idx)
+		}
+	}
+	if len(must) > 0 {
+		return a.oldest(must)
+	}
+	if len(filtered) > 0 {
+		candidates = filtered
+	}
+	if len(candidates) == 0 {
+		return -1
+	}
+
 	currentRole := screenAnalyzer.CharSlots[current].Role
 	if currentRole == roleMain {
 		if target := a.oldestByRole(candidates, roleSub, now, true); target >= 0 {
@@ -275,6 +320,79 @@ func charBuffTime(name string) float64 {
 		}
 	}
 	return 0
+}
+
+func (a *CombatMainAction) characterSwitchPriority(targetIdx, currentIdx int, now time.Time) switchPriority {
+	target := screenAnalyzer.CharSlots[targetIdx]
+	current := screenAnalyzer.CharSlots[currentIdx]
+	if target.Name == "" || !target.Alive {
+		return switchPriorityNo
+	}
+	state := a.charStates[target.Name]
+	if state == nil {
+		return switchPriorityAuto
+	}
+
+	sinceLib := now.Sub(state.lastLiberation)
+	sinceHeavy := now.Sub(state.lastHeavy)
+	sincePerform := now.Sub(state.lastPerform)
+	sinceSwitchIn := now.Sub(a.lastSwitchIn[targetIdx])
+
+	switch target.Name {
+	case "aemeath":
+		if !state.phaseUntil.IsZero() && now.Before(state.phaseUntil) {
+			return switchPriorityMust
+		}
+	case "brant":
+		if sincePerform < 4*time.Second {
+			return switchPriorityNo
+		}
+		if sinceLib < 12*time.Second || current.Name == "lupa" {
+			return switchPriorityMust
+		}
+	case "encore":
+		if sinceHeavy < 4600*time.Millisecond {
+			return switchPriorityNo
+		}
+		if sinceLib < 9500*time.Millisecond {
+			return switchPriorityMust
+		}
+	case "lupa":
+		if sinceLib < 12*time.Second || current.Name == "changli" || current.Name == "changli2" || current.Name == "chang_changli" {
+			return switchPriorityMust
+		}
+	case "phrolova":
+		if sinceLib < 24*time.Second {
+			if current.Name == "cantarella" && sinceLib > 14*time.Second {
+				return switchPriorityMust
+			}
+			return switchPriorityNo
+		}
+	case "shorekeeper":
+		if current.Name == "augusta" {
+			return switchPriorityMust
+		}
+	case "chisa":
+		if target.Role == roleHealer && sinceSwitchIn > 12*time.Second {
+			return switchPriorityMust
+		}
+	case "denia":
+		if sinceSwitchIn > 14*time.Second {
+			return switchPriorityMust
+		}
+	case "mornye", "mornye_new", "moning", "moning_new":
+		if sinceHeavy < 23*time.Second {
+			return switchPriorityMust
+		}
+		if current.Name == "aemeath" {
+			return switchPriorityMust
+		}
+	case "sanhua", "sanhua2", "yinlin", "mortefi", "zhezhi", "yuanwu", "danjin", "qiuyuan", "chouyuan", "roccia", "ciaccona", "iuno":
+		if sinceSwitchIn > time.Duration(charBuffTime(target.Name)*float64(time.Second)) {
+			return switchPriorityMust
+		}
+	}
+	return switchPriorityAuto
 }
 
 func switchActionName(index int) string {

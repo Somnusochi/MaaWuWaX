@@ -35,9 +35,31 @@
             }
         ],
         "next": [
-            "Diagnosis_Snapshot"
+            "Diagnosis_CharacterDetect"
         ],
         "post_delay": 300
+    },
+    "Diagnosis_CharacterDetect": {
+        "recognition": "Custom",
+        "custom_recognition": "CharacterDetect",
+        "next": [
+            "Diagnosis_StaminaRead"
+        ],
+        "on_error": [
+            "Diagnosis_StaminaRead"
+        ],
+        "post_delay": 100
+    },
+    "Diagnosis_StaminaRead": {
+        "recognition": "Custom",
+        "custom_recognition": "StaminaReader",
+        "next": [
+            "Diagnosis_Snapshot"
+        ],
+        "on_error": [
+            "Diagnosis_Snapshot"
+        ],
+        "post_delay": 100
     },
     "Diagnosis_Snapshot": {
         "action": "Custom",

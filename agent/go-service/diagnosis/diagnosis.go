@@ -63,6 +63,26 @@ func (a *SnapshotAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
 			}
 		}`,
 	)
+	charDetectDetail, _ := ctx.RunRecognition(
+		"__Diagnosis_CharacterDetect",
+		img,
+		`{
+			"__Diagnosis_CharacterDetect": {
+				"recognition": "Custom",
+				"custom_recognition": "CharacterDetect"
+			}
+		}`,
+	)
+	staminaDetail, _ := ctx.RunRecognition(
+		"__Diagnosis_StaminaReader",
+		img,
+		`{
+			"__Diagnosis_StaminaReader": {
+				"recognition": "Custom",
+				"custom_recognition": "StaminaReader"
+			}
+		}`,
+	)
 
 	log.Info().
 		Str("component", "Diagnosis").
@@ -70,7 +90,16 @@ func (a *SnapshotAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
 		Bool("in_world", worldDetail != nil && worldDetail.Hit).
 		Bool("in_combat", combatDetail != nil && combatDetail.Hit).
 		Bool("has_team", charDetail != nil && charDetail.Hit).
+		Str("character_detect", detailJSONString(charDetectDetail)).
+		Str("stamina", detailJSONString(staminaDetail)).
 		Msg("diagnosis snapshot")
 	time.Sleep(500 * time.Millisecond)
 	return true
+}
+
+func detailJSONString(detail *maa.RecognitionDetail) string {
+	if detail == nil {
+		return ""
+	}
+	return detail.DetailJson
 }

@@ -12,7 +12,8 @@
                 "daily"
             ],
             "option": [
-                "RogueStopOnTreasure"
+                "RogueStopOnTreasure",
+                "RogueBuffFilter"
             ]
         }
     ],
@@ -45,6 +46,32 @@
                     }
                 }
             ]
+        },
+        "RogueBuffFilter": {
+            "type": "input",
+            "label": "$option.RogueBuffWhitelist.label",
+            "inputs": [
+                {
+                    "name": "Whitelist",
+                    "label": "$option.RogueBuffWhitelist.label",
+                    "description": "逗号分隔，优先选择这些 Buff。",
+                    "default": "心流,悲鸣纪,余音贝,齿轮之心,全知之眼,指南针,医疗箱"
+                },
+                {
+                    "name": "Blacklist",
+                    "label": "$option.RogueBuffBlacklist.label",
+                    "description": "逗号分隔，尽量避开这些 Buff。",
+                    "default": "雷暴,旋风,矛盾晶体"
+                }
+            ],
+            "pipeline_override": {
+                "Rogue_BuffSelect": {
+                    "custom_action_param": {
+                        "whitelist": "{Whitelist}",
+                        "blacklist": "{Blacklist}"
+                    }
+                }
+            }
         }
     }
 }

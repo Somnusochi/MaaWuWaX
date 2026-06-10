@@ -14,6 +14,7 @@
             "option": [
                 "ClaimMail",
                 "ClaimBattlePass",
+                "DailyNightmareMode",
                 "StaminaType"
             ]
         }
@@ -69,6 +70,49 @@
                 }
             ]
         },
+        "DailyNightmareMode": {
+            "type": "select",
+            "label": "梦魇巢穴",
+            "default_case": "none",
+            "cases": [
+                {
+                    "name": "none",
+                    "label": "不刷"
+                },
+                {
+                    "name": "capture",
+                    "label": "刷 1 个日常声骸",
+                    "pipeline_override": {
+                        "Daily_CheckNightmare": {
+                            "custom_recognition_param": {
+                                "nightmare_mode": "capture"
+                            }
+                        },
+                        "Daily_RunNightmare": {
+                            "custom_action_param": {
+                                "nightmare_mode": "capture"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "all",
+                    "label": "全部梦魇巢穴",
+                    "pipeline_override": {
+                        "Daily_CheckNightmare": {
+                            "custom_recognition_param": {
+                                "nightmare_mode": "all"
+                            }
+                        },
+                        "Daily_RunNightmare": {
+                            "custom_action_param": {
+                                "nightmare_mode": "all"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
         "StaminaType": {
             "type": "select",
             "label": "$task.DailyRoutine.option.StaminaType.label",
@@ -80,6 +124,11 @@
                         "TacetSuppressionIndex"
                     ],
                     "pipeline_override": {
+                        "Daily_SpendStamina": {
+                            "custom_recognition_param": {
+                                "stamina_type": "tacet"
+                            }
+                        },
                         "Daily_Stamina_Has": {
                             "custom_action_param": {
                                 "stamina_type": "tacet"
@@ -94,6 +143,11 @@
                         "ForgeryChallengeIndex"
                     ],
                     "pipeline_override": {
+                        "Daily_SpendStamina": {
+                            "custom_recognition_param": {
+                                "stamina_type": "forgery"
+                            }
+                        },
                         "Daily_Stamina_Has": {
                             "custom_action_param": {
                                 "stamina_type": "forgery"
@@ -108,6 +162,11 @@
                         "SimulationMaterial"
                     ],
                     "pipeline_override": {
+                        "Daily_SpendStamina": {
+                            "custom_recognition_param": {
+                                "stamina_type": "simulation"
+                            }
+                        },
                         "Daily_Stamina_Has": {
                             "custom_action_param": {
                                 "stamina_type": "simulation"
@@ -115,10 +174,6 @@
                         }
                     },
                     "label": "$task.DailyRoutine.option.StaminaType.cases.simulation.label"
-                },
-                {
-                    "name": "none",
-                    "label": "$task.DailyRoutine.option.StaminaType.cases.none.label"
                 }
             ]
         },

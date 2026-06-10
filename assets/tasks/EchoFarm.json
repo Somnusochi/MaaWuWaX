@@ -13,7 +13,6 @@
             ],
             "option": [
                 "TeleportToBoss",
-                "EchoFarmBossType",
                 "RepeatFarmCount",
                 "CombatWaitTime",
                 "EchoPickupMethod",
@@ -38,7 +37,8 @@
                     "pipeline_override": {
                         "EchoFarm_TeleportBoss": {
                             "custom_action_param": {
-                                "boss_type": "weekly"
+                                "boss_type": "weekly",
+                                "total_number": 9
                             }
                         }
                     },
@@ -53,48 +53,17 @@
                     "pipeline_override": {
                         "EchoFarm_TeleportBoss": {
                             "custom_action_param": {
-                                "boss_type": "boss"
+                                "boss_type": "boss",
+                                "total_number": 20
                             }
                         }
                     },
                     "option": [
                         "EchoFarmBossIndex",
+                        "EchoFarmBossName",
                         "EchoFarmBossLevel",
                         "EchoFarmBossProfile"
                     ]
-                }
-            ]
-        },
-        "EchoFarmBossType": {
-            "type": "select",
-            "label": "Boss类型",
-            "default_case": "weekly",
-            "cases": [
-                {
-                    "name": "weekly",
-                    "label": "战歌重奏 (9个)",
-                    "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
-                            "enabled": true,
-                            "custom_action_param": {
-                                "boss_type": "weekly",
-                                "total_number": 9
-                            }
-                        }
-                    }
-                },
-                {
-                    "name": "boss",
-                    "label": "讨伐强敌 (20个)",
-                    "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
-                            "enabled": true,
-                            "custom_action_param": {
-                                "boss_type": "boss",
-                                "total_number": 20
-                            }
-                        }
-                    }
                 }
             ]
         },
@@ -106,9 +75,33 @@
                 {
                     "name": "value",
                     "default": "1",
-                    "pipeline_type": "string"
+                    "pipeline_type": "int"
                 }
-            ]
+            ],
+            "pipeline_override": {
+                "EchoFarm_TeleportBoss": {
+                    "custom_action_param": {
+                        "serial_number": "{value}"
+                    }
+                }
+            }
+        },
+        "EchoFarmBossName": {
+            "type": "input",
+            "label": "Boss OCR 名称",
+            "inputs": [
+                {
+                    "name": "value",
+                    "default": ""
+                }
+            ],
+            "pipeline_override": {
+                "EchoFarm_TeleportBoss": {
+                    "custom_action_param": {
+                        "boss_name": "{value}"
+                    }
+                }
+            }
         },
         "EchoFarmBossLevel": {
             "type": "select",
@@ -117,23 +110,58 @@
             "cases": [
                 {
                     "name": "50",
-                    "label": "50 级"
+                    "label": "50 级",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_level": "50"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "60",
-                    "label": "60 级"
+                    "label": "60 级",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_level": "60"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "70",
-                    "label": "70 级"
+                    "label": "70 级",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_level": "70"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "80",
-                    "label": "80 级"
+                    "label": "80 级",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_level": "80"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "90",
-                    "label": "90 级"
+                    "label": "90 级",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_level": "90"
+                            }
+                        }
+                    }
                 }
             ]
         },
@@ -148,35 +176,91 @@
                 },
                 {
                     "name": "hyvatia",
-                    "label": "海维夏"
+                    "label": "海维夏",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "hyvatia"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "fallacy",
-                    "label": "无归的谬误"
+                    "label": "无归的谬误",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "fallacy"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "sentryconstruct",
-                    "label": "异构武装"
+                    "label": "异构武装",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "sentry_construct"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "lorelei",
-                    "label": "罗蕾莱"
+                    "label": "罗蕾莱",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "lorelei"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "lionessofglory",
-                    "label": "荣耀狮像"
+                    "label": "荣耀狮像",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "lioness_of_glory"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "fenrico",
-                    "label": "芬莱克"
+                    "label": "芬莱克",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "fenrico"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "namelessexplorer",
-                    "label": "无铭探索者"
+                    "label": "无铭探索者",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "nameless_explorer"
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "nightmarehecate",
-                    "label": "梦魇·赫卡忒"
+                    "label": "梦魇·赫卡忒",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "nightmare_hecate"
+                            }
+                        }
+                    }
                 }
             ]
         },
@@ -188,9 +272,16 @@
                 {
                     "name": "value",
                     "default": "10000",
-                    "pipeline_type": "string"
+                    "pipeline_type": "int"
                 }
-            ]
+            ],
+            "pipeline_override": {
+                "EchoFarm_NextRound": {
+                    "custom_action_param": {
+                        "max_rounds": "{value}"
+                    }
+                }
+            }
         },
         "CombatWaitTime": {
             "type": "input",
@@ -200,9 +291,16 @@
                 {
                     "name": "value",
                     "default": "0",
-                    "pipeline_type": "string"
+                    "pipeline_type": "int"
                 }
-            ]
+            ],
+            "pipeline_override": {
+                "EchoFarm_TeleportBoss": {
+                    "custom_action_param": {
+                        "combat_wait_ms": "{value}"
+                    }
+                }
+            }
         },
         "EchoPickupMethod": {
             "type": "select",
@@ -211,15 +309,39 @@
             "cases": [
                 {
                     "name": "walk",
-                    "label": "后退再前进"
+                    "label": "后退再前进",
+                    "pipeline_override": {
+                        "EchoFarm_Collect": {
+                            "custom_action_param": {
+                                "method": "walk",
+                                "max_attempts": 4
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "run_in_circle",
-                    "label": "转圈奔跑"
+                    "label": "转圈奔跑",
+                    "pipeline_override": {
+                        "EchoFarm_Collect": {
+                            "custom_action_param": {
+                                "method": "run_in_circle",
+                                "max_attempts": 4
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "yolo",
-                    "label": "Yolo模型"
+                    "label": "Yolo模型",
+                    "pipeline_override": {
+                        "EchoFarm_Collect": {
+                            "custom_action_param": {
+                                "method": "yolo",
+                                "max_attempts": 5
+                            }
+                        }
+                    }
                 }
             ]
         },
@@ -257,11 +379,25 @@
             "cases": [
                 {
                     "name": "Yes",
-                    "label": "是"
+                    "label": "是",
+                    "pipeline_override": {
+                        "EchoFarm_Fight": {
+                            "custom_action_param": {
+                                "switch_healer": true
+                            }
+                        }
+                    }
                 },
                 {
                     "name": "No",
-                    "label": "否"
+                    "label": "否",
+                    "pipeline_override": {
+                        "EchoFarm_Fight": {
+                            "custom_action_param": {
+                                "switch_healer": false
+                            }
+                        }
+                    }
                 }
             ]
         }

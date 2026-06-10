@@ -7,5 +7,8 @@ import (
 
 func Register() {
 	maa.AgentServerRegisterCustomRecognition("EchoOrbDetect", &EchoOrbDetect{})
-	log.Info().Str("component", "echofarm").Msg("registered EchoOrbDetect")
+	maa.AgentServerRegisterCustomAction("EchoFarmResetLoop", &EchoFarmResetLoopAction{})
+	maa.AgentServerRegisterCustomAction("EchoFarmNextRound", &EchoFarmNextRoundAction{})
+	maa.AgentServerRegisterCustomAction("EchoFarmCollect", &EchoFarmCollectAction{})
+	log.Info().Str("component", "echofarm").Msg("registered echo-farm components")
 }

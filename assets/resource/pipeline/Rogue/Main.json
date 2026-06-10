@@ -345,7 +345,12 @@
                 "expected": "Claim Reward"
             }
         ],
-        "action": "Click",
+        "action": "Custom",
+        "custom_action": "RogueTreasureReward",
+        "custom_action_param": {
+            "stop_on_treasure": false,
+            "max_claims": 2
+        },
         "next": [
             "Rogue_Main"
         ],
