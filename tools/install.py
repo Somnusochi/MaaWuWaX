@@ -29,6 +29,45 @@ os_name = sys.argv[2]
 arch = sys.argv[3]
 
 
+def sync_interface_agents():
+    interface_path = install_path / "interface.json"
+    with open(interface_path, "r", encoding="utf-8") as f:
+        interface = jsonc.load(f)
+
+    binary_candidates = {
+        "agent/go-service": (
+            install_path / "agent" / "go-service",
+            install_path / "agent" / "go-service.exe",
+        ),
+        "agent/cpp-algo": (
+            install_path / "agent" / "cpp-algo",
+            install_path / "agent" / "cpp-algo.exe",
+        ),
+    }
+    existing_agents = {
+        agent.get("child_exec"): agent
+        for agent in interface.get("agent", [])
+        if agent.get("child_exec")
+    }
+
+    agents = []
+    for child_exec in ("agent/go-service", "agent/cpp-algo"):
+        if any(path.is_file() for path in binary_candidates[child_exec]):
+            agent = existing_agents.get(
+                child_exec,
+                {
+                    "child_exec": child_exec,
+                    "child_args": [],
+                },
+            )
+            agents.append(agent)
+
+    interface["agent"] = agents
+
+    with open(interface_path, "w", encoding="utf-8") as f:
+        jsonc.dump(interface, f, ensure_ascii=False, indent=4)
+
+
 def get_dotnet_platform_tag():
     """自动检测当前平台并返回对应的dotnet平台标签"""
     if os_name == "win" and arch == "x86_64":
@@ -131,14 +170,43 @@ def install_chores():
         working_dir / "LICENSE",
         install_path,
     )
+    icon_path = working_dir / "assets" / "icon" / "MaaWuWaX.icns"
+    if icon_path.is_file():
+        shutil.copy2(
+            icon_path,
+            install_path / "MaaWuWaX.icns",
+        )
 
 
 def install_agent():
-    shutil.copytree(
-        working_dir / "agent",
-        install_path / "agent",
-        dirs_exist_ok=True,
+    agent_dir = install_path / "agent"
+    agent_dir.mkdir(parents=True, exist_ok=True)
+
+    nested_source_dirs = (
+        agent_dir / "go-service",
+        agent_dir / "cpp-algo",
     )
+    for path in nested_source_dirs:
+        if path.is_dir():
+            shutil.rmtree(path)
+
+    expected_binaries = {
+        "android": (),
+        "win": ("go-service.exe",),
+        "macos": ("go-service",),
+        "linux": ("go-service",),
+    }
+    missing = [name for name in expected_binaries.get(os_name, ()) if not (agent_dir / name).is_file()]
+    if missing:
+        print(f"Missing built agent binaries: {', '.join(missing)}")
+        sys.exit(1)
+
+    # cpp-algo is optional during development, but when present it should be a
+    # direct binary artifact rather than a copied source directory.
+    for nested_source_dir in ("cpp-algo", "go-service"):
+        nested = agent_dir / nested_source_dir
+        if nested.is_dir():
+            shutil.rmtree(nested)
 
 
 if __name__ == "__main__":
@@ -146,5 +214,6 @@ if __name__ == "__main__":
     install_resource()
     install_chores()
     install_agent()
+    sync_interface_agents()
 
     print(f"Install to {install_path} successfully.")
