@@ -8,6 +8,7 @@ import (
 func Register() {
 	maa.AgentServerRegisterCustomRecognition("MinimapNavigate", &MinimapNavigateRecognition{})
 	maa.AgentServerRegisterCustomAction("DirectionWalk", &DirectionWalkAction{})
+	maa.AgentServerRegisterCustomAction("ClickFastTravel", &ClickFastTravelAction{})
 	maa.AgentServerRegisterCustomAction("TeleportBoss", &TeleportBossAction{})
-	log.Info().Str("component", "navigation").Msg("registered MinimapNavigate, DirectionWalk, TeleportBoss")
+	log.Info().Str("component", "navigation").Msg("registered navigation components")
 }

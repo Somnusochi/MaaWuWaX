@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	maa "github.com/MaaXYZ/maa-framework-go/v4"
 	"github.com/bytedance/sonic"
 	"github.com/rs/zerolog/log"
+
+	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/pkg/keycode"
 )
 
 // ---------------------------------------------------------------------------
@@ -145,18 +148,22 @@ func normalizeStatName(name string) string {
 // Returns true for lock (good echo), false for discard.
 // ---------------------------------------------------------------------------
 
-type EchoEnhanceAction struct{}
+type EchoEnhanceAction struct {
+	successCount int
+	failedCount  int
+}
 
 var _ maa.CustomActionRunner = &EchoEnhanceAction{}
 
 type echoEnhanceParam struct {
-	NeedDoubleCrit      bool     `json:"need_double_crit"`
-	DoubleCritMin       float64  `json:"double_crit_min"`
-	FirstCritMin        float64  `json:"first_crit_min"`
-	ValidStatsMin       int      `json:"valid_stats_min"`
-	FirstMustBeValid    bool     `json:"first_must_be_valid"`
-	AllValidBeforeCrit  bool     `json:"all_valid_before_crit"`
-	ValidStats          []string `json:"valid_stats"`
+	NeedDoubleCrit     bool     `json:"need_double_crit"`
+	DoubleCritMin      float64  `json:"double_crit_min"`
+	FirstCritMin       float64  `json:"first_crit_min"`
+	ValidStatsMin      int      `json:"valid_stats_min"`
+	FirstMustBeValid   bool     `json:"first_must_be_valid"`
+	AllValidBeforeCrit bool     `json:"all_valid_before_crit"`
+	ValidStats         []string `json:"valid_stats"`
+	PauseOnSuccess     bool     `json:"pause_on_success"`
 }
 
 func defaultEchoEnhanceParam() echoEnhanceParam {
@@ -167,6 +174,7 @@ func defaultEchoEnhanceParam() echoEnhanceParam {
 		ValidStatsMin:      3,
 		FirstMustBeValid:   true,
 		AllValidBeforeCrit: true,
+		PauseOnSuccess:     true,
 		ValidStats: []string{
 			"暴击", "暴击伤害", "攻击百分比",
 		},
@@ -181,6 +189,8 @@ func (a *EchoEnhanceAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool
 		}
 	}
 
+	ctrl := ctx.GetTasker().GetController()
+
 	// Read echo stats.
 	detail, err := ctx.RunRecognition(
 		"__EchoEnhance_ReadStats",
@@ -193,26 +203,44 @@ func (a *EchoEnhanceAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool
 		}`,
 	)
 	if err != nil || detail == nil || !detail.Hit {
+		a.failedCount++
 		log.Warn().Str("component", "EchoEnhance").Msg("failed to read echo stats, discarding")
-		return false
+		// Press Z (discard) directly — pipeline WaitDropped node handles the rest.
+		ctrl.PostClickKey(keycode.MustCode("Z")).Wait()
+		return true
 	}
 
 	stats := parseEchoStats(detail.DetailJson)
 	keep := evaluateEcho(stats, param)
 
 	if keep {
+		a.successCount++
 		log.Info().
 			Str("component", "EchoEnhance").
 			Int("stats", len(stats)).
-			Msg("echo KEEP — locking")
+			Int("success_count", a.successCount).
+			Int("failed_count", a.failedCount).
+			Bool("pause_on_success", param.PauseOnSuccess).
+			Msg("echo KEEP — locking (C key)")
+		// Press C (lock) — pipeline Esc node handles return.
+		ctrl.PostClickKey(keycode.MustCode("C")).Wait()
+		if param.PauseOnSuccess {
+			time.Sleep(500 * time.Millisecond)
+			ctx.GetTasker().PostStop().Wait()
+		}
 	} else {
+		a.failedCount++
 		log.Info().
 			Str("component", "EchoEnhance").
 			Int("stats", len(stats)).
-			Msg("echo DISCARD")
+			Int("success_count", a.successCount).
+			Int("failed_count", a.failedCount).
+			Msg("echo DISCARD (Z key)")
+		// Press Z (discard) — pipeline WaitDropped node handles confirmation.
+		ctrl.PostClickKey(keycode.MustCode("Z")).Wait()
 	}
 
-	return keep
+	return true
 }
 
 func evaluateEcho(stats []EchoStat, param echoEnhanceParam) bool {
@@ -334,6 +362,51 @@ type echoChangeParam struct {
 	TargetStat string `json:"target_stat"`
 }
 
+type EchoChangeGuardRecognition struct{}
+
+var _ maa.CustomRecognitionRunner = &EchoChangeGuardRecognition{}
+
+func (r *EchoChangeGuardRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
+	param := echoChangeParam{TargetStat: "攻击"}
+	if arg.CustomRecognitionParam != "" {
+		if err := sonic.Unmarshal([]byte(arg.CustomRecognitionParam), &param); err != nil {
+			log.Warn().Err(err).Str("component", "EchoChangeGuard").Msg("failed to parse param")
+		}
+	}
+
+	detail, err := ctx.RunRecognition(
+		"__EchoChange_CurrentMain",
+		arg.Img,
+		`{
+			"__EchoChange_CurrentMain": {
+				"recognition": "OCR",
+				"roi": [115, 144, 80, 44]
+			}
+		}`,
+	)
+	if err != nil || detail == nil || !detail.Hit {
+		log.Warn().Str("component", "EchoChangeGuard").Msg("current main stat not found")
+		return nil, false
+	}
+
+	current := normalizeFiveToOneText(applyTextFix(detail.DetailJson))
+	target := normalizeFiveToOneText(param.TargetStat)
+	if target != "" && strings.Contains(current, target) {
+		log.Warn().
+			Str("component", "EchoChangeGuard").
+			Str("current", current).
+			Str("target", target).
+			Msg("target stat is already current stat")
+		return nil, false
+	}
+
+	payload, _ := sonic.Marshal(map[string]string{
+		"current": current,
+		"target":  target,
+	})
+	return &maa.CustomRecognitionResult{Box: detail.Box, Detail: string(payload)}, true
+}
+
 func (a *EchoChangeSelectAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
 	param := echoChangeParam{TargetStat: "攻击"}
 	if arg.CustomActionParam != "" {
@@ -342,27 +415,13 @@ func (a *EchoChangeSelectAction) Run(ctx *maa.Context, arg *maa.CustomActionArg)
 		}
 	}
 
-	ctrl := ctx.GetTasker().GetController()
-
-	// OCR to find the target stat in the dropdown.
-	detail, err := ctx.RunRecognition(
-		"__EchoChange_FindStat",
-		nil,
-		fmt.Sprintf(`{
-			"__EchoChange_FindStat": {
-				"recognition": "OCR",
-				"expected": %q,
-				"roi": [100, 300, 800, 400]
-			}
-		}`, param.TargetStat),
-	)
-	if err != nil || detail == nil || !detail.Hit {
+	box, ok := a.findTargetStat(ctx, param.TargetStat)
+	if !ok {
 		log.Warn().Str("component", "EchoChangeSelect").Str("target", param.TargetStat).Msg("target stat not found")
 		return false
 	}
 
-	box := detail.Box
-	ctrl.PostClick(
+	ctx.GetTasker().GetController().PostClick(
 		int32(box[0]+box[2]/2),
 		int32(box[1]+box[3]/2),
 	).Wait()
@@ -373,4 +432,457 @@ func (a *EchoChangeSelectAction) Run(ctx *maa.Context, arg *maa.CustomActionArg)
 		Msg("selected target stat")
 
 	return true
+}
+
+func (a *EchoChangeSelectAction) findTargetStat(ctx *maa.Context, target string) (maa.Rect, bool) {
+	detail, err := ctx.RunRecognition(
+		"__EchoChange_FindStat",
+		nil,
+		`{
+			"__EchoChange_FindStat": {
+				"recognition": "OCR",
+				"roi": [100, 300, 800, 400]
+			}
+		}`,
+	)
+	if err == nil && detail != nil && detail.Hit && detail.Results != nil {
+		results := detail.Results.Filtered
+		if len(results) == 0 {
+			results = detail.Results.All
+		}
+		for _, result := range results {
+			ocr, ok := result.AsOCR()
+			if !ok || ocr == nil {
+				continue
+			}
+			if echoChangeTextMatches(ocr.Text, target) {
+				return ocr.Box, true
+			}
+		}
+	}
+
+	detail, err = ctx.RunRecognition(
+		"__EchoChange_FindStatFallback",
+		nil,
+		fmt.Sprintf(`{
+			"__EchoChange_FindStatFallback": {
+				"recognition": "OCR",
+				"expected": %q,
+				"roi": [100, 300, 800, 400]
+			}
+		}`, target),
+	)
+	if err != nil || detail == nil || !detail.Hit {
+		return maa.Rect{}, false
+	}
+	return detail.Box, true
+}
+
+func echoChangeTextMatches(text string, target string) bool {
+	text = applyTextFix(text)
+	text = normalizeFiveToOneText(text)
+	target = normalizeFiveToOneText(target)
+	if target == "暴击" && strings.Contains(text, "暴击伤害") {
+		return false
+	}
+	return strings.Contains(text, target)
+}
+
+// ---------------------------------------------------------------------------
+// FiveToOneMergeAction — performs repeated batch fusion in the Data Dock screen.
+// ---------------------------------------------------------------------------
+
+type FiveToOneMergeAction struct{}
+
+var _ maa.CustomActionRunner = &FiveToOneMergeAction{}
+
+type fiveToOneParam struct {
+	MaxRounds        int                 `json:"max_rounds"`
+	MaxRoundsPerSet  int                 `json:"max_rounds_per_set"`
+	Keep             map[string][]string `json:"keep"`
+	KeepConfig       string              `json:"keep_config"`
+	ContinueOnOCRErr bool                `json:"continue_on_ocr_error"`
+}
+
+func (a *FiveToOneMergeAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
+	param := fiveToOneParam{MaxRounds: 20, MaxRoundsPerSet: 20}
+	if arg.CustomActionParam != "" {
+		if err := sonic.Unmarshal([]byte(arg.CustomActionParam), &param); err != nil {
+			log.Warn().Err(err).Str("component", "FiveToOneMerge").Msg("failed to parse param")
+		}
+	}
+	if param.Keep == nil {
+		param.Keep = map[string][]string{}
+	}
+	if param.KeepConfig != "" {
+		var keep map[string][]string
+		if err := sonic.Unmarshal([]byte(param.KeepConfig), &keep); err != nil {
+			log.Warn().Err(err).Str("component", "FiveToOneMerge").Msg("failed to parse keep_config")
+		} else {
+			param.Keep = keep
+		}
+	}
+	if param.MaxRoundsPerSet <= 0 {
+		param.MaxRoundsPerSet = param.MaxRounds
+	}
+
+	claimHandled := false
+	for _, setName := range fiveToOneSets {
+		if ctx.GetTasker().Stopping() {
+			return true
+		}
+		if !a.mergeSet(ctx, setName, 1, &claimHandled, param) && !param.ContinueOnOCRErr {
+			return true
+		}
+		if !a.mergeSet(ctx, setName, 2, &claimHandled, param) && !param.ContinueOnOCRErr {
+			return true
+		}
+	}
+
+	log.Info().Str("component", "FiveToOneMerge").Msg("all configured sets processed")
+	return true
+}
+
+var fiveToOneSets = []string{
+	"凝夜白霜", "熔山裂谷", "彻空冥雷", "啸谷长风", "浮星祛暗", "沉日劫明", "隐世回光", "轻云出月", "不绝余音",
+	"凌冽决断之心", "此间永驻之光", "幽夜隐匿之帷", "高天共奏之曲", "无惧浪涛之勇", "流云逝尽之空", "愿戴荣光之旅", "奔狼燎原之焰",
+}
+
+var fiveToOneMainStats = []string{
+	"攻击力百分比", "生命值百分比", "防御力百分比", "暴击率", "暴击伤害", "共鸣效率",
+	"冷凝伤害加成", "热熔伤害加成", "导电伤害加成", "气动伤害加成", "衍射伤害加成", "湮灭伤害加成", "治疗效果加成",
+}
+
+var fiveToOneFlatMainStats = []string{"主属性生命值", "主属性攻击力", "主属性防御力"}
+
+var fiveToOneTextFix = map[string]string{
+	"凝夜自霜":      "凝夜白霜",
+	"主属性灭伤害加成":  "主属性湮灭伤害加成",
+	"灭伤害加成":     "主属性湮灭伤害加成",
+	"主属性行射伤害加成": "主属性衍射伤害加成",
+}
+
+func (a *FiveToOneMergeAction) mergeSet(ctx *maa.Context, setName string, step int, claimHandled *bool, param fiveToOneParam) bool {
+	keeps := param.Keep[setName]
+	log.Info().
+		Str("component", "FiveToOneMerge").
+		Str("set", setName).
+		Int("step", step).
+		Strs("keeps", keeps).
+		Msg("processing set")
+
+	if len(keeps) >= len(fiveToOneMainStats) {
+		log.Info().Str("component", "FiveToOneMerge").Str("set", setName).Msg("all main stats kept, skipping")
+		return true
+	}
+	if step == 2 && !containsAny(keeps, "攻击力百分比") {
+		return true
+	}
+
+	ctrl := ctx.GetTasker().GetController()
+	ctrl.PostClick(51, 655).Wait()
+	time.Sleep(300 * time.Millisecond)
+	if step == 1 {
+		ctrl.PostClick(794, 590).Wait()
+		time.Sleep(80 * time.Millisecond)
+	}
+	ctrl.PostClick(256, 511).Wait()
+	time.Sleep(80 * time.Millisecond)
+	ctrl.PostClick(602, 511).Wait()
+	time.Sleep(80 * time.Millisecond)
+	if step == 1 {
+		ctrl.PostClick(909, 511).Wait()
+		time.Sleep(80 * time.Millisecond)
+	}
+
+	if step == 1 {
+		ctrl.PostClick(1146, 396).Wait()
+		time.Sleep(500 * time.Millisecond)
+		if !a.clickOCR(ctx, setName, maa.Rect{141, 137, 972, 403}) {
+			log.Warn().Str("component", "FiveToOneMerge").Str("set", setName).Msg("set filter not found")
+			return false
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+
+	ctrl.PostClick(1146, 533).Wait()
+	time.Sleep(500 * time.Millisecond)
+	choices := a.ocrStatChoices(ctx)
+	if len(choices) == 0 {
+		log.Warn().Str("component", "FiveToOneMerge").Str("set", setName).Int("step", step).Msg("stat OCR failed")
+		return false
+	}
+
+	clicked := 0
+	for _, choice := range choices {
+		if step == 1 {
+			if isFiveToOneFlatStat(choice.Text) {
+				continue
+			}
+			if !isFiveToOneMainStat(choice.Text) {
+				continue
+			}
+			if containsAny(keeps, normalizeFiveToOneText(choice.Text)) {
+				continue
+			}
+		} else if !strings.Contains(normalizeFiveToOneText(choice.Text), "攻击力百分比") {
+			continue
+		}
+		ctrl.PostClick(int32(choice.Box[0]+choice.Box[2]/2), int32(choice.Box[1]+choice.Box[3]/2)).Wait()
+		clicked++
+		time.Sleep(60 * time.Millisecond)
+	}
+
+	log.Info().
+		Str("component", "FiveToOneMerge").
+		Str("set", setName).
+		Int("step", step).
+		Int("clicked_filters", clicked).
+		Msg("selected merge filters")
+
+	ctrl.PostClick(1037, 605).Wait()
+	time.Sleep(500 * time.Millisecond)
+	a.runMergeLoop(ctx, claimHandled, param.MaxRoundsPerSet, setName, step)
+	return true
+}
+
+func (a *FiveToOneMergeAction) runMergeLoop(ctx *maa.Context, claimHandled *bool, maxRounds int, setName string, step int) {
+	if maxRounds <= 0 {
+		maxRounds = 20
+	}
+	ctrl := ctx.GetTasker().GetController()
+	for round := 0; round < maxRounds; round++ {
+		if ctx.GetTasker().Stopping() {
+			return
+		}
+
+		ctrl.PostClick(333, 655).Wait()
+		time.Sleep(500 * time.Millisecond)
+		ctrl.PostClick(998, 648).Wait()
+		time.Sleep(1200 * time.Millisecond)
+
+		if !*claimHandled && a.clickConfirm(ctx) {
+			ctrl.PostClick(627, 396).Wait()
+			time.Sleep(200 * time.Millisecond)
+			a.clickConfirm(ctx)
+			*claimHandled = true
+			time.Sleep(800 * time.Millisecond)
+		}
+
+		if !a.hasResult(ctx) {
+			if a.hasBatchFusion(ctx) {
+				ctrl.PostClick(333, 655).Wait()
+				log.Info().
+					Str("component", "FiveToOneMerge").
+					Str("set", setName).
+					Int("step", step).
+					Int("rounds", round).
+					Msg("not enough echoes")
+				return
+			}
+			time.Sleep(800 * time.Millisecond)
+			continue
+		}
+
+		ctrl.PostClick(678, 36).Wait()
+		time.Sleep(600 * time.Millisecond)
+		ctrl.PostClick(870, 655).Wait()
+		time.Sleep(800 * time.Millisecond)
+	}
+
+	log.Info().
+		Str("component", "FiveToOneMerge").
+		Str("set", setName).
+		Int("step", step).
+		Int("rounds", maxRounds).
+		Msg("max rounds reached")
+}
+
+func (a *FiveToOneMergeAction) clickConfirm(ctx *maa.Context) bool {
+	detail, err := ctx.RunRecognition(
+		"__FiveToOne_Confirm",
+		nil,
+		`{
+			"__FiveToOne_Confirm": {
+				"recognition": "OCR",
+				"expected": "确认",
+				"roi": [760, 520, 420, 160]
+			}
+		}`,
+	)
+	if err != nil || detail == nil || !detail.Hit {
+		return false
+	}
+	ctx.GetTasker().GetController().PostClick(
+		int32(detail.Box[0]+detail.Box[2]/2),
+		int32(detail.Box[1]+detail.Box[3]/2),
+	).Wait()
+	return true
+}
+
+func (a *FiveToOneMergeAction) hasResult(ctx *maa.Context) bool {
+	detail, err := ctx.RunRecognition(
+		"__FiveToOne_Result",
+		nil,
+		`{
+			"__FiveToOne_Result": {
+				"recognition": "OCR",
+				"expected": "获得声骸",
+				"roi": [380, 0, 520, 120]
+			}
+		}`,
+	)
+	return err == nil && detail != nil && detail.Hit
+}
+
+func (a *FiveToOneMergeAction) hasBatchFusion(ctx *maa.Context) bool {
+	detail, err := ctx.RunRecognition(
+		"__FiveToOne_BatchFusion",
+		nil,
+		`{
+			"__FiveToOne_BatchFusion": {
+				"recognition": "OCR",
+				"expected": "批量融合",
+				"roi": [900, 600, 380, 120]
+			}
+		}`,
+	)
+	return err == nil && detail != nil && detail.Hit
+}
+
+type fiveToOneChoice struct {
+	Text string
+	Box  maa.Rect
+}
+
+func (a *FiveToOneMergeAction) clickOCR(ctx *maa.Context, text string, roi maa.Rect) bool {
+	detail, err := ctx.RunRecognition(
+		"__FiveToOne_ClickOCR",
+		nil,
+		fmt.Sprintf(`{
+			"__FiveToOne_ClickOCR": {
+				"recognition": "OCR",
+				"expected": %q,
+				"roi": [%d, %d, %d, %d]
+			}
+		}`, text, roi[0], roi[1], roi[2], roi[3]),
+	)
+	if err != nil || detail == nil || !detail.Hit {
+		return false
+	}
+	ctx.GetTasker().GetController().PostClick(
+		int32(detail.Box[0]+detail.Box[2]/2),
+		int32(detail.Box[1]+detail.Box[3]/2),
+	).Wait()
+	return true
+}
+
+func (a *FiveToOneMergeAction) ocrStatChoices(ctx *maa.Context) []fiveToOneChoice {
+	detail, err := ctx.RunRecognition(
+		"__FiveToOne_StatOCR",
+		nil,
+		`{
+			"__FiveToOne_StatOCR": {
+				"recognition": "OCR",
+				"roi": [141, 137, 972, 403]
+			}
+		}`,
+	)
+	if err != nil || detail == nil || !detail.Hit || detail.Results == nil {
+		return nil
+	}
+
+	results := detail.Results.Filtered
+	if len(results) == 0 {
+		results = detail.Results.All
+	}
+	choices := make([]fiveToOneChoice, 0, len(results))
+	for _, result := range results {
+		ocr, ok := result.AsOCR()
+		if !ok || ocr == nil {
+			continue
+		}
+		text := normalizeFiveToOneText(ocr.Text)
+		if text == "" {
+			continue
+		}
+		choices = append(choices, fiveToOneChoice{
+			Text: text,
+			Box:  ocr.Box,
+		})
+	}
+	return choices
+}
+
+func normalizeFiveToOneText(text string) string {
+	text = strings.TrimSpace(strings.ReplaceAll(text, " ", ""))
+	for from, to := range fiveToOneTextFix {
+		text = strings.ReplaceAll(text, from, to)
+	}
+	return text
+}
+
+func containsAny(values []string, text string) bool {
+	text = normalizeFiveToOneText(text)
+	for _, value := range values {
+		if strings.Contains(text, normalizeFiveToOneText(value)) {
+			return true
+		}
+	}
+	return false
+}
+
+func isFiveToOneMainStat(text string) bool {
+	text = normalizeFiveToOneText(text)
+	for _, stat := range fiveToOneMainStats {
+		if strings.Contains(text, "主属性"+stat) || strings.Contains(text, stat) {
+			return true
+		}
+	}
+	return false
+}
+
+func isFiveToOneFlatStat(text string) bool {
+	text = normalizeFiveToOneText(text)
+	for _, stat := range fiveToOneFlatMainStats {
+		if strings.Contains(text, stat) && !strings.Contains(text, "百分比") {
+			return true
+		}
+	}
+	return false
+}
+
+// ── Language guard (ok-ww: enhance requires zh_CN/zh_TW, change requires zh_CN) ──
+
+func checkLanguageSupport(component string, allowed ...string) bool {
+	log.Debug().Str("component", component).Strs("allowed", allowed).Msg("language guard: assuming zh_CN")
+	return true
+}
+
+// ── OCR text correction mapping (ok-ww: text_fix for ChangeEcho main stat) ──
+
+var textFixMap = map[string]string{
+	"凝夜自霜": "凝夜白霜",
+	"熔山裂合": "熔山裂谷",
+	"彻空真雷": "彻空冥雷",
+	"凌冽决断": "凌冽决断之心",
+	"此间永驻": "此间永驻之光",
+	"幽夜隐匿": "幽夜隐匿之帷",
+	"高天共奏": "高天共奏之曲",
+	"无惧浪涛": "无惧浪涛之勇",
+	"流云逝尽": "流云逝尽之空",
+	"愿戴荣光": "愿戴荣光之旅",
+	"奔狼燎原": "奔狼燎原之焰",
+}
+
+func applyTextFix(text string) string {
+	if fixed, ok := textFixMap[text]; ok {
+		return fixed
+	}
+	for wrong, correct := range textFixMap {
+		if strings.HasPrefix(text, wrong) || strings.HasPrefix(wrong, text) {
+			return correct
+		}
+	}
+	return text
 }

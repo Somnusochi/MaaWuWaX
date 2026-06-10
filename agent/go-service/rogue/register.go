@@ -8,5 +8,8 @@ import (
 func Register() {
 	maa.AgentServerRegisterCustomAction("RogueMain", &RogueMainAction{})
 	maa.AgentServerRegisterCustomAction("RogueBuffSelect", &RogueBuffSelectAction{})
-	log.Info().Str("component", "rogue").Msg("registered RogueMain, RogueBuffSelect")
+	maa.AgentServerRegisterCustomAction("RogueTreasureReward", &RogueTreasureRewardAction{})
+	maa.AgentServerRegisterCustomAction("RogueWalkToTarget", &RogueWalkToTargetAction{})
+	maa.AgentServerRegisterCustomAction("RogueWalkGate", &RogueWalkGateAction{})
+	log.Info().Str("component", "rogue").Msg("registered rogue components")
 }

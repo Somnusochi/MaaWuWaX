@@ -7,6 +7,5 @@ import (
 
 func Register() {
 	maa.AgentServerRegisterCustomRecognition("EchoOrbDetect", &EchoOrbDetect{})
-	maa.AgentServerRegisterCustomAction("FiveToOneMerge", &FiveToOneMergeAction{})
-	log.Info().Str("component", "echofarm").Msg("registered EchoOrbDetect, FiveToOneMerge")
+	log.Info().Str("component", "echofarm").Msg("registered EchoOrbDetect")
 }

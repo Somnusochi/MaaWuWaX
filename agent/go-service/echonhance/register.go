@@ -7,7 +7,9 @@ import (
 
 func Register() {
 	maa.AgentServerRegisterCustomRecognition("EchoStatReader", &EchoStatReader{})
+	maa.AgentServerRegisterCustomRecognition("EchoChangeGuard", &EchoChangeGuardRecognition{})
 	maa.AgentServerRegisterCustomAction("EchoEnhance", &EchoEnhanceAction{})
 	maa.AgentServerRegisterCustomAction("EchoChangeSelect", &EchoChangeSelectAction{})
-	log.Info().Str("component", "echonhance").Msg("registered EchoStatReader, EchoEnhance, EchoChangeSelect")
+	maa.AgentServerRegisterCustomAction("FiveToOneMerge", &FiveToOneMergeAction{})
+	log.Info().Str("component", "echonhance").Msg("registered echonhance components")
 }

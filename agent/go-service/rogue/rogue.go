@@ -2,9 +2,11 @@
 package rogue
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
+	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/pkg/keycode"
 	maa "github.com/MaaXYZ/maa-framework-go/v4"
 	"github.com/bytedance/sonic"
 	"github.com/rs/zerolog/log"
@@ -199,6 +201,11 @@ type rogueBuffParam struct {
 	Whitelist []string `json:"whitelist"`
 }
 
+type rogueBuffChoice struct {
+	Text string
+	Box  maa.Rect
+}
+
 func defaultRogueBuffParam() rogueBuffParam {
 	return rogueBuffParam{
 		Blacklist: []string{"雷暴", "旋风", "矛盾晶体"},
@@ -206,11 +213,58 @@ func defaultRogueBuffParam() rogueBuffParam {
 	}
 }
 
+// parseRogueBuffParamFromCSV handles input-type options that pass
+// comma-separated values instead of JSON arrays.
+func parseRogueBuffParamFromCSV(raw string) rogueBuffParam {
+	// Try to extract whitelist/blacklist from a flat JSON string like
+	// {"whitelist":"a,b,c","blacklist":"d,e"} or just the raw CSV text.
+	type flatParam struct {
+		Whitelist string `json:"whitelist"`
+		Blacklist string `json:"blacklist"`
+	}
+	var flat flatParam
+	if err := sonic.Unmarshal([]byte(raw), &flat); err == nil {
+		return rogueBuffParam{
+			Whitelist: splitCSV(flat.Whitelist),
+			Blacklist: splitCSV(flat.Blacklist),
+		}
+	}
+	// Fallback: treat entire raw string as whitelist if non-empty.
+	trimmed := strings.TrimSpace(raw)
+	if trimmed != "" && !strings.HasPrefix(trimmed, "{") {
+		return rogueBuffParam{
+			Whitelist: splitCSV(trimmed),
+			Blacklist: defaultRogueBuffParam().Blacklist,
+		}
+	}
+	return rogueBuffParam{}
+}
+
+func splitCSV(s string) []string {
+	if s == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	result := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			result = append(result, p)
+		}
+	}
+	return result
+}
+
 func (a *RogueBuffSelectAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
 	param := defaultRogueBuffParam()
 	if arg.CustomActionParam != "" {
 		if err := sonic.Unmarshal([]byte(arg.CustomActionParam), &param); err != nil {
-			log.Warn().Err(err).Str("component", "RogueBuffSelect").Msg("failed to parse param")
+			// Try parsing as comma-separated strings (from input-type options)
+			param = parseRogueBuffParamFromCSV(arg.CustomActionParam)
+			if len(param.Whitelist) == 0 && len(param.Blacklist) == 0 {
+				log.Warn().Err(err).Str("component", "RogueBuffSelect").Msg("failed to parse param")
+				param = defaultRogueBuffParam()
+			}
 		}
 	}
 
@@ -235,25 +289,355 @@ func (a *RogueBuffSelectAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) 
 		return true
 	}
 
+	choices := rogueBuffChoices(detail)
 	text := detail.DetailJson
 	// Try whitelist first.
 	for _, w := range param.Whitelist {
+		if choice, ok := findRogueBuffChoice(choices, w); ok {
+			clickRogueBuffChoice(ctrl, choice)
+			log.Info().
+				Str("component", "RogueBuffSelect").
+				Str("buff", w).
+				Str("text", choice.Text).
+				Interface("box", choice.Box).
+				Msg("selected whitelist buff")
+			time.Sleep(1000 * time.Millisecond)
+			return true
+		}
 		if strings.Contains(text, w) {
-			log.Info().Str("component", "RogueBuffSelect").Str("buff", w).Msg("selected whitelist buff")
-			ctrl.PostClick(640, 430).Wait()
+			log.Info().Str("component", "RogueBuffSelect").Str("buff", w).Msg("selected whitelist buff by fallback text")
+			clickFallbackBuff(ctrl, choices)
 			time.Sleep(1000 * time.Millisecond)
 			return true
 		}
 	}
 
-	// No whitelist hit, click middle (avoid blacklist).
-	for _, b := range param.Blacklist {
-		if strings.Contains(text, b) {
-			log.Debug().Str("component", "RogueBuffSelect").Str("blacklist", b).Msg("avoiding blacklisted buff")
+	// No whitelist hit: choose the first OCR choice that is not blacklisted.
+	for _, choice := range choices {
+		if !rogueBuffChoiceBlacklisted(choice, param.Blacklist) {
+			clickRogueBuffChoice(ctrl, choice)
+			log.Info().
+				Str("component", "RogueBuffSelect").
+				Str("text", choice.Text).
+				Interface("box", choice.Box).
+				Msg("selected non-blacklisted buff")
+			time.Sleep(1000 * time.Millisecond)
+			return true
 		}
 	}
 
-	ctrl.PostClick(640, 430).Wait()
+	clickFallbackBuff(ctrl, choices)
 	time.Sleep(1000 * time.Millisecond)
 	return true
+}
+
+func rogueBuffChoices(detail *maa.RecognitionDetail) []rogueBuffChoice {
+	if detail == nil || detail.Results == nil {
+		return nil
+	}
+	results := detail.Results.Filtered
+	if len(results) == 0 {
+		results = detail.Results.All
+	}
+	choices := make([]rogueBuffChoice, 0, len(results))
+	for _, result := range results {
+		ocr, ok := result.AsOCR()
+		if !ok || ocr == nil {
+			continue
+		}
+		text := normalizeRogueBuffText(ocr.Text)
+		if text == "" {
+			continue
+		}
+		choices = append(choices, rogueBuffChoice{Text: text, Box: ocr.Box})
+	}
+	return choices
+}
+
+func normalizeRogueBuffText(text string) string {
+	return strings.TrimSpace(strings.ReplaceAll(text, " ", ""))
+}
+
+func findRogueBuffChoice(choices []rogueBuffChoice, target string) (rogueBuffChoice, bool) {
+	target = normalizeRogueBuffText(target)
+	for _, choice := range choices {
+		if strings.Contains(choice.Text, target) {
+			return choice, true
+		}
+	}
+	return rogueBuffChoice{}, false
+}
+
+func rogueBuffChoiceBlacklisted(choice rogueBuffChoice, blacklist []string) bool {
+	for _, blocked := range blacklist {
+		if strings.Contains(choice.Text, normalizeRogueBuffText(blocked)) {
+			return true
+		}
+	}
+	return false
+}
+
+func clickRogueBuffChoice(ctrl *maa.Controller, choice rogueBuffChoice) {
+	x := choice.Box[0] + choice.Box[2]/2
+	if x < 373 {
+		x = 373
+	} else if x > 907 {
+		x = 907
+	}
+	y := choice.Box[1] + choice.Box[3]/2
+	if y < 395 {
+		y = 395
+	} else if y > 455 {
+		y = 455
+	}
+	ctrl.PostClick(int32(x), int32(y)).Wait()
+}
+
+func clickFallbackBuff(ctrl *maa.Controller, choices []rogueBuffChoice) {
+	if len(choices) > 0 {
+		clickRogueBuffChoice(ctrl, choices[0])
+		return
+	}
+	// Absolute last resort: click middle of buff list area.
+	ctrl.PostClick(640, 430).Wait()
+	log.Warn().Str("component", "RogueBuffSelect").Msg("fallback to absolute middle click")
+}
+
+type RogueTreasureRewardAction struct {
+	claimed int
+}
+
+var _ maa.CustomActionRunner = &RogueTreasureRewardAction{}
+
+type rogueTreasureParam struct {
+	StopOnTreasure bool `json:"stop_on_treasure"`
+	MaxClaims      int  `json:"max_claims"`
+}
+
+func (a *RogueTreasureRewardAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
+	param := rogueTreasureParam{MaxClaims: 2}
+	if arg.CustomActionParam != "" {
+		if err := sonic.Unmarshal([]byte(arg.CustomActionParam), &param); err != nil {
+			log.Warn().Err(err).Str("component", "RogueTreasureReward").Msg("failed to parse param")
+		}
+	}
+	if param.StopOnTreasure {
+		log.Info().Str("component", "RogueTreasureReward").Msg("treasure found, stopping by option")
+		ctx.GetTasker().PostStop().Wait()
+		return true
+	}
+	if param.MaxClaims <= 0 {
+		param.MaxClaims = 2
+	}
+
+	ctrl := ctx.GetTasker().GetController()
+	if a.hasStaminaRefill(ctx) || a.claimed >= param.MaxClaims {
+		ctrl.PostClickKey(keycode.MustCode("ESC")).Wait()
+		time.Sleep(1000 * time.Millisecond)
+		log.Info().Str("component", "RogueTreasureReward").Int("claimed", a.claimed).Msg("skip treasure reward")
+		return true
+	}
+
+	if a.claimed == 0 {
+		ctrl.PostClick(870, 454).Wait()
+	} else {
+		ctrl.PostClick(410, 446).Wait()
+	}
+	a.claimed++
+	time.Sleep(1500 * time.Millisecond)
+	log.Info().Str("component", "RogueTreasureReward").Int("claimed", a.claimed).Msg("claimed treasure reward")
+	return true
+}
+
+func (a *RogueTreasureRewardAction) hasStaminaRefill(ctx *maa.Context) bool {
+	detail, err := ctx.RunRecognition(
+		"__RogueTreasure_StaminaRefill",
+		nil,
+		`{
+			"__RogueTreasure_StaminaRefill": {
+				"recognition": "Or",
+				"any_of": [
+					{"recognition": "OCR", "expected": "补充结晶"},
+					{"recognition": "OCR", "expected": "Refill"}
+				]
+			}
+		}`,
+	)
+	return err == nil && detail != nil && detail.Hit
+}
+
+type RogueWalkToTargetAction struct{}
+
+var _ maa.CustomActionRunner = &RogueWalkToTargetAction{}
+
+type RogueWalkGateAction struct{}
+
+var _ maa.CustomActionRunner = &RogueWalkGateAction{}
+
+type rogueWalkParam struct {
+	Template   string `json:"template"`
+	DurationMs int    `json:"duration_ms"`
+}
+
+func (a *RogueWalkToTargetAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
+	param := rogueWalkParam{Template: "purple_target_distance_icon.png", DurationMs: 900}
+	if arg.CustomActionParam != "" {
+		if err := sonic.Unmarshal([]byte(arg.CustomActionParam), &param); err != nil {
+			log.Warn().Err(err).Str("component", "RogueWalkToTarget").Msg("failed to parse param")
+		}
+	}
+
+	detail, err := ctx.RunRecognition(
+		"__RogueWalk_Target",
+		nil,
+		fmt.Sprintf(`{
+			"__RogueWalk_Target": {
+				"recognition": "TemplateMatch",
+				"template": %q,
+				"threshold": 0.6,
+				"roi": [230, 72, 820, 510]
+			}
+		}`, param.Template),
+	)
+	ctrl := ctx.GetTasker().GetController()
+	if err != nil || detail == nil || !detail.Hit {
+		pressFor(ctrl, keycode.MustCode("D"), 250*time.Millisecond)
+		pressFor(ctrl, keycode.MustCode("W"), time.Duration(param.DurationMs)*time.Millisecond)
+		return true
+	}
+
+	centerX := detail.Box[0] + detail.Box[2]/2
+	duration := time.Duration(param.DurationMs) * time.Millisecond
+	if centerX < 540 {
+		keyDownPair(ctrl, keycode.MustCode("A"), keycode.MustCode("W"))
+		time.Sleep(duration / 2)
+		keyUpPair(ctrl, keycode.MustCode("A"), keycode.MustCode("W"))
+	} else if centerX > 740 {
+		keyDownPair(ctrl, keycode.MustCode("D"), keycode.MustCode("W"))
+		time.Sleep(duration / 2)
+		keyUpPair(ctrl, keycode.MustCode("D"), keycode.MustCode("W"))
+	} else {
+		pressFor(ctrl, keycode.MustCode("W"), duration)
+	}
+
+	log.Debug().
+		Str("component", "RogueWalkToTarget").
+		Str("template", param.Template).
+		Int("center_x", centerX).
+		Msg("walked toward target")
+	return true
+}
+
+func (a *RogueWalkGateAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
+	ctrl := ctx.GetTasker().GetController()
+	for i := 0; i < 4; i++ {
+		if hasRogueFPrompt(ctx) {
+			ctrl.PostClickKey(keycode.MustCode("F")).Wait()
+			time.Sleep(1000 * time.Millisecond)
+			return true
+		}
+
+		box, ok := findRogueGate(ctx)
+		if ok {
+			centerX := box[0] + box[2]/2
+			if centerX < 448 {
+				keyDownPair(ctrl, keycode.MustCode("A"), keycode.MustCode("W"))
+				time.Sleep(250 * time.Millisecond)
+				keyUpPair(ctrl, keycode.MustCode("A"), keycode.MustCode("W"))
+			} else if centerX > 832 {
+				keyDownPair(ctrl, keycode.MustCode("D"), keycode.MustCode("W"))
+				time.Sleep(250 * time.Millisecond)
+				keyUpPair(ctrl, keycode.MustCode("D"), keycode.MustCode("W"))
+			}
+			pressFor(ctrl, keycode.MustCode("W"), 1200*time.Millisecond)
+			log.Info().
+				Str("component", "RogueWalkGate").
+				Int("center_x", centerX).
+				Interface("box", box).
+				Msg("walked toward gate")
+			return true
+		}
+
+		pressFor(ctrl, keycode.MustCode("D"), 300*time.Millisecond)
+		pressFor(ctrl, keycode.MustCode("W"), 500*time.Millisecond)
+		time.Sleep(300 * time.Millisecond)
+	}
+
+	pressFor(ctrl, keycode.MustCode("W"), 2000*time.Millisecond)
+	return true
+}
+
+func findRogueGate(ctx *maa.Context) (maa.Rect, bool) {
+	detail, err := ctx.RunRecognition(
+		"__RogueGate_OCR",
+		nil,
+		`{
+			"__RogueGate_OCR": {
+				"recognition": "OCR",
+				"roi": [0, 0, 1280, 720]
+			}
+		}`,
+	)
+	if err != nil || detail == nil || !detail.Hit || detail.Results == nil {
+		return maa.Rect{}, false
+	}
+
+	results := detail.Results.Filtered
+	if len(results) == 0 {
+		results = detail.Results.All
+	}
+	for _, result := range results {
+		ocr, ok := result.AsOCR()
+		if !ok || ocr == nil {
+			continue
+		}
+		text := normalizeRogueGateText(ocr.Text)
+		if strings.Contains(text, "的记忆") ||
+			strings.Contains(text, "梦乡的") ||
+			strings.Contains(text, "记忆区") ||
+			strings.Contains(text, "前往下一") {
+			return ocr.Box, true
+		}
+	}
+	return maa.Rect{}, false
+}
+
+func normalizeRogueGateText(text string) string {
+	text = strings.TrimSpace(text)
+	text = strings.ReplaceAll(text, " ", "")
+	text = strings.ReplaceAll(text, "\n", "")
+	return strings.ToLower(text)
+}
+
+func hasRogueFPrompt(ctx *maa.Context) bool {
+	detail, err := ctx.RunRecognition(
+		"__RogueGate_F",
+		nil,
+		`{
+			"__RogueGate_F": {
+				"recognition": "Or",
+				"any_of": [
+					{"recognition": "TemplateMatch", "template": "pick_up_f.png", "threshold": 0.6},
+					{"recognition": "TemplateMatch", "template": "pick_up_f_hcenter_vcenter.png", "threshold": 0.6}
+				]
+			}
+		}`,
+	)
+	return err == nil && detail != nil && detail.Hit
+}
+
+func pressFor(ctrl *maa.Controller, code int32, duration time.Duration) {
+	ctrl.PostKeyDown(code).Wait()
+	time.Sleep(duration)
+	ctrl.PostKeyUp(code).Wait()
+}
+
+func keyDownPair(ctrl *maa.Controller, first int32, second int32) {
+	ctrl.PostKeyDown(first).Wait()
+	ctrl.PostKeyDown(second).Wait()
+}
+
+func keyUpPair(ctrl *maa.Controller, first int32, second int32) {
+	ctrl.PostKeyUp(second).Wait()
+	ctrl.PostKeyUp(first).Wait()
 }
