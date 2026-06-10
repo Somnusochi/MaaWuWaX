@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.28)
+project(cpp-algo CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(DEPS /Users/somnusochi/Documents/coding/MaaWuWaX/deps)
+
+# Direct include and link
+add_executable(cpp-algo source/main.cpp)
+
+target_include_directories(cpp-algo PRIVATE 
+    ${DEPS}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/source
+    ${DEPS}/../MaaFramework/include
+)
+
+# Link directly against dylibs  
+target_link_libraries(cpp-algo
+    ${DEPS}/bin/libMaaAgentServer.dylib
+    ${DEPS}/bin/libMaaToolkit.dylib
+    ${DEPS}/bin/libMaaUtils.dylib
+    ${DEPS}/bin/libMaaFramework.dylib
+)
+
+set_target_properties(cpp-algo PROPERTIES
+    BUILD_RPATH "@executable_path/../maafw"
+    INSTALL_RPATH "@executable_path/../maafw"
+)
