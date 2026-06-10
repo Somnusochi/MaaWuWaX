@@ -118,7 +118,7 @@ jobs:
           rm -rf MFA/runtimes
 
       - name: Build cpp-algo
-        if: matrix.os == 'macos' || matrix.os == 'linux'
+        if: matrix.os == 'macos'
         shell: bash
         run: |
           echo "Downloading MaaDeps..."
