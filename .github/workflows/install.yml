@@ -124,21 +124,8 @@ jobs:
           echo "Downloading MaaDeps..."
           python3 tools/maadeps-download.py
 
-          echo "Configuring cpp-algo CMake..."
-          mkdir -p agent/cpp-algo/build
-          cd agent/cpp-algo/build
-          cmake .. \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DDEPS_DIR="$(pwd)/../../../deps" \
-            -DCMAKE_OSX_ARCHITECTURES="${{ matrix.arch == 'x86_64' && 'x86_64' || 'arm64' }}"
-
           echo "Building cpp-algo..."
-          cmake --build . --config RelWithDebInfo --parallel
-
-          echo "Copying cpp-algo binary..."
-          mkdir -p ../../../install/agent
-          cp cpp-algo ../../../install/agent/ || cp source/cpp-algo ../../../install/agent/
-          cd ../../..
+          python3 tools/build_and_install.py --cpp-algo --ci --os ${{ matrix.os }} --arch ${{ matrix.arch }}
 
       - name: Install
         shell: bash
