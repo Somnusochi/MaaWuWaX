@@ -1,26 +1,42 @@
 {
     "Forgery_Main": {
-        "next": ["Forgery_EnsureWorld"]
+        "next": [
+            "Forgery_EnsureWorld"
+        ]
     },
     "Forgery_EnsureWorld": {
         "recognition": "TemplateMatch",
         "template": "minimap.png",
         "threshold": 0.7,
-        "roi": [1050, 20, 200, 160],
-        "next": ["Forgery_OpenBook"],
-        "post_delay": 500
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "Forgery_OpenBook"
+        ],
+        "post_delay": 500,
+        "on_error": [
+            "Forgery_RecoverToWorld"
+        ]
     },
     "Forgery_OpenBook": {
         "action": "ClickKey",
         "key": 120,
-        "next": ["Forgery_BookOpen"],
+        "next": [
+            "Forgery_BookOpen"
+        ],
         "post_delay": 2000
     },
     "Forgery_BookOpen": {
         "recognition": "TemplateMatch",
         "template": "gray_book_boss.png",
         "threshold": 0.6,
-        "next": ["Forgery_SelectForgeryTab"],
+        "next": [
+            "Forgery_SelectForgeryTab"
+        ],
         "post_delay": 500
     },
     "Forgery_SelectForgeryTab": {
@@ -28,39 +44,59 @@
         "template": "book_qiangdi.png",
         "threshold": 0.6,
         "action": "Click",
-        "next": ["Forgery_SelectTarget"],
+        "next": [
+            "Forgery_SelectTarget"
+        ],
         "post_delay": 500
     },
     "Forgery_SelectTarget": {
-        "recognition": "TemplateMatch",
-        "template": "gray_book_boss.png",
-        "threshold": 0.5,
-        "action": "Click",
-        "next": ["Forgery_ClickTravel"],
-        "post_delay": 500
+        "action": "Custom",
+        "custom_action": "BookTargetSelect",
+        "custom_action_param": {
+            "serial_number": 1,
+            "total_number": 15
+        },
+        "next": [
+            "Forgery_ClickTravel"
+        ],
+        "post_delay": 1000
     },
     "Forgery_ClickTravel": {
         "recognition": "TemplateMatch",
         "template": "gray_teleport.png",
         "threshold": 0.7,
-        "action": "Click",
-        "next": ["Forgery_WaitLoad"],
+        "action": "Custom",
+        "custom_action": "ClickFastTravel",
+        "next": [
+            "Forgery_WaitLoad"
+        ],
         "post_delay": 3000
     },
     "Forgery_WaitLoad": {
         "recognition": "TemplateMatch",
         "template": "minimap.png",
         "threshold": 0.7,
-        "roi": [1050, 20, 200, 160],
-        "next": ["Forgery_WalkToDomain"],
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "Forgery_WalkToDomain"
+        ],
         "timeout": 30000,
-        "timeout_next": [],
-        "post_delay": 1000
+        "post_delay": 1000,
+        "on_error": [
+            "Forgery_RecoverToWorld"
+        ]
     },
     "Forgery_WalkToDomain": {
         "action": "ClickKey",
         "key": 13,
-        "next": ["Forgery_EnterDomain"],
+        "next": [
+            "Forgery_EnterDomain"
+        ],
         "post_delay": 5000
     },
     "Forgery_EnterDomain": {
@@ -81,7 +117,9 @@
             }
         ],
         "action": "Click",
-        "next": ["Forgery_ConfirmEnter"],
+        "next": [
+            "Forgery_ConfirmEnter"
+        ],
         "post_delay": 2000
     },
     "Forgery_ConfirmEnter": {
@@ -102,22 +140,39 @@
             }
         ],
         "action": "Click",
-        "next": ["Forgery_Fight"],
+        "next": [
+            "Forgery_Fight"
+        ],
         "post_delay": 3000
     },
     "Forgery_Fight": {
         "action": "Custom",
         "custom_action": "CombatMain",
-        "next": ["Forgery_CheckComplete", "Forgery_Loot"],
-        "post_delay": 500
+        "next": [
+            "Forgery_CheckComplete",
+            "Forgery_Loot",
+            "Forgery_DetectDead",
+            "Forgery_Fight"
+        ],
+        "post_delay": 500,
+        "timeout": 120000,
+        "on_error": [
+            "Forgery_RecoverToWorld"
+        ]
     },
     "Forgery_Loot": {
         "recognition": "TemplateMatch",
         "template": "pick_up_f.png",
         "threshold": 0.65,
-        "action": "ClickKey",
-        "key": 3,
-        "next": ["Forgery_CheckComplete", "Forgery_Fight"],
+        "action": "Custom",
+        "custom_action": "PickEnhanced",
+        "custom_action_param": {
+            "max_attempts": 3
+        },
+        "next": [
+            "Forgery_CheckComplete",
+            "Forgery_Fight"
+        ],
         "post_delay": 500
     },
     "Forgery_CheckComplete": {
@@ -137,7 +192,9 @@
                 "threshold": 0.6
             }
         ],
-        "next": ["Forgery_HandleReward"],
+        "next": [
+            "Forgery_HandleReward"
+        ],
         "post_delay": 1000
     },
     "Forgery_HandleReward": {
@@ -155,10 +212,30 @@
             {
                 "recognition": "OCR",
                 "expected": "Spend Stamina"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "体力不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "结晶波片不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Insufficient"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Not enough"
             }
         ],
         "action": "Click",
-        "next": ["Forgery_ConfirmStamina", "Forgery_Done"],
+        "next": [
+            "Forgery_NotEnoughStamina",
+            "Forgery_ConfirmStamina",
+            "Forgery_Done"
+        ],
         "post_delay": 1000
     },
     "Forgery_ConfirmStamina": {
@@ -175,10 +252,99 @@
             }
         ],
         "action": "Click",
-        "next": ["Forgery_Fight"],
+        "next": [
+            "Forgery_Fight"
+        ],
         "post_delay": 2000
     },
     "Forgery_Done": {
         "next": []
+    },
+    "Forgery_DetectDead": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "revive_confirm_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "复活"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Revive"
+            }
+        ],
+        "action": "Click",
+        "next": [
+            "Forgery_RecoverToWorld"
+        ],
+        "post_delay": 2000
+    },
+    "Forgery_RecoverToWorld": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": [
+            "Forgery_ConfirmExit",
+            "Forgery_EnsureWorld"
+        ],
+        "post_delay": 1000
+    },
+    "Forgery_ConfirmExit": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "gray_confirm_exit_button.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_yellow_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            }
+        ],
+        "action": "Click",
+        "next": [
+            "Forgery_WaitLoad"
+        ],
+        "post_delay": 3000
+    },
+    "Forgery_NotEnoughStamina": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "体力不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "结晶波片不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Insufficient"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Not enough"
+            }
+        ],
+        "action": "ClickKey",
+        "key": 53,
+        "next": [
+            "Forgery_Done"
+        ],
+        "post_delay": 1000
     }
 }

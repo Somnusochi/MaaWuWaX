@@ -3,13 +3,19 @@
         "action": "ClickKey",
         "key": 120,
         "post_delay": 2000,
-        "next": ["Nav_BookOpen"]
+        "next": [
+            "Nav_BookOpen"
+        ]
     },
     "Nav_BookOpen": {
         "recognition": "TemplateMatch",
         "template": "gray_book_boss.png",
         "threshold": 0.6,
-        "next": ["Nav_SelectBoss", "Nav_SelectQuest", "Nav_SelectTacet"]
+        "next": [
+            "Nav_SelectBoss",
+            "Nav_SelectQuest",
+            "Nav_SelectTacet"
+        ]
     },
     "Nav_SelectBoss": {
         "recognition": "TemplateMatch",
@@ -47,11 +53,16 @@
         "recognition": "TemplateMatch",
         "template": "minimap.png",
         "threshold": 0.7,
-        "roi": [1050, 20, 200, 160],
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
         "post_delay": 1000,
         "next": [],
         "timeout": 30000,
-        "timeout_next": []
+        "on_error": []
     },
     "Nav_CloseBook": {
         "action": "ClickKey",

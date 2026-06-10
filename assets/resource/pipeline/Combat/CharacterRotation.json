@@ -34,7 +34,7 @@
         "key": 13,
         "post_delay": 300
     },
-    "Combat_Dodge": {
+    "Combat_RotationDodge": {
         "action": "ClickKey",
         "key": 56,
         "post_delay": 200

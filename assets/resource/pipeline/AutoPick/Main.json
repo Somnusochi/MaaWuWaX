@@ -13,6 +13,10 @@
     "AutoPick_Filter": {
         "recognition": "Custom",
         "custom_recognition": "PickTextFilter",
+        "custom_recognition_param": {
+            "whitelist": "吸收,Absorb",
+            "blacklist": "开始合成,领取奖励,Claim,合成台"
+        },
         "next": ["AutoPick_Execute", "AutoPick_Main"]
     },
     "AutoPick_Execute": {

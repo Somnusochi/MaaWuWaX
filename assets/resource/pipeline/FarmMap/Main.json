@@ -1,0 +1,183 @@
+{
+    "FarmMap_Main": {
+        "next": [
+            "FarmMap_LoadPath"
+        ]
+    },
+    "FarmMap_LoadPath": {
+        "action": "Custom",
+        "custom_action": "FarmMapLoadPath",
+        "custom_action_param": {
+            "max_step_distance": 144,
+            "min_stars": 3
+        },
+        "next": [
+            "FarmMap_WaitWorld"
+        ],
+        "post_delay": 1000
+    },
+    "FarmMap_WaitWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "FarmMap_Loop"
+        ],
+        "timeout": 30000
+    },
+    "FarmMap_Loop": {
+        "next": [
+            "FarmMap_Done",
+            "FarmMap_Revive",
+            "FarmMap_Pickup",
+            "FarmMap_Combat",
+            "FarmMap_Walk"
+        ]
+    },
+    "FarmMap_Done": {
+        "recognition": "Custom",
+        "custom_recognition": "FarmMapPathDone",
+        "next": [
+            "FarmMap_Stop"
+        ]
+    },
+    "FarmMap_Stop": {
+        "action": "DoNothing",
+        "next": []
+    },
+    "FarmMap_Revive": {
+        "recognition": "TemplateMatch",
+        "template": "revive_confirm_hcenter_vcenter.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": [
+            "FarmMap_ResetTracker"
+        ],
+        "post_delay": 3000
+    },
+    "FarmMap_ResetTracker": {
+        "action": "Custom",
+        "custom_action": "FarmMapResetTracker",
+        "next": [
+            "FarmMap_Loop"
+        ],
+        "post_delay": 1000
+    },
+    "FarmMap_Pickup": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f_hcenter_vcenter.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f.png",
+                "threshold": 0.65
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "echo_orb.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "treasure_icon.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "absorb_zh_CN.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "absorb_en_US.png",
+                "threshold": 0.6
+            }
+        ],
+        "next": [
+            "FarmMap_Collect",
+            "FarmMap_Combat",
+            "FarmMap_Walk"
+        ],
+        "post_delay": 500
+    },
+    "FarmMap_Collect": {
+        "action": "Custom",
+        "custom_action": "PickEnhanced",
+        "custom_action_param": {
+            "max_attempts": 5
+        },
+        "next": [
+            "FarmMap_Loop"
+        ],
+        "post_delay": 500
+    },
+    "FarmMap_Combat": {
+        "recognition": "TemplateMatch",
+        "template": "has_target.png",
+        "threshold": 0.65,
+        "next": [
+            "FarmMap_Fight",
+            "FarmMap_Walk"
+        ]
+    },
+    "FarmMap_Fight": {
+        "action": "Custom",
+        "custom_action": "CombatMain",
+        "custom_action_param": {
+            "auto_target": true,
+            "use_liberation": true
+        },
+        "next": [
+            "FarmMap_Pickup",
+            "FarmMap_Loop"
+        ],
+        "timeout": 120000
+    },
+    "FarmMap_Walk": {
+        "action": "Custom",
+        "custom_action": "MapNavigatorCompatible",
+        "custom_action_param": {
+            "reach_distance": 24,
+            "search_radius": 280,
+            "walk_ms": 850
+        },
+        "next": [
+            "FarmMap_Loop"
+        ],
+        "post_delay": 200,
+        "on_error": [
+            "FarmMap_WalkGo"
+        ]
+    },
+    "FarmMap_WalkGo": {
+        "action": "Custom",
+        "custom_action": "FarmMapWalkStep",
+        "custom_action_param": {
+            "reach_distance": 24,
+            "search_radius": 280,
+            "walk_ms": 850
+        },
+        "next": [
+            "FarmMap_Loop"
+        ],
+        "post_delay": 200
+    },
+    "FarmMap_Locate": {
+        "recognition": "Custom",
+        "custom_recognition": "MapLocateRecognition",
+        "next": [
+            "FarmMap_Loop"
+        ],
+        "post_delay": 500
+    }
+}

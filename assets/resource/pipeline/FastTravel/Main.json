@@ -1,6 +1,9 @@
 {
     "FastTravel_Main": {
-        "next": ["FastTravel_DetectTeleport", "FastTravel_Main"]
+        "next": [
+            "FastTravel_DetectTeleport",
+            "FastTravel_Main"
+        ]
     },
     "FastTravel_DetectTeleport": {
         "recognition": "Or",
@@ -21,8 +24,9 @@
                 "threshold": 0.6
             }
         ],
-        "action": "Click",
-        "next": ["FastTravel_ConfirmTravel"],
+        "next": [
+            "FastTravel_ConfirmTravel"
+        ],
         "post_delay": 1500
     },
     "FastTravel_ConfirmTravel": {
@@ -30,19 +34,43 @@
         "any_of": [
             {
                 "recognition": "OCR",
-                "expected": "快速旅行"
+                "expected": "快速旅行",
+                "roi": [
+                    896,
+                    640,
+                    384,
+                    80
+                ]
             },
             {
                 "recognition": "OCR",
-                "expected": "Travel"
+                "expected": "Travel",
+                "roi": [
+                    896,
+                    640,
+                    384,
+                    80
+                ]
             },
             {
                 "recognition": "OCR",
-                "expected": "前往"
+                "expected": "前往",
+                "roi": [
+                    896,
+                    640,
+                    384,
+                    80
+                ]
             },
             {
                 "recognition": "OCR",
-                "expected": "Proceed"
+                "expected": "Proceed",
+                "roi": [
+                    896,
+                    640,
+                    384,
+                    80
+                ]
             },
             {
                 "recognition": "TemplateMatch",
@@ -50,18 +78,26 @@
                 "threshold": 0.7
             }
         ],
-        "action": "Click",
-        "next": ["FastTravel_WaitLoad"],
+        "action": "Custom",
+        "custom_action": "ClickFastTravel",
+        "next": [
+            "FastTravel_WaitLoad"
+        ],
         "post_delay": 3000
     },
     "FastTravel_WaitLoad": {
         "recognition": "TemplateMatch",
         "template": "minimap.png",
         "threshold": 0.7,
-        "roi": [1050, 20, 200, 160],
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
         "next": [],
         "timeout": 30000,
-        "timeout_next": [],
-        "post_delay": 1000
+        "post_delay": 1000,
+        "on_error": []
     }
 }

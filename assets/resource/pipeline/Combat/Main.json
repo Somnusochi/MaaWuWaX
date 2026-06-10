@@ -1,6 +1,6 @@
 {
     "Combat_Main": {
-        "next": ["Combat_ScanEnemy", "Combat_Idle"]
+        "next": ["Combat_ReviveConfirm", "Combat_ScanEnemy", "Combat_Idle"]
     },
     "Combat_Idle": {
         "next": ["Combat_ScanEnemy"]
@@ -16,12 +16,24 @@
     "Combat_Engage": {
         "action": "Custom",
         "custom_action": "CombatMain",
+        "custom_action_param": {
+            "auto_target": true,
+            "use_liberation": true
+        },
         "next": ["Combat_CheckState", "Combat_Engage"]
     },
     "Combat_CheckState": {
         "recognition": "Custom",
         "custom_recognition": "CombatState",
-        "next": ["Combat_Dodge", "Combat_Loot", "Combat_ScanEnemy"]
+        "next": ["Combat_ReviveConfirm", "Combat_Dodge", "Combat_Loot", "Combat_ScanEnemy"]
+    },
+    "Combat_ReviveConfirm": {
+        "recognition": "TemplateMatch",
+        "template": "revive_confirm_hcenter_vcenter.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["Combat_Idle"],
+        "post_delay": 3000
     },
     "Combat_Dodge": {
         "recognition": "TemplateMatch",
@@ -40,8 +52,11 @@
         "post_delay": 500
     },
     "Combat_LootAction": {
-        "action": "ClickKey",
-        "key": 3,
+        "action": "Custom",
+        "custom_action": "PickEnhanced",
+        "custom_action_param": {
+            "max_attempts": 4
+        },
         "next": ["Combat_Loot"]
     }
 }

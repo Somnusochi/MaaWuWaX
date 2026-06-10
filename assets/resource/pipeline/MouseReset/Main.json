@@ -1,6 +1,6 @@
 {
     "MouseReset_Main": {
-        "next": ["MouseReset_CheckPosition", "MouseReset_Main"]
+        "next": ["MouseReset_CheckPosition", "MouseReset_DoReset", "MouseReset_Main"]
     },
     "MouseReset_CheckPosition": {
         "recognition": "TemplateMatch",
@@ -11,7 +11,7 @@
         "post_delay": 2000
     },
     "MouseReset_DoReset": {
-        "action": "ClickKey",
+        "action": "KeyDown",
         "key": 58,
         "post_delay": 100,
         "next": ["MouseReset_ClickCenter"]
@@ -23,9 +23,9 @@
         "post_delay": 100
     },
     "MouseReset_ReleaseAlt": {
-        "action": "ClickKey",
+        "action": "KeyUp",
         "key": 58,
         "next": ["MouseReset_Main"],
-        "post_delay": 500
+        "post_delay": 2000
     }
 }

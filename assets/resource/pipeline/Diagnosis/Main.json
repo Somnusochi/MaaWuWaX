@@ -1,8 +1,10 @@
 {
-    "Login_Main": {
-        "next": ["Login_CheckWorld", "Login_HandleScreen"]
+    "Diagnosis_Main": {
+        "next": [
+            "Diagnosis_EnsureWorld"
+        ]
     },
-    "Login_CheckWorld": {
+    "Diagnosis_EnsureWorld": {
         "recognition": "Or",
         "any_of": [
             {
@@ -18,31 +20,31 @@
             },
             {
                 "recognition": "TemplateMatch",
-                "template": "world_earth_icon.png",
-                "threshold": 0.55
-            },
-            {
-                "recognition": "TemplateMatch",
                 "template": "char_1_text.png",
-                "threshold": 0.75
+                "threshold": 0.7
             },
             {
                 "recognition": "TemplateMatch",
                 "template": "char_2_text.png",
-                "threshold": 0.75
+                "threshold": 0.7
             },
             {
                 "recognition": "TemplateMatch",
                 "template": "char_3_text.png",
-                "threshold": 0.75
+                "threshold": 0.7
             }
         ],
-        "next": []
+        "next": [
+            "Diagnosis_Snapshot"
+        ],
+        "post_delay": 300
     },
-    "Login_HandleScreen": {
-        "recognition": "Custom",
-        "custom_recognition": "LoginScreenDetect",
-        "next": ["Login_Main"],
-        "post_delay": 2000
+    "Diagnosis_Snapshot": {
+        "action": "Custom",
+        "custom_action": "DiagnosisSnapshot",
+        "next": [
+            "Diagnosis_Main"
+        ],
+        "post_delay": 500
     }
 }

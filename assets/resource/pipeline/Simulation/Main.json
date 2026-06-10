@@ -1,66 +1,101 @@
 {
     "Simulation_Main": {
-        "next": ["Simulation_EnsureWorld"]
+        "next": [
+            "Simulation_EnsureWorld"
+        ]
     },
     "Simulation_EnsureWorld": {
         "recognition": "TemplateMatch",
         "template": "minimap.png",
         "threshold": 0.7,
-        "roi": [1050, 20, 200, 160],
-        "next": ["Simulation_OpenBook"],
-        "post_delay": 500
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "Simulation_OpenBook"
+        ],
+        "post_delay": 500,
+        "on_error": [
+            "Simulation_RecoverToWorld"
+        ]
     },
     "Simulation_OpenBook": {
         "action": "ClickKey",
         "key": 120,
-        "next": ["Simulation_BookOpen"],
+        "next": [
+            "Simulation_BookOpen"
+        ],
         "post_delay": 2000
     },
     "Simulation_BookOpen": {
         "recognition": "TemplateMatch",
         "template": "gray_book_boss.png",
         "threshold": 0.6,
-        "next": ["Simulation_SelectSimTab"],
+        "next": [
+            "Simulation_SelectSimTab"
+        ],
         "post_delay": 500
     },
     "Simulation_SelectSimTab": {
         "recognition": "TemplateMatch",
-        "template": "book_mengyan.png",
+        "template": "book_moni.png",
         "threshold": 0.6,
         "action": "Click",
-        "next": ["Simulation_SelectTarget"],
+        "next": [
+            "Simulation_SelectTarget"
+        ],
         "post_delay": 500
     },
     "Simulation_SelectTarget": {
-        "recognition": "TemplateMatch",
-        "template": "gray_book_boss.png",
-        "threshold": 0.5,
-        "action": "Click",
-        "next": ["Simulation_ClickTravel"],
-        "post_delay": 500
+        "action": "Custom",
+        "custom_action": "BookTargetSelect",
+        "custom_action_param": {
+            "serial_number": 1,
+            "total_number": 1
+        },
+        "next": [
+            "Simulation_ClickTravel"
+        ],
+        "post_delay": 1000
     },
     "Simulation_ClickTravel": {
         "recognition": "TemplateMatch",
         "template": "boss_proceed.png",
         "threshold": 0.7,
         "action": "Click",
-        "next": ["Simulation_WaitLoad"],
+        "next": [
+            "Simulation_WaitLoad"
+        ],
         "post_delay": 3000
     },
     "Simulation_WaitLoad": {
         "recognition": "TemplateMatch",
         "template": "minimap.png",
         "threshold": 0.7,
-        "roi": [1050, 20, 200, 160],
-        "next": ["Simulation_WalkToDomain"],
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "Simulation_WalkToDomain"
+        ],
         "timeout": 30000,
-        "timeout_next": [],
-        "post_delay": 1000
+        "post_delay": 1000,
+        "on_error": [
+            "Simulation_RecoverToWorld"
+        ]
     },
     "Simulation_WalkToDomain": {
         "action": "ClickKey",
         "key": 13,
-        "next": ["Simulation_EnterDomain"],
+        "next": [
+            "Simulation_EnterDomain"
+        ],
         "post_delay": 5000
     },
     "Simulation_EnterDomain": {
@@ -81,12 +116,19 @@
             }
         ],
         "action": "Click",
-        "next": ["Simulation_SelectMaterial"],
+        "next": [
+            "Simulation_SelectMaterial"
+        ],
         "post_delay": 2000
     },
     "Simulation_SelectMaterial": {
         "recognition": "Or",
         "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_yellow_confirm.png",
+                "threshold": 0.6
+            },
             {
                 "recognition": "OCR",
                 "expected": "选择"
@@ -94,16 +136,17 @@
             {
                 "recognition": "OCR",
                 "expected": "Select"
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "btn_yellow_confirm.png",
-                "threshold": 0.6
             }
         ],
-        "action": "Click",
-        "next": ["Simulation_ConfirmEnter"],
-        "post_delay": 1000
+        "action": "Custom",
+        "custom_action": "SimulationSelectMaterial",
+        "custom_action_param": {
+            "material": "shell_credit"
+        },
+        "next": [
+            "Simulation_Fight"
+        ],
+        "post_delay": 3000
     },
     "Simulation_ConfirmEnter": {
         "recognition": "Or",
@@ -123,22 +166,39 @@
             }
         ],
         "action": "Click",
-        "next": ["Simulation_Fight"],
+        "next": [
+            "Simulation_Fight"
+        ],
         "post_delay": 3000
     },
     "Simulation_Fight": {
         "action": "Custom",
         "custom_action": "CombatMain",
-        "next": ["Simulation_CheckComplete", "Simulation_Loot"],
-        "post_delay": 500
+        "next": [
+            "Simulation_CheckComplete",
+            "Simulation_Loot",
+            "Simulation_DetectDead",
+            "Simulation_Fight"
+        ],
+        "post_delay": 500,
+        "timeout": 120000,
+        "on_error": [
+            "Simulation_RecoverToWorld"
+        ]
     },
     "Simulation_Loot": {
         "recognition": "TemplateMatch",
         "template": "pick_up_f.png",
         "threshold": 0.65,
-        "action": "ClickKey",
-        "key": 3,
-        "next": ["Simulation_CheckComplete", "Simulation_Fight"],
+        "action": "Custom",
+        "custom_action": "PickEnhanced",
+        "custom_action_param": {
+            "max_attempts": 3
+        },
+        "next": [
+            "Simulation_CheckComplete",
+            "Simulation_Fight"
+        ],
         "post_delay": 500
     },
     "Simulation_CheckComplete": {
@@ -158,7 +218,9 @@
                 "threshold": 0.6
             }
         ],
-        "next": ["Simulation_HandleReward"],
+        "next": [
+            "Simulation_HandleReward"
+        ],
         "post_delay": 1000
     },
     "Simulation_HandleReward": {
@@ -176,10 +238,30 @@
             {
                 "recognition": "OCR",
                 "expected": "Spend Stamina"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "体力不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "结晶波片不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Insufficient"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Not enough"
             }
         ],
         "action": "Click",
-        "next": ["Simulation_ConfirmStamina", "Simulation_Done"],
+        "next": [
+            "Simulation_NotEnoughStamina",
+            "Simulation_ConfirmStamina",
+            "Simulation_Done"
+        ],
         "post_delay": 1000
     },
     "Simulation_ConfirmStamina": {
@@ -196,10 +278,99 @@
             }
         ],
         "action": "Click",
-        "next": ["Simulation_Fight"],
+        "next": [
+            "Simulation_Fight"
+        ],
         "post_delay": 2000
     },
     "Simulation_Done": {
         "next": []
+    },
+    "Simulation_DetectDead": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "revive_confirm_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "复活"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Revive"
+            }
+        ],
+        "action": "Click",
+        "next": [
+            "Simulation_RecoverToWorld"
+        ],
+        "post_delay": 2000
+    },
+    "Simulation_RecoverToWorld": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": [
+            "Simulation_ConfirmExit",
+            "Simulation_EnsureWorld"
+        ],
+        "post_delay": 1000
+    },
+    "Simulation_ConfirmExit": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "gray_confirm_exit_button.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_yellow_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            }
+        ],
+        "action": "Click",
+        "next": [
+            "Simulation_WaitLoad"
+        ],
+        "post_delay": 3000
+    },
+    "Simulation_NotEnoughStamina": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "体力不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "结晶波片不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Insufficient"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Not enough"
+            }
+        ],
+        "action": "ClickKey",
+        "key": 53,
+        "next": [
+            "Simulation_Done"
+        ],
+        "post_delay": 1000
     }
 }

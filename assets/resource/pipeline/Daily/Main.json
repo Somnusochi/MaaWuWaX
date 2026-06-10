@@ -1,6 +1,6 @@
 {
     "Daily_Main": {
-        "next": ["Daily_EnsureWorld", "Daily_HandlePopups"]
+        "next": ["Daily_HandlePopups", "Daily_EnsureWorld"]
     },
     "Daily_HandlePopups": {
         "recognition": "Or",
@@ -9,6 +9,29 @@
                 "recognition": "TemplateMatch",
                 "template": "monthly_card.png",
                 "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "claim_btn.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "claim_cancel_button_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "revive_confirm_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "登录奖励"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Login Reward"
             },
             {
                 "recognition": "OCR",
@@ -40,27 +63,35 @@
     "Daily_OpenBook": {
         "action": "ClickKey",
         "key": 120,
-        "next": ["Daily_CheckProgress"],
+        "next": ["Daily_SelectQuest"],
         "post_delay": 2000
+    },
+    "Daily_SelectQuest": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_quest.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": ["Daily_CheckProgress"],
+        "post_delay": 1200,
+        "timeout": 5000
     },
     "Daily_CheckProgress": {
-        "recognition": "OCR",
-        "roi": [150, 100, 500, 100],
-        "expected": "/180",
-        "next": ["Daily_SpendStamina", "Daily_ClaimRewards"]
+        "recognition": "Custom",
+        "custom_recognition": "DailyProgress",
+        "next": ["Daily_SpendStamina", "Daily_ClaimRewards"],
+        "timeout": 8000
     },
     "Daily_SpendStamina": {
-        "action": "Custom",
-        "custom_action": "SpendStamina",
-        "next": ["Daily_ClaimRewards"]
+        "recognition": "Custom",
+        "custom_recognition": "DailyNeedsStamina",
+        "next": ["Daily_Stamina_Check"],
+        "on_error": ["Daily_ClaimRewards"]
     },
     "Daily_ClaimRewards": {
-        "recognition": "TemplateMatch",
-        "template": "claim_btn.png",
-        "threshold": 0.7,
-        "action": "Click",
+        "action": "Custom",
+        "custom_action": "ClaimDailyRewards",
         "next": ["Daily_ClaimMail"],
-        "post_delay": 2000
+        "post_delay": 1000
     },
     "Daily_ClaimMail": {
         "recognition": "Custom",

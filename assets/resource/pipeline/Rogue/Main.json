@@ -1,6 +1,16 @@
 {
     "Rogue_Main": {
-        "next": ["Rogue_HandleUI", "Rogue_InCombat"],
+        "next": [
+            "Rogue_ChallengeEnd",
+            "Rogue_HandleUI",
+            "Rogue_EntranceTitle",
+            "Rogue_ContinueExplore",
+            "Rogue_GainEcho",
+            "Rogue_BuffSelect",
+            "Rogue_TreasureReward",
+            "Rogue_StaminaNotEnough",
+            "Rogue_InCombat"
+        ],
         "post_delay": 500
     },
     "Rogue_HandleUI": {
@@ -9,18 +19,30 @@
             {
                 "recognition": "OCR",
                 "expected": "交易",
-                "roi": [10, 20, 180, 80]
+                "roi": [
+                    10,
+                    20,
+                    180,
+                    80
+                ]
             },
             {
                 "recognition": "OCR",
                 "expected": "Trade",
-                "roi": [10, 20, 180, 80]
+                "roi": [
+                    10,
+                    20,
+                    180,
+                    80
+                ]
             }
         ],
         "action": "ClickKey",
         "key": 53,
         "post_delay": 2000,
-        "next": ["Rogue_Main"]
+        "next": [
+            "Rogue_Main"
+        ]
     },
     "Rogue_EntranceTitle": {
         "recognition": "Or",
@@ -35,8 +57,15 @@
             }
         ],
         "action": "Click",
-        "target": [1050, 640, 100, 50],
-        "next": ["Rogue_Main"],
+        "target": [
+            1050,
+            640,
+            100,
+            50
+        ],
+        "next": [
+            "Rogue_Main"
+        ],
         "post_delay": 2000
     },
     "Rogue_ContinueExplore": {
@@ -52,8 +81,15 @@
             }
         ],
         "action": "Click",
-        "target": [860, 440, 100, 50],
-        "next": ["Rogue_Main"],
+        "target": [
+            860,
+            440,
+            100,
+            50
+        ],
+        "next": [
+            "Rogue_Main"
+        ],
         "post_delay": 2000
     },
     "Rogue_GainEcho": {
@@ -62,17 +98,34 @@
             {
                 "recognition": "OCR",
                 "expected": "获得",
-                "roi": [550, 130, 180, 80]
+                "roi": [
+                    550,
+                    130,
+                    180,
+                    80
+                ]
             },
             {
                 "recognition": "OCR",
                 "expected": "Gain",
-                "roi": [550, 130, 180, 80]
+                "roi": [
+                    550,
+                    130,
+                    180,
+                    80
+                ]
             }
         ],
         "action": "Click",
-        "target": [640, 580, 100, 50],
-        "next": ["Rogue_Main"],
+        "target": [
+            640,
+            580,
+            100,
+            50
+        ],
+        "next": [
+            "Rogue_Main"
+        ],
         "post_delay": 2000
     },
     "Rogue_BuffSelect": {
@@ -89,13 +142,26 @@
         ],
         "action": "Custom",
         "custom_action": "RogueBuffSelect",
-        "next": ["Rogue_ConfirmBuff"],
+        "custom_action_param": {
+            "whitelist": ["心流", "悲鸣纪", "余音贝", "齿轮之心", "全知之眼", "指南针", "医疗箱"],
+            "blacklist": ["雷暴", "旋风", "矛盾晶体"]
+        },
+        "next": [
+            "Rogue_ConfirmBuff"
+        ],
         "post_delay": 1000
     },
     "Rogue_ConfirmBuff": {
         "action": "Click",
-        "target": [1050, 680, 100, 30],
-        "next": ["Rogue_Main"],
+        "target": [
+            1050,
+            680,
+            100,
+            30
+        ],
+        "next": [
+            "Rogue_Main"
+        ],
         "post_delay": 1000
     },
     "Rogue_ChallengeEnd": {
@@ -114,30 +180,75 @@
         "post_delay": 1000
     },
     "Rogue_InCombat": {
-        "recognition": "TemplateMatch",
-        "template": "has_target.png",
-        "threshold": 0.6,
-        "next": ["Rogue_Fight"],
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "has_target.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "has_target_cloud.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "revive_confirm_hcenter_vcenter.png",
+                "threshold": 0.7
+            }
+        ],
+        "next": [
+            "Rogue_Revive",
+            "Rogue_Fight"
+        ],
         "post_delay": 500
+    },
+    "Rogue_Revive": {
+        "recognition": "TemplateMatch",
+        "template": "revive_confirm_hcenter_vcenter.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": [
+            "Rogue_Main"
+        ],
+        "post_delay": 3000
     },
     "Rogue_Fight": {
         "action": "Custom",
         "custom_action": "CombatMain",
-        "next": ["Rogue_PostFight"],
+        "next": [
+            "Rogue_PostFight"
+        ],
         "timeout": 120000,
-        "timeout_next": ["Rogue_Main"]
+        "on_error": [
+            "Rogue_Main"
+        ]
     },
     "Rogue_PostFight": {
-        "next": ["Rogue_PressF", "Rogue_FindGate", "Rogue_TreasureReward", "Rogue_StaminaNotEnough", "Rogue_Main"],
+        "next": [
+            "Rogue_PressF",
+            "Rogue_FindGate",
+            "Rogue_WalkTreasure",
+            "Rogue_WalkPurple",
+            "Rogue_TreasureReward",
+            "Rogue_StaminaNotEnough",
+            "Rogue_Main"
+        ],
         "post_delay": 500
     },
     "Rogue_PressF": {
         "recognition": "TemplateMatch",
         "template": "pick_up_f.png",
         "threshold": 0.6,
-        "action": "ClickKey",
-        "key": 3,
-        "next": ["Rogue_Main"],
+        "action": "Custom",
+        "custom_action": "PickEnhanced",
+        "custom_action_param": {
+            "max_attempts": 3
+        },
+        "next": [
+            "Rogue_Main"
+        ],
         "post_delay": 1000
     },
     "Rogue_FindGate": {
@@ -146,19 +257,75 @@
             {
                 "recognition": "OCR",
                 "expected": "前往下一",
-                "roi": [50, 150, 200, 50]
+                "roi": [
+                    50,
+                    150,
+                    200,
+                    50
+                ]
             },
             {
                 "recognition": "OCR",
                 "expected": "记忆区",
-                "roi": [50, 150, 200, 50]
+                "roi": [
+                    50,
+                    150,
+                    200,
+                    50
+                ]
             }
         ],
         "action": "Custom",
-        "custom_action": "DirectionWalk",
-        "custom_action_param": "{\"direction\": \"forward\", \"duration_ms\": 3000, \"sprint\": true}",
-        "next": ["Rogue_PressF", "Rogue_Main"],
+        "custom_action": "RogueWalkGate",
+        "next": [
+            "Rogue_PressF",
+            "Rogue_Main"
+        ],
         "post_delay": 500
+    },
+    "Rogue_WalkTreasure": {
+        "recognition": "TemplateMatch",
+        "template": "treasure_icon.png",
+        "threshold": 0.6,
+        "roi": [
+            230,
+            72,
+            820,
+            510
+        ],
+        "action": "Custom",
+        "custom_action": "RogueWalkToTarget",
+        "custom_action_param": {
+            "template": "treasure_icon.png",
+            "duration_ms": 1000
+        },
+        "next": [
+            "Rogue_PressF",
+            "Rogue_Main"
+        ],
+        "post_delay": 300
+    },
+    "Rogue_WalkPurple": {
+        "recognition": "TemplateMatch",
+        "template": "purple_target_distance_icon.png",
+        "threshold": 0.6,
+        "roi": [
+            230,
+            72,
+            820,
+            510
+        ],
+        "action": "Custom",
+        "custom_action": "RogueWalkToTarget",
+        "custom_action_param": {
+            "template": "purple_target_distance_icon.png",
+            "duration_ms": 900
+        },
+        "next": [
+            "Rogue_PressF",
+            "Rogue_Main"
+        ],
+        "post_delay": 300
     },
     "Rogue_TreasureReward": {
         "recognition": "Or",
@@ -166,7 +333,12 @@
             {
                 "recognition": "OCR",
                 "expected": "领取奖励",
-                "roi": [280, 200, 200, 80]
+                "roi": [
+                    280,
+                    200,
+                    200,
+                    80
+                ]
             },
             {
                 "recognition": "OCR",
@@ -174,7 +346,9 @@
             }
         ],
         "action": "Click",
-        "next": ["Rogue_Main"],
+        "next": [
+            "Rogue_Main"
+        ],
         "post_delay": 1500
     },
     "Rogue_StaminaNotEnough": {
@@ -191,7 +365,9 @@
         ],
         "action": "ClickKey",
         "key": 53,
-        "next": ["Rogue_Main"],
+        "next": [
+            "Rogue_Main"
+        ],
         "post_delay": 1000
     }
 }

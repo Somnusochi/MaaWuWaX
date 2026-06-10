@@ -1,0 +1,65 @@
+{
+    "MultiAccountDaily_Switch": {
+        "action": "Custom",
+        "custom_action": "MultiAccountSwitch",
+        "custom_action_param": {
+            "max_accounts": 2
+        },
+        "next": [
+            "MultiAccountDaily_Login"
+        ],
+        "post_delay": 2000,
+        "on_error": [
+            "MultiAccountDaily_Done"
+        ]
+    },
+    "MultiAccountDaily_Login": {
+        "recognition": "Custom",
+        "custom_recognition": "LoginScreenDetect",
+        "next": [
+            "MultiAccountDaily_WaitWorld",
+            "MultiAccountDaily_Login"
+        ],
+        "post_delay": 2000,
+        "timeout": 180000,
+        "on_error": [
+            "MultiAccountDaily_SkipFailed"
+        ]
+    },
+    "MultiAccountDaily_WaitWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "Daily_Main"
+        ],
+        "post_delay": 2000,
+        "timeout": 180000,
+        "on_error": [
+            "MultiAccountDaily_SkipFailed"
+        ]
+    },
+    "MultiAccountDaily_SkipFailed": {
+        "action": "Custom",
+        "custom_action": "MultiAccountMarkFailed",
+        "custom_action_param": {
+            "max_accounts": 2
+        },
+        "next": [
+            "MultiAccountDaily_Switch"
+        ],
+        "on_error": [
+            "MultiAccountDaily_Done"
+        ],
+        "post_delay": 1000
+    },
+    "MultiAccountDaily_Done": {
+        "next": []
+    }
+}

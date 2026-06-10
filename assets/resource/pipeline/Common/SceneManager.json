@@ -3,8 +3,15 @@
         "recognition": "TemplateMatch",
         "template": "minimap.png",
         "threshold": 0.7,
-        "roi": [1050, 20, 200, 160],
-        "next": ["Scene_InWorld"],
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "Scene_InWorld"
+        ],
         "post_delay": 500
     },
     "Scene_InWorld": {
@@ -39,13 +46,18 @@
         "action": "ClickKey",
         "key": 53,
         "post_delay": 1000,
-        "next": ["Scene_DetectInWorld", "Scene_EnsureMain"]
+        "next": [
+            "Scene_DetectInWorld",
+            "Scene_EnsureMain"
+        ]
     },
     "Scene_OpenF2Book": {
         "action": "ClickKey",
         "key": 120,
         "post_delay": 2000,
-        "next": ["Scene_BookOpen"]
+        "next": [
+            "Scene_BookOpen"
+        ]
     },
     "Scene_BookOpen": {
         "recognition": "TemplateMatch",
@@ -58,17 +70,19 @@
         "recognition": "Or",
         "any_of": [
             {
-                "recognition": "TemplateMatch",
-                "template": "realm_indicator.png",
-                "threshold": 0.6
-            },
-            {
                 "recognition": "OCR",
                 "expected": "挑战",
-                "roi": [0, 0, 200, 100]
+                "roi": [
+                    0,
+                    0,
+                    200,
+                    100
+                ]
             }
         ],
-        "next": ["Scene_InRealm"],
+        "next": [
+            "Scene_InRealm"
+        ],
         "post_delay": 500
     },
     "Scene_InRealm": {
@@ -82,10 +96,17 @@
                 "recognition": "TemplateMatch",
                 "template": "has_target.png",
                 "threshold": 0.6,
-                "roi": [400, 200, 800, 600]
+                "roi": [
+                    400,
+                    200,
+                    800,
+                    600
+                ]
             }
         ],
-        "next": ["Scene_InCombat"],
+        "next": [
+            "Scene_InCombat"
+        ],
         "post_delay": 300
     },
     "Scene_InCombat": {
@@ -96,26 +117,38 @@
         "recognition": "Or",
         "any_of": [
             {
+                "recognition": "TemplateMatch",
+                "template": "revive_confirm_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
                 "recognition": "OCR",
                 "expected": "复活",
-                "roi": [400, 300, 480, 200]
+                "roi": [
+                    400,
+                    300,
+                    480,
+                    200
+                ]
             },
             {
                 "recognition": "OCR",
                 "expected": "Revive"
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "dead_indicator.png",
-                "threshold": 0.6
             }
         ],
-        "next": ["Scene_HandleDead"],
+        "next": [
+            "Scene_HandleDead"
+        ],
         "post_delay": 500
     },
     "Scene_HandleDead": {
         "recognition": "Or",
         "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "revive_confirm_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
             {
                 "recognition": "OCR",
                 "expected": "复活"
@@ -126,17 +159,51 @@
             }
         ],
         "action": "Click",
-        "next": ["Scene_WaitAfterRevive"],
+        "next": [
+            "Scene_WaitAfterRevive"
+        ],
         "post_delay": 3000
+    },
+    "Scene_DetectClaimReward": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "claim_cancel_button_hcenter_vcenter.png",
+                "threshold": 0.75
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "claim_btn.png",
+                "threshold": 0.7
+            }
+        ],
+        "next": [
+            "Scene_HandleClaimReward"
+        ],
+        "post_delay": 500
+    },
+    "Scene_HandleClaimReward": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": [
+            "Scene_DetectInWorld"
+        ],
+        "post_delay": 1000
     },
     "Scene_WaitAfterRevive": {
         "recognition": "TemplateMatch",
         "template": "minimap.png",
         "threshold": 0.7,
-        "roi": [1050, 20, 200, 160],
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
         "next": [],
         "timeout": 15000,
-        "timeout_next": [],
-        "post_delay": 1000
+        "post_delay": 1000,
+        "on_error": []
     }
 }

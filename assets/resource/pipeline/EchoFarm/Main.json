@@ -1,58 +1,169 @@
 {
     "EchoFarm_Main": {
-        "next": ["EchoFarm_Navigate"]
+        "next": [
+            "EchoFarm_TeleportBoss"
+        ]
+    },
+    "EchoFarm_TeleportBoss": {
+        "action": "Custom",
+        "custom_action": "TeleportBoss",
+        "custom_action_param": {
+            "boss_type": "boss",
+            "serial_number": 1,
+            "total_number": 20,
+            "boss_level": "80"
+        },
+        "next": [
+            "EchoFarm_DetectDead",
+            "EchoFarm_ScanEcho",
+            "EchoFarm_Combat",
+            "EchoFarm_Navigate"
+        ],
+        "post_delay": 3000,
+        "on_error": [
+            "EchoFarm_DetectDead",
+            "EchoFarm_ScanEcho",
+            "EchoFarm_Combat",
+            "EchoFarm_Navigate"
+        ]
     },
     "EchoFarm_Navigate": {
         "recognition": "Custom",
         "custom_recognition": "MinimapNavigate",
-        "next": ["EchoFarm_Combat", "EchoFarm_Navigate"],
+        "next": [
+            "EchoFarm_DetectDead",
+            "EchoFarm_Combat",
+            "EchoFarm_ScanEcho",
+            "EchoFarm_Navigate"
+        ],
         "post_delay": 500,
         "timeout": 60000,
-        "timeout_next": ["EchoFarm_TeleportNext"]
+        "on_error": [
+            "EchoFarm_TeleportNext"
+        ]
     },
     "EchoFarm_Combat": {
         "recognition": "TemplateMatch",
         "template": "has_target.png",
         "threshold": 0.7,
-        "next": ["EchoFarm_Fight", "EchoFarm_ScanEcho"]
+        "next": [
+            "EchoFarm_Fight",
+            "EchoFarm_ScanEcho"
+        ]
     },
     "EchoFarm_Fight": {
         "action": "Custom",
         "custom_action": "CombatMain",
-        "next": ["EchoFarm_CheckDead", "EchoFarm_Fight"],
+        "next": [
+            "EchoFarm_DetectDead",
+            "EchoFarm_ScanEcho",
+            "EchoFarm_Fight"
+        ],
         "timeout": 120000,
-        "timeout_next": ["EchoFarm_TeleportNext"]
+        "on_error": [
+            "EchoFarm_TeleportNext"
+        ]
+    },
+    "EchoFarm_DetectDead": {
+        "recognition": "TemplateMatch",
+        "template": "revive_confirm_hcenter_vcenter.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": [
+            "EchoFarm_TeleportNext"
+        ],
+        "post_delay": 3000
     },
     "EchoFarm_CheckDead": {
-        "recognition": "Custom",
-        "custom_recognition": "CombatState",
-        "next": ["EchoFarm_ScanEcho", "EchoFarm_Fight"]
+        "recognition": "TemplateMatch",
+        "template": "revive_confirm_hcenter_vcenter.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": [
+            "EchoFarm_TeleportNext"
+        ],
+        "post_delay": 3000
     },
     "EchoFarm_ScanEcho": {
-        "recognition": "TemplateMatch",
-        "template": "echo_orb.png",
-        "threshold": 0.6,
-        "next": ["EchoFarm_Collect", "EchoFarm_CheckNext", "EchoFarm_Navigate"],
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "Custom",
+                "custom_recognition": "EchoDetectRecognition"
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "echo_orb.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "treasure_icon.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f_hcenter_vcenter.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f.png",
+                "threshold": 0.65
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "absorb_zh_CN.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "absorb_en_US.png",
+                "threshold": 0.6
+            }
+        ],
+        "next": [
+            "EchoFarm_Collect",
+            "EchoFarm_CheckNext",
+            "EchoFarm_Navigate"
+        ],
         "post_delay": 1000,
         "timeout": 30000,
-        "timeout_next": ["EchoFarm_TeleportNext"]
+        "on_error": [
+            "EchoFarm_TeleportNext"
+        ]
     },
     "EchoFarm_Collect": {
-        "action": "ClickKey",
-        "key": 3,
-        "next": ["EchoFarm_ScanEcho"],
-        "post_delay": 300
+        "action": "Custom",
+        "custom_action": "PickEnhanced",
+        "custom_action_param": {
+            "max_attempts": 4
+        },
+        "next": [
+            "EchoFarm_DetectDead",
+            "EchoFarm_ScanEcho"
+        ],
+        "post_delay": 500
     },
     "EchoFarm_CheckNext": {
         "recognition": "TemplateMatch",
         "template": "boss_check_mark.png",
         "threshold": 0.7,
-        "next": ["EchoFarm_TeleportNext"]
+        "next": [
+            "EchoFarm_TeleportNext"
+        ]
     },
     "EchoFarm_TeleportNext": {
         "action": "Custom",
         "custom_action": "TeleportBoss",
-        "next": ["EchoFarm_Navigate"],
+        "custom_action_param": {
+            "boss_type": "boss"
+        },
+        "next": [
+            "EchoFarm_DetectDead",
+            "EchoFarm_ScanEcho",
+            "EchoFarm_Navigate"
+        ],
         "post_delay": 3000
     }
 }

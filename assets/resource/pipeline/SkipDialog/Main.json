@@ -1,6 +1,12 @@
 {
     "SkipDialog_Main": {
-        "next": ["SkipDialog_CheckSkip", "SkipDialog_CheckAuto", "SkipDialog_CheckArrow"]
+        "next": ["SkipDialog_Advanced", "SkipDialog_Main"]
+    },
+    "SkipDialog_Advanced": {
+        "action": "Custom",
+        "custom_action": "SkipDialogAdvanced",
+        "next": ["SkipDialog_Main"],
+        "post_delay": 200
     },
     "SkipDialog_CheckSkip": {
         "recognition": "TemplateMatch",

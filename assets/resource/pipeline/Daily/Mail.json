@@ -15,7 +15,7 @@
     },
     "Daily_Mail_ClaimAll": {
         "recognition": "TemplateMatch",
-        "template": "btn_claim_all.png",
+        "template": "claim_btn.png",
         "threshold": 0.7,
         "action": "Click",
         "next": ["Daily_Mail_Close"],

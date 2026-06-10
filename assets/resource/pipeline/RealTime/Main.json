@@ -1,0 +1,97 @@
+{
+    "RealTime_Main": {
+        "next": ["RealTime_Combat", "RealTime_Pick", "RealTime_Skip", "RealTime_Travel", "RealTime_Login", "RealTime_Mouse"]
+    },
+    "RealTime_Combat": {
+        "recognition": "Custom",
+        "custom_recognition": "CombatState",
+        "action": "Custom",
+        "custom_action": "CombatMain",
+        "custom_action_param": {
+            "auto_target": true,
+            "use_liberation": true
+        },
+        "enabled": true,
+        "next": ["RealTime_Main"]
+    },
+    "RealTime_Pick": {
+        "recognition": "Custom",
+        "custom_recognition": "PickTextFilter",
+        "enabled": true,
+        "next": ["RealTime_PickAction"]
+    },
+    "RealTime_PickAction": {
+        "action": "Custom",
+        "custom_action": "PickEnhanced",
+        "next": ["RealTime_Main"]
+    },
+    "RealTime_Skip": {
+        "action": "Custom",
+        "custom_action": "SkipDialogAdvanced",
+        "enabled": true,
+        "next": ["RealTime_Main"]
+    },
+    "RealTime_SkipConfirm": {
+        "recognition": "TemplateMatch",
+        "template": "skip_dialog_confirm.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["RealTime_Main"]
+    },
+    "RealTime_AutoPlay": {
+        "recognition": "TemplateMatch",
+        "template": "btn_auto_play_dialog.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["RealTime_Arrow"]
+    },
+    "RealTime_Arrow": {
+        "recognition": "TemplateMatch",
+        "template": "btn_dialog_arrow.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": ["RealTime_Main"]
+    },
+    "RealTime_Travel": {
+        "recognition": "TemplateMatch",
+        "template": "gray_teleport.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "enabled": false,
+        "next": ["RealTime_TravelConfirm"]
+    },
+    "RealTime_TravelConfirm": {
+        "recognition": "Or",
+        "any_of": [
+            {"recognition": "OCR", "expected": "Travel"},
+            {"recognition": "OCR", "expected": "快速旅行"},
+            {"recognition": "OCR", "expected": "前往"}
+        ],
+        "action": "Click",
+        "next": ["RealTime_Main"]
+    },
+    "RealTime_Login": {
+        "recognition": "Custom",
+        "custom_recognition": "LoginScreenDetect",
+        "enabled": true,
+        "next": ["RealTime_Main"]
+    },
+    "RealTime_Mouse": {
+        "action": "KeyDown",
+        "key": 58,
+        "enabled": false,
+        "next": ["RealTime_MouseClick"]
+    },
+    "RealTime_MouseClick": {
+        "action": "Click",
+        "target": [640, 360, 1, 1],
+        "next": ["RealTime_MouseRelease"],
+        "post_delay": 100
+    },
+    "RealTime_MouseRelease": {
+        "action": "KeyUp",
+        "key": 58,
+        "next": ["RealTime_Main"],
+        "post_delay": 10000
+    }
+}
