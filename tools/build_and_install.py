@@ -16,6 +16,15 @@ import subprocess
 import sys
 from pathlib import Path
 
+try:
+    import jsonc
+except ModuleNotFoundError as e:
+    raise ImportError(
+        "Missing dependency 'json-with-comments' (imported as 'jsonc').\n"
+        f"Install it with:\n  {sys.executable} -m pip install json-with-comments\n"
+        "Or add it to your project's requirements."
+    ) from e
+
 
 def info(msg: str) -> str:
     return f"\033[36m{msg}\033[0m"
@@ -35,6 +44,20 @@ def err(msg: str) -> str:
 
 def step(msg: str) -> str:
     return f"\n{info('==>')} {msg}"
+
+
+def workspace_go_env(root_dir: Path, base_env: dict[str, str] | None = None) -> dict[str, str]:
+    env = dict(base_env or os.environ)
+    go_cache = root_dir / ".cache" / "go-build"
+    go_mod_cache = root_dir / ".cache" / "go-mod"
+    go_tmp = root_dir / ".tmp" / "go-tmp"
+    go_cache.mkdir(parents=True, exist_ok=True)
+    go_mod_cache.mkdir(parents=True, exist_ok=True)
+    go_tmp.mkdir(parents=True, exist_ok=True)
+    env["GOCACHE"] = str(go_cache)
+    env["GOMODCACHE"] = str(go_mod_cache)
+    env["GOTMPDIR"] = str(go_tmp)
+    return env
 
 
 def create_directory_link(src: Path, dst: Path) -> bool:
@@ -63,6 +86,121 @@ def copy_directory(src: Path, dst: Path) -> bool:
         shutil.rmtree(dst)
     shutil.copytree(src, dst)
     return True
+
+
+def sync_interface_agents(install_dir: Path) -> None:
+    interface_path = install_dir / "interface.json"
+    if not interface_path.exists():
+        return
+
+    with interface_path.open("r", encoding="utf-8") as f:
+        interface = jsonc.load(f)
+
+    binary_candidates = {
+        "agent/go-service": (
+            install_dir / "agent" / "go-service",
+            install_dir / "agent" / "go-service.exe",
+        ),
+        "agent/cpp-algo": (
+            install_dir / "agent" / "cpp-algo",
+            install_dir / "agent" / "cpp-algo.exe",
+        ),
+    }
+    existing_agents = {
+        agent.get("child_exec"): agent
+        for agent in interface.get("agent", [])
+        if agent.get("child_exec")
+    }
+
+    agents = []
+    for child_exec in ("agent/go-service", "agent/cpp-algo"):
+        if any(path.is_file() for path in binary_candidates[child_exec]):
+            agent = existing_agents.get(
+                child_exec,
+                {
+                    "child_exec": child_exec,
+                    "child_args": [],
+                },
+            )
+            agents.append(agent)
+
+    interface["agent"] = agents
+
+    with interface_path.open("w", encoding="utf-8") as f:
+        jsonc.dump(interface, f, ensure_ascii=False, indent=4)
+
+
+def create_macos_app_bundle(root_dir: Path, install_dir: Path, version: str | None = None) -> None:
+    system = platform.system().lower()
+    if system != "darwin":
+        return
+
+    app_dir = install_dir / "MaaWuWaX.app"
+    contents_dir = app_dir / "Contents"
+    macos_dir = contents_dir / "MacOS"
+    resources_dir = contents_dir / "Resources"
+
+    if app_dir.exists():
+        shutil.rmtree(app_dir)
+
+    macos_dir.mkdir(parents=True, exist_ok=True)
+    resources_dir.mkdir(parents=True, exist_ok=True)
+
+    launcher_path = macos_dir / "MaaWuWaX"
+    launcher_path.write_text(
+        """#!/bin/sh
+set -eu
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+INSTALL_DIR="$(CDPATH= cd -- "${SCRIPT_DIR}/../../.." && pwd)"
+cd "${INSTALL_DIR}"
+exec "${INSTALL_DIR}/mxu" "$@"
+""",
+        encoding="utf-8",
+    )
+    launcher_path.chmod(0o755)
+
+    bundle_version = version or "0.0.0"
+    info_plist = contents_dir / "Info.plist"
+    info_plist.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>zh_CN</string>
+    <key>CFBundleDisplayName</key>
+    <string>MaaWuWaX</string>
+    <key>CFBundleExecutable</key>
+    <string>MaaWuWaX</string>
+    <key>CFBundleIconFile</key>
+    <string>MaaWuWaX.icns</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.maawuwax.mxu</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>MaaWuWaX</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>"""
+        + bundle_version
+        + """</string>
+    <key>CFBundleVersion</key>
+    <string>"""
+        + bundle_version
+        + """</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>12.0</string>
+</dict>
+</plist>
+""",
+        encoding="utf-8",
+    )
+
+    icon_source = root_dir / "assets" / "icon" / "MaaWuWaX.icns"
+    if icon_source.is_file():
+        shutil.copy2(icon_source, resources_dir / "MaaWuWaX.icns")
 
 
 def build_go_agent(
@@ -95,10 +233,14 @@ def build_go_agent(
     agent_dir = install_dir / "agent"
     agent_dir.mkdir(parents=True, exist_ok=True)
     output_path = agent_dir / f"go-service{ext}"
+    if output_path.is_dir():
+        shutil.rmtree(output_path)
+    elif output_path.exists():
+        output_path.unlink()
     print(f"  目标平台: {goos}/{goarch}")
     print(f"  输出路径: {output_path}")
 
-    env = {**os.environ, "GOOS": goos, "GOARCH": goarch, "CGO_ENABLED": "0"}
+    env = workspace_go_env(root_dir, {**os.environ, "GOOS": goos, "GOARCH": goarch, "CGO_ENABLED": "0"})
 
     ldflags = ""
     if version:
@@ -113,7 +255,7 @@ def build_go_agent(
     build_cmd.extend(["-o", str(output_path), "."])
 
     print(f"  构建命令: {' '.join(build_cmd)}")
-    result = subprocess.run(build_cmd, cwd=go_service_dir, capture_output=True, text=True)
+    result = subprocess.run(build_cmd, cwd=go_service_dir, capture_output=True, text=True, env=env)
     if result.stdout:
         print(result.stdout)
     if result.returncode != 0:
@@ -146,8 +288,8 @@ def build_cpp_algo(
 ) -> bool:
     """构建 C++ Algo Agent。
 
-    CI 模式下 DEPS_DIR 使用 root_dir/deps（CI workflow 下载 MaaFramework 到此），
-    开发模式使用 install_dir（开发者自行 build + install MaaFramework 到此）。
+    优先使用 root_dir/deps（仓库内标准 MaaDeps/MaaFramework 布局）；
+    若其不存在，再回退到 install_dir 兼容本地自备运行时的场景。
     """
     if not check_cmake_environment():
         return False
@@ -180,7 +322,9 @@ def build_cpp_algo(
     print(f"  MaaDeps triplet: {maadeps_triplet}")
 
     # CMake configure
-    deps_dir = root_dir / "deps" if ci_mode else install_dir
+    deps_dir = root_dir / "deps"
+    if not (deps_dir / "share" / "cmake" / "MaaFramework").exists():
+        deps_dir = install_dir
 
     configure_cmd = [
         "cmake", "-S", str(cpp_algo_dir), "-B", str(build_dir),
@@ -218,9 +362,14 @@ def build_cpp_algo(
     agent_dir.mkdir(parents=True, exist_ok=True)
     ext = ".exe" if resolved_os == "win" else ""
     src = build_dir / "bin" / f"cpp-algo{ext}"
+    dst = agent_dir / f"cpp-algo{ext}"
     if src.exists():
-        shutil.copy2(src, agent_dir / f"cpp-algo{ext}")
-        print(f"  {ok('->')} {agent_dir / f'cpp-algo{ext}'}")
+        if dst.is_dir():
+            shutil.rmtree(dst)
+        elif dst.exists():
+            dst.unlink()
+        shutil.copy2(src, dst)
+        print(f"  {ok('->')} {dst}")
     else:
         print(f"  {warn('警告')}: 二进制文件未找到: {src}")
         return False
@@ -295,6 +444,12 @@ def main():
     maafw_dir = install_dir / "maafw"
     maafw_dir.mkdir(parents=True, exist_ok=True)
     print(f"  {ok('->')} {maafw_dir} (空目录，运行时由 MaaFramework 填充)")
+
+    create_macos_app_bundle(root_dir, install_dir, args.version)
+    if platform.system().lower() == "darwin":
+        print(f"  {ok('->')} {install_dir / 'MaaWuWaX.app'}")
+
+    sync_interface_agents(install_dir)
 
     print(f"\n{ok('===== 构建完成 =====')}")
     if not use_copy:

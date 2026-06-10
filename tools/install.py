@@ -178,6 +178,77 @@ def install_chores():
         )
 
 
+def create_macos_app_bundle():
+    if os_name != "macos":
+        return
+
+    app_dir = install_path / "MaaWuWaX.app"
+    contents_dir = app_dir / "Contents"
+    macos_dir = contents_dir / "MacOS"
+    resources_dir = contents_dir / "Resources"
+
+    if app_dir.exists():
+        shutil.rmtree(app_dir)
+
+    macos_dir.mkdir(parents=True, exist_ok=True)
+    resources_dir.mkdir(parents=True, exist_ok=True)
+
+    launcher_path = macos_dir / "MaaWuWaX"
+    launcher_path.write_text(
+        """#!/bin/sh
+set -eu
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+INSTALL_DIR="$(CDPATH= cd -- "${SCRIPT_DIR}/../../.." && pwd)"
+cd "${INSTALL_DIR}"
+exec "${INSTALL_DIR}/mxu" "$@"
+""",
+        encoding="utf-8",
+    )
+    launcher_path.chmod(0o755)
+
+    info_plist = contents_dir / "Info.plist"
+    info_plist.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>zh_CN</string>
+    <key>CFBundleDisplayName</key>
+    <string>MaaWuWaX</string>
+    <key>CFBundleExecutable</key>
+    <string>MaaWuWaX</string>
+    <key>CFBundleIconFile</key>
+    <string>MaaWuWaX.icns</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.maawuwax.mxu</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>MaaWuWaX</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>"""
+        + version
+        + """</string>
+    <key>CFBundleVersion</key>
+    <string>"""
+        + version
+        + """</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>12.0</string>
+</dict>
+</plist>
+""",
+        encoding="utf-8",
+    )
+
+    icon_source = working_dir / "assets" / "icon" / "MaaWuWaX.icns"
+    if icon_source.is_file():
+        shutil.copy2(icon_source, resources_dir / "MaaWuWaX.icns")
+
+
 def install_agent():
     agent_dir = install_path / "agent"
     agent_dir.mkdir(parents=True, exist_ok=True)
@@ -214,6 +285,7 @@ if __name__ == "__main__":
     install_resource()
     install_chores()
     install_agent()
+    create_macos_app_bundle()
     sync_interface_agents()
 
     print(f"Install to {install_path} successfully.")
