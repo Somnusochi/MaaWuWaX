@@ -68,12 +68,12 @@ func performCarlottaInterlock(c combatActor) {
 			return
 		}
 	}
-	// KNOWN_DIFF: Python get_forte() returns 0-4 discrete FFT tiers; Go uses mouseForteFull()/currentForte() float percentage
-	if !c.mouseForteFull() && c.currentResonance() > 0.05 && !c.state.liberationReady {
+	if carlottaGetForte(c) < 4 && c.currentResonance() > 0.05 && !c.state.liberationReady {
 		if bullet == 0 {
 			c.heavy(600 * time.Millisecond)
 		}
 		if carlottaClickResonance(c) {
+			c.state.carlottaForte += 2
 			c.requestSwitch()
 			return
 		}
@@ -107,6 +107,7 @@ func performCarlottaInterlock(c combatActor) {
 // during zhezhi outro: build forte → heavy_click_forte → liberation+resonance loop → echo → set continue_liberation.
 func performCarlottaOutro(c combatActor) {
 	if !c.state.liberationReady {
+		carlottaGetForte(c)
 		for !c.mouseForteFull() && c.performElapsed() < 6*time.Second {
 			if c.currentResonance() > 0.05 {
 				carlottaClickResonance(c)
@@ -118,6 +119,7 @@ func performCarlottaOutro(c combatActor) {
 	}
 	if carlottaHeavyClickForte(c) {
 		c.state.liberationReady = true
+		c.state.carlottaForte = 0
 	}
 
 	clickedResonance := false
@@ -139,6 +141,7 @@ func performCarlottaOutro(c combatActor) {
 			if c.currentResonance() > 0.05 {
 				if carlottaClickResonance(c) {
 					c.attackFor(800 * time.Millisecond)
+					c.state.carlottaForte += 1
 					clickedResonance = true
 				}
 			}
@@ -155,18 +158,17 @@ func performCarlottaOutro(c combatActor) {
 	c.state.carlottaContinueLiberation = !castLiberation
 }
 
-// KNOWN_DIFF: Python get_forte() returns 0-4 discrete FFT tiers; Go uses currentForte() float percentage
 // carlottaReady mirrors ok-ww Carlotta.get_ready():
-// true when liberation_ready, mouse_forte_full, forte>0.5, or resonance+forte>0.02.
+// true when liberation_ready, mouse_forte_full, forte>2, or resonance+forte>0.
 func carlottaReady(c combatActor) bool {
-	if c.state.liberationReady || c.mouseForteFull() {
+	if c.state.liberationReady {
 		return true
 	}
-	forte := c.currentForte()
-	if forte > 0.5 {
+	forte := carlottaGetForte(c)
+	if forte > 2 {
 		return true
 	}
-	return c.currentResonance() > 0.05 && forte > 0.02
+	return c.currentResonance() > 0.05 && forte > 0
 }
 
 // carlottaHeavyClickForte mirrors ok-ww Carlotta.heavy_click_forte():
@@ -248,6 +250,7 @@ func carlottaCastLiberation(c combatActor, holdForward bool) bool {
 	}
 	c.addFreezeDuration(time.Since(freezeStart))
 	c.state.lastLiberation = time.Now()
+	c.state.carlottaForte = 0
 	return true
 }
 
@@ -295,3 +298,13 @@ func carlottaEchoWait(c combatActor, wait time.Duration) bool {
 	}
 	return carlottaEcho(c)
 }
+
+// carlottaGetForte returns the manual memory forte points tracker
+func carlottaGetForte(c combatActor) int {
+	if c.mouseForteFull() {
+		c.state.carlottaForte = 4
+		return 4
+	}
+	return c.state.carlottaForte
+}
+

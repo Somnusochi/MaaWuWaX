@@ -96,6 +96,7 @@ type combatCharState struct {
 	cantarellaHeavyFreeze      int64     // Cantarella heavy timestamp freeze snapshot
 	mornyeHeavyFreeze          int64     // Mornye heavy timestamp freeze snapshot
 	xiangliyaoLiberationFreeze int64     // Xiangliyao liberation timestamp freeze snapshot
+	carlottaForte              int       // Carlotta manual memory forte points tracker
 }
 
 type combatActor struct {

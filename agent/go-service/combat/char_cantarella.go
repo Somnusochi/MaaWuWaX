@@ -32,7 +32,6 @@ func performCantarella(c combatActor) {
 			c.requestSwitch()
 			return
 		} else {
-			c.attackFor(100 * time.Millisecond)
 			c.requestSwitch()
 			return
 		}
@@ -45,6 +44,8 @@ func performCantarella(c combatActor) {
 	}
 	if !c.echoWait(1 * time.Second) {
 		c.attackFor(100 * time.Millisecond)
+		c.requestSwitch()
+		return
 	}
 	c.requestSwitch()
 }

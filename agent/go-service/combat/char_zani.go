@@ -242,11 +242,11 @@ func zaniStandardDefenseProtocolCombo(c combatActor) zaniWaitState {
 	}
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
+	for c.currentResonance() > 0.05 && time.Since(start) < 200*time.Millisecond {
 		if c.forceSkill() {
 			clicked = true
 		}
-		c.sleep(100 * time.Millisecond)
+		c.sleep(50 * time.Millisecond)
 	}
 	if !clicked {
 		return zaniWaitFailed
@@ -392,7 +392,7 @@ func zaniCrisisResponseProtocolCombo(c combatActor) bool {
 		c.sleep(50 * time.Millisecond)
 	}
 	duration := time.Since(start)
-	if !clicked || duration < 350*time.Millisecond {
+	if !clicked || (c.forteFull() && duration < 350*time.Millisecond) {
 		return false
 	}
 	c.state.lastCrisis = time.Now()

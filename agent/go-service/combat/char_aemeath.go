@@ -10,14 +10,7 @@ func performAemeath(c combatActor) {
 	if c.recentlyIntroSwitchedIn(1700 * time.Millisecond) {
 		c.state.lastIntro = time.Now()
 		c.state.aemeathIntroFreeze = screenAnalyzer.FreezeDuration
-		// Per-character intro_time from Python: 14s for Linnai/Lupa, 10s for Changli, -1 disabled for others.
-		c.state.aemeathIntroTime = -1
-		if c.switchedFromAny(2*time.Second, "linnai", "linnai2") || c.switchedFromAny(2*time.Second, "lupa", "lupa2") {
-			c.state.aemeathIntroTime = 14
-		}
-		if c.switchedFromAny(2*time.Second, "changli", "changli2") {
-			c.state.aemeathIntroTime = 10
-		}
+		c.state.aemeathIntroTime = 14
 
 		c.attackFor(1200 * time.Millisecond)
 	}
@@ -54,7 +47,7 @@ func performAemeath(c combatActor) {
 				c.echo()
 				c.fBreak()
 			}
-			if (aemeathIntroLibReady(c) && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05)) || c.hasLongAction() {
+			if (aemeathIntroLibReady(c) && aemeathCanCastLib1(c) && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05)) || c.hasLongAction() {
 				start = time.Now()
 				startFreeze = screenAnalyzer.FreezeDuration
 			} else {
@@ -96,11 +89,7 @@ func aemeathIntroLibReady(c combatActor) bool {
 	if c.state.lastIntro.IsZero() {
 		return false
 	}
-	// intro_time of -1 means disabled (no outro from Linnai/Lupa/Changli).
-	if c.state.aemeathIntroTime <= 0 {
-		return false
-	}
-	return c.freezeElapsed(c.state.lastIntro, c.state.aemeathIntroFreeze) <= time.Duration(c.state.aemeathIntroTime)*time.Second
+	return c.freezeElapsed(c.state.lastIntro, c.state.aemeathIntroFreeze) <= 14*time.Second
 }
 
 // aemeathShouldWaitLib2 mirrors ok-ww Aemeath.should_wait_for_lib2():
@@ -132,7 +121,7 @@ func aemeathHandleHeavy(c combatActor) bool {
 	if !c.hasLongAction() {
 		return false
 	}
-	preparesLib2 := aemeathShouldWaitLib2(c)
+	preparesLib2 := aemeathPreparingLib2(c)
 	c.holdHeavyUntil(1200*time.Millisecond, 100*time.Millisecond, func() bool {
 		return !c.hasLongAction()
 	})
@@ -176,6 +165,14 @@ func aemeathLib2Anchor(c combatActor) (time.Time, int64, bool) {
 		return time.Time{}, 0, false
 	}
 	return c.action.combatStart, 0, true
+}
+
+func aemeathPreparingLib2(c combatActor) bool {
+	anchor, freezeAt, ok := aemeathLib2Anchor(c)
+	if !ok {
+		return false
+	}
+	return c.freezeElapsed(anchor, freezeAt) > 17*time.Second
 }
 
 // aemeathLiberationCooldownLeft mirrors ok-ww Aemeath.liberation_cooldown_left():
