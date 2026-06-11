@@ -176,23 +176,7 @@ jobs:
             if [ -d "MFA" ]; then
               echo "Copying MFA files to install directory..."
               mkdir -p install
-              python - <<'PY'
-import os
-import shutil
-
-src_root = "MFA"
-dst_root = "install"
-
-for root, dirs, files in os.walk(src_root):
-    rel = os.path.relpath(root, src_root)
-    dst_dir = dst_root if rel == "." else os.path.join(dst_root, rel)
-    os.makedirs(dst_dir, exist_ok=True)
-    for name in files:
-        src_file = os.path.join(root, name)
-        dst_file = os.path.join(dst_dir, name)
-        if not os.path.exists(dst_file):
-            shutil.copy2(src_file, dst_file)
-PY
+              python -c "import shutil; from pathlib import Path; src=Path('MFA'); dst=Path('install'); [((dst / f.relative_to(src)).parent.mkdir(parents=True, exist_ok=True), shutil.copy2(f, dst / f.relative_to(src))) for f in src.rglob('*') if f.is_file() and not (dst / f.relative_to(src)).exists()]"
               echo "MFA files copied successfully."
             else
               echo "MFA directory not found, skipping copy."
