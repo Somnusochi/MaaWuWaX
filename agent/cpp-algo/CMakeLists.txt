@@ -15,11 +15,11 @@ if(NOT EXISTS ${DEPS_DIR})
         "Build MaaFramework first or set -DDEPS_DIR=/path/to/MaaFramework/install")
 endif()
 
-# Map all build configs to Release (matching MaaFramework's installed config)
-set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release)
-set(CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL Release)
-set(CMAKE_MAP_IMPORTED_CONFIG_RELEASE Release)
-set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG Release)
+# MaaFramework deps ship RelWithDebInfo exports on macOS, so map all configs there.
+set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo)
+set(CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL RelWithDebInfo)
+set(CMAKE_MAP_IMPORTED_CONFIG_RELEASE RelWithDebInfo)
+set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG RelWithDebInfo)
 
 set(MaaFramework_DIR ${DEPS_DIR}/share/cmake/MaaFramework)
 find_package(MaaFramework REQUIRED)
