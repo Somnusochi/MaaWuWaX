@@ -5,6 +5,7 @@
 
 #include "Common/ParentProcessWatcher.h"
 #include "EchoDetect/echo_detect.h"
+#include "FarmMap/FarmMapWalkStep.h"
 #include "MapLocator/MapLocateAction.h"
 #include "MapNavigator/MapNavigator.h"
 #include "MapNavigator/MapNavigatorCompatible.h"
@@ -53,6 +54,7 @@ int main(int argc, char** argv)
         nullptr);
     MaaAgentServerRegisterCustomAction("MapNavigateAction", mapnavigator::MapNavigateActionRun, nullptr);
     MaaAgentServerRegisterCustomAction("MapNavigatorCompatible", mapnavigator::MapNavigatorCompatibleRun, nullptr);
+    MaaAgentServerRegisterCustomAction("FarmMapWalkStepCpp", farmmap::FarmMapWalkStepCppRun, nullptr);
     MaaAgentServerRegisterCustomAction("RealTimeTaskAction", realtimetask::RealTimeTaskActionRun, nullptr);
 
     const char* identifier = argv[argc - 1];
