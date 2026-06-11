@@ -18,10 +18,6 @@ on:
       - "assets/**"
       - "agent/**"
       - "tools/**"
-      - "**.py"
-      - "**.go"
-      - "**/CMakeLists.txt"
-      - "**.cmake"
   pull_request:
     branches:
       - "**"
@@ -30,10 +26,6 @@ on:
       - "assets/**"
       - "agent/**"
       - "tools/**"
-      - "**.py"
-      - "**.go"
-      - "**/CMakeLists.txt"
-      - "**.cmake"
   workflow_dispatch:
 
 jobs:
