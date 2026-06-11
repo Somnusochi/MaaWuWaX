@@ -117,6 +117,11 @@ jobs:
         run: |
           rm -rf MFA/runtimes
 
+      - name: Install Python requirements
+        shell: bash
+        run: |
+          python3 -m pip install -r tools/requirements.txt
+
       - name: Build cpp-algo
         if: matrix.os == 'macos'
         shell: bash
@@ -126,6 +131,13 @@ jobs:
 
           echo "Building cpp-algo..."
           python3 tools/build_and_install.py --cpp-algo --ci --os ${{ matrix.os }} --arch ${{ matrix.arch }}
+
+      - name: Build go-service
+        if: matrix.os != 'macos' && matrix.os != 'android'
+        shell: bash
+        run: |
+          echo "Building go-service..."
+          python3 tools/build_and_install.py --ci --os ${{ matrix.os }} --arch ${{ matrix.arch }}
 
       - name: Install
         shell: bash
@@ -143,10 +155,7 @@ jobs:
             echo "Skipping copy MFA for Android."
           fi
 
-          cd tools/
-          python -m pip install -r ./requirements.txt
-          python ./install.py ${{ needs.meta.outputs.tag }} ${{ matrix.os }} ${{ matrix.arch }}
-          cd ..
+          python3 tools/install.py ${{ needs.meta.outputs.tag }} ${{ matrix.os }} ${{ matrix.arch }}
 
       - uses: actions/upload-artifact@v4
         with:
