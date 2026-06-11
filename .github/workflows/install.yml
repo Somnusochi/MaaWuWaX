@@ -153,14 +153,12 @@ jobs:
       - name: Build cpp-algo
         if: matrix.os == 'macos'
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Downloading MaaDeps..."
-          if [[ "${{ matrix.arch }}" == "x86_64" ]]; then
-            MAADEPS_TRIPLET="maa-x64-osx"
-          else
-            MAADEPS_TRIPLET="maa-arm64-osx"
-          fi
-          python tools/maadeps-download.py "${MAADEPS_TRIPLET}"
+          MAADEPS_TARGET="${{ matrix.arch == 'x86_64' && 'x64-osx' || 'arm64-osx' }}"
+          python tools/maadeps-download.py "${MAADEPS_TARGET}"
 
           echo "Building cpp-algo..."
           python tools/build_and_install.py --cpp-algo --ci --os ${{ matrix.os }} --arch ${{ matrix.arch }}
