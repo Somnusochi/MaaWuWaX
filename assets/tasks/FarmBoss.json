@@ -32,10 +32,10 @@
                     "pipeline_override": {
                         "EchoFarm_Main": {
                             "next": [
-                                "EchoFarm_TeleportNext"
+                                "EchoFarm_TeleportBoss"
                             ]
                         },
-                        "EchoFarm_TeleportNext": {
+                        "EchoFarm_TeleportBoss": {
                             "custom_action_param": {
                                 "boss_type": "boss",
                                 "total_number": 20
@@ -49,10 +49,10 @@
                     "pipeline_override": {
                         "EchoFarm_Main": {
                             "next": [
-                                "EchoFarm_TeleportNext"
+                                "EchoFarm_TeleportBoss"
                             ]
                         },
-                        "EchoFarm_TeleportNext": {
+                        "EchoFarm_TeleportBoss": {
                             "custom_action_param": {
                                 "boss_type": "weekly",
                                 "total_number": 9
@@ -74,7 +74,7 @@
                 }
             ],
             "pipeline_override": {
-                "EchoFarm_TeleportNext": {
+                "EchoFarm_TeleportBoss": {
                     "custom_action_param": {
                         "boss_name": "{BossName}"
                     }
@@ -94,7 +94,7 @@
                     "name": "Fallacy",
                     "label": "$option.BossProfile.cases.Fallacy.label",
                     "pipeline_override": {
-                        "EchoFarm_TeleportNext": {
+                        "EchoFarm_TeleportBoss": {
                             "custom_action_param": {
                                 "boss_profile": "fallacy"
                             }
@@ -105,9 +105,31 @@
                     "name": "Fenrico",
                     "label": "$option.BossProfile.cases.Fenrico.label",
                     "pipeline_override": {
-                        "EchoFarm_TeleportNext": {
+                        "EchoFarm_TeleportBoss": {
                             "custom_action_param": {
                                 "boss_profile": "fenrico"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Lorelei",
+                    "label": "$option.BossProfile.cases.lorelei.label",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "lorelei"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "LionessOfGlory",
+                    "label": "$option.BossProfile.cases.lionessofglory.label",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "lioness_of_glory"
                             }
                         }
                     }
@@ -116,9 +138,20 @@
                     "name": "NamelessExplorer",
                     "label": "$option.BossProfile.cases.NamelessExplorer.label",
                     "pipeline_override": {
-                        "EchoFarm_TeleportNext": {
+                        "EchoFarm_TeleportBoss": {
                             "custom_action_param": {
                                 "boss_profile": "nameless_explorer"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "NightmareHecate",
+                    "label": "$option.BossProfile.cases.nightmarehecate.label",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "nightmare_hecate"
                             }
                         }
                     }
@@ -127,7 +160,7 @@
                     "name": "SentryConstruct",
                     "label": "$option.BossProfile.cases.SentryConstruct.label",
                     "pipeline_override": {
-                        "EchoFarm_TeleportNext": {
+                        "EchoFarm_TeleportBoss": {
                             "custom_action_param": {
                                 "boss_profile": "sentry_construct"
                             }
@@ -138,7 +171,7 @@
                     "name": "Hyvatia",
                     "label": "$option.BossProfile.cases.Hyvatia.label",
                     "pipeline_override": {
-                        "EchoFarm_TeleportNext": {
+                        "EchoFarm_TeleportBoss": {
                             "custom_action_param": {
                                 "boss_profile": "hyvatia"
                             }
@@ -161,7 +194,7 @@
                 }
             ],
             "pipeline_override": {
-                "EchoFarm_TeleportNext": {
+                "EchoFarm_TeleportBoss": {
                     "custom_action_param": {
                         "serial_number": "{BossIndex}"
                     }
@@ -177,7 +210,7 @@
                     "name": "50",
                     "label": "50 级",
                     "pipeline_override": {
-                        "EchoFarm_TeleportNext": {
+                        "EchoFarm_TeleportBoss": {
                             "custom_action_param": {
                                 "boss_level": "50"
                             }
@@ -188,7 +221,7 @@
                     "name": "60",
                     "label": "60 级",
                     "pipeline_override": {
-                        "EchoFarm_TeleportNext": {
+                        "EchoFarm_TeleportBoss": {
                             "custom_action_param": {
                                 "boss_level": "60"
                             }
@@ -199,7 +232,7 @@
                     "name": "70",
                     "label": "70 级",
                     "pipeline_override": {
-                        "EchoFarm_TeleportNext": {
+                        "EchoFarm_TeleportBoss": {
                             "custom_action_param": {
                                 "boss_level": "70"
                             }
@@ -210,9 +243,20 @@
                     "name": "80",
                     "label": "80 级",
                     "pipeline_override": {
-                        "EchoFarm_TeleportNext": {
+                        "EchoFarm_TeleportBoss": {
                             "custom_action_param": {
                                 "boss_level": "80"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "90",
+                    "label": "90 级",
+                    "pipeline_override": {
+                        "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_level": "90"
                             }
                         }
                     }

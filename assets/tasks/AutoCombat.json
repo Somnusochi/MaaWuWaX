@@ -14,7 +14,9 @@
             "option": [
                 "CombatAutoTarget",
                 "CombatUseLiberation",
-                "CombatSwitchHealer"
+                "CombatSwitchHealer",
+                "CombatChisaDPS",
+                "CombatIunoC6"
             ]
         }
     ],
@@ -94,6 +96,60 @@
                         "Combat_Engage": {
                             "custom_action_param": {
                                 "switch_healer": false
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "CombatChisaDPS": {
+            "type": "switch",
+            "label": "Chisa 按主C站场",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "Combat_Engage": {
+                            "custom_action_param": {
+                                "chisa_dps": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "Combat_Engage": {
+                            "custom_action_param": {
+                                "chisa_dps": false
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "CombatIunoC6": {
+            "type": "switch",
+            "label": "Iuno C6 按主C站场",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "Combat_Engage": {
+                            "custom_action_param": {
+                                "iuno_c6": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "Combat_Engage": {
+                            "custom_action_param": {
+                                "iuno_c6": false
                             }
                         }
                     }

@@ -27,7 +27,7 @@
             160
         ],
         "next": [
-            "FarmMap_Loop"
+            "FarmMap_Locate"
         ],
         "timeout": 30000
     },
@@ -145,7 +145,7 @@
     },
     "FarmMap_Walk": {
         "action": "Custom",
-        "custom_action": "FarmMapWalkStep",
+        "custom_action": "FarmMapWalkStepCpp",
         "custom_action_param": {
             "reach_distance": 24,
             "search_radius": 280,
@@ -176,7 +176,7 @@
         "recognition": "Custom",
         "custom_recognition": "MapLocateRecognition",
         "custom_recognition_param": {
-            "search_radius": 420
+            "force_global_search": true
         },
         "next": [
             "FarmMap_Loop"

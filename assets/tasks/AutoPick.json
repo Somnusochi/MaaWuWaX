@@ -37,6 +37,7 @@
             "pipeline_override": {
                 "AutoPick_Filter": {
                     "custom_recognition_param": {
+                        "whitelist": "{Whitelist}",
                         "blacklist": "{Blacklist}"
                     }
                 }

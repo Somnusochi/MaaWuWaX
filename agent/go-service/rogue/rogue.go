@@ -214,7 +214,7 @@ type rogueBuffOCRPiece struct {
 func defaultRogueBuffParam() rogueBuffParam {
 	return rogueBuffParam{
 		Blacklist: []string{"雷暴", "旋风", "矛盾晶体"},
-		Whitelist: []string{"心流", "悲鸣纪", "余音贝", "齿轮之心", "全知之眼", "指南针", "医疗箱"},
+		Whitelist: []string{"心流", "悲鸣纪", "余音贝", "齿轮之心", "全知之眼", "指南针", "医疗箱", "妄语的残谱", "激越的残谱"},
 	}
 }
 
@@ -681,7 +681,8 @@ func findRogueGate(ctx *maa.Context) (maa.Rect, bool) {
 		if strings.Contains(text, "的记忆") ||
 			strings.Contains(text, "梦乡的") ||
 			strings.Contains(text, "记忆区") ||
-			strings.Contains(text, "前往下一") {
+			strings.Contains(text, "前往下一") ||
+			strings.Contains(text, "奇异的白猫") {
 			return ocr.Box, true
 		}
 	}

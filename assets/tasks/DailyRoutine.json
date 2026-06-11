@@ -85,7 +85,8 @@
                     "pipeline_override": {
                         "Daily_CheckNightmare": {
                             "custom_recognition_param": {
-                                "nightmare_mode": "capture"
+                                "nightmare_mode": "capture",
+                                "stamina_type": "tacet"
                             }
                         },
                         "Daily_RunNightmare": {
@@ -96,12 +97,47 @@
                     }
                 },
                 {
+                    "name": "nightmare",
+                    "label": "仅刷梦魇拔除",
+                    "pipeline_override": {
+                        "Daily_CheckNightmare": {
+                            "custom_recognition_param": {
+                                "nightmare_mode": "nightmare",
+                                "stamina_type": "tacet"
+                            }
+                        },
+                        "Daily_RunNightmare": {
+                            "custom_action_param": {
+                                "nightmare_mode": "nightmare"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "canxiang",
+                    "label": "仅刷残像聚落",
+                    "pipeline_override": {
+                        "Daily_CheckNightmare": {
+                            "custom_recognition_param": {
+                                "nightmare_mode": "canxiang",
+                                "stamina_type": "tacet"
+                            }
+                        },
+                        "Daily_RunNightmare": {
+                            "custom_action_param": {
+                                "nightmare_mode": "canxiang"
+                            }
+                        }
+                    }
+                },
+                {
                     "name": "all",
                     "label": "全部梦魇巢穴",
                     "pipeline_override": {
                         "Daily_CheckNightmare": {
                             "custom_recognition_param": {
-                                "nightmare_mode": "all"
+                                "nightmare_mode": "all",
+                                "stamina_type": "tacet"
                             }
                         },
                         "Daily_RunNightmare": {
@@ -129,6 +165,11 @@
                                 "stamina_type": "tacet"
                             }
                         },
+                        "Daily_CheckNightmare": {
+                            "custom_recognition_param": {
+                                "stamina_type": "tacet"
+                            }
+                        },
                         "Daily_Stamina_Has": {
                             "custom_action_param": {
                                 "stamina_type": "tacet"
@@ -148,6 +189,11 @@
                                 "stamina_type": "forgery"
                             }
                         },
+                        "Daily_CheckNightmare": {
+                            "custom_recognition_param": {
+                                "stamina_type": "forgery"
+                            }
+                        },
                         "Daily_Stamina_Has": {
                             "custom_action_param": {
                                 "stamina_type": "forgery"
@@ -163,6 +209,11 @@
                     ],
                     "pipeline_override": {
                         "Daily_SpendStamina": {
+                            "custom_recognition_param": {
+                                "stamina_type": "simulation"
+                            }
+                        },
+                        "Daily_CheckNightmare": {
                             "custom_recognition_param": {
                                 "stamina_type": "simulation"
                             }

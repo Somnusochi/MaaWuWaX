@@ -11,8 +11,6 @@ func Register() {
 	maa.AgentServerRegisterCustomAction("ClaimMail", &ClaimMailAction{})
 	maa.AgentServerRegisterCustomAction("ClaimBattlePass", &ClaimBattlePassAction{})
 	maa.AgentServerRegisterCustomAction("RunNightmareNest", &RunNightmareNestAction{})
-	maa.AgentServerRegisterCustomAction("MultiAccountSwitch", &MultiAccountSwitchAction{})
-	maa.AgentServerRegisterCustomAction("MultiAccountMarkFailed", &MultiAccountMarkFailedAction{})
 	maa.AgentServerRegisterCustomRecognition("DailyProgress", &DailyProgressReader{})
 	maa.AgentServerRegisterCustomRecognition("DailyNeedsStamina", &DailyNeedsStaminaRecognition{})
 	maa.AgentServerRegisterCustomRecognition("DailyNeedsNightmare", &DailyNeedsNightmareRecognition{})

@@ -2,6 +2,7 @@
 package farmmap
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"image/png"
@@ -62,10 +63,97 @@ type stateData struct {
 	tracker      *MotionTracker
 }
 
+type persistedPointBox struct {
+	X int `json:"x"`
+	Y int `json:"y"`
+	W int `json:"w"`
+	H int `json:"h"`
+}
+
+type persistedStateData struct {
+	BigMapPath   string              `json:"big_map_path"`
+	Stars        []persistedPointBox `json:"stars"`
+	MyBox        persistedPointBox   `json:"my_box"`
+	MiniMapBox   persistedPointBox   `json:"mini_map_box"`
+	LastDistance float64             `json:"last_distance"`
+	StuckIndex   int                 `json:"stuck_index"`
+	Done         bool                `json:"done"`
+}
+
 var farmState = struct {
 	sync.Mutex
 	state stateData
 }{}
+
+func persistedFarmMapDir() string {
+	return filepath.Join("debug", "farmmap")
+}
+
+func persistedFarmMapStatePath() string {
+	return filepath.Join(persistedFarmMapDir(), "state.json")
+}
+
+func persistedFarmMapImagePath() string {
+	return filepath.Join(persistedFarmMapDir(), "bigmap.png")
+}
+
+func toPersistedBox(b pointBox) persistedPointBox {
+	return persistedPointBox{X: b.X, Y: b.Y, W: b.W, H: b.H}
+}
+
+func toPersistedState(state stateData) persistedStateData {
+	stars := make([]persistedPointBox, 0, len(state.stars))
+	for _, star := range state.stars {
+		stars = append(stars, toPersistedBox(star))
+	}
+	return persistedStateData{
+		BigMapPath:   persistedFarmMapImagePath(),
+		Stars:        stars,
+		MyBox:        toPersistedBox(state.myBox),
+		MiniMapBox:   toPersistedBox(state.miniMapBox),
+		LastDistance: state.lastDistance,
+		StuckIndex:   state.stuckIndex,
+		Done:         state.done,
+	}
+}
+
+func writePersistedFarmMapState(state stateData) {
+	if err := os.MkdirAll(persistedFarmMapDir(), 0o755); err != nil {
+		log.Warn().Err(err).Str("component", "FarmMapPersist").Msg("failed to create state directory")
+		return
+	}
+
+	if state.bigMap != nil {
+		buf := bytes.NewBuffer(nil)
+		if err := png.Encode(buf, state.bigMap); err != nil {
+			log.Warn().Err(err).Str("component", "FarmMapPersist").Msg("failed to encode big map")
+		} else if err := os.WriteFile(persistedFarmMapImagePath(), buf.Bytes(), 0o644); err != nil {
+			log.Warn().Err(err).Str("component", "FarmMapPersist").Msg("failed to write big map")
+		}
+	}
+
+	payload, err := sonic.MarshalIndent(toPersistedState(state), "", "  ")
+	if err != nil {
+		log.Warn().Err(err).Str("component", "FarmMapPersist").Msg("failed to marshal state")
+		return
+	}
+	if err := os.WriteFile(persistedFarmMapStatePath(), payload, 0o644); err != nil {
+		log.Warn().Err(err).Str("component", "FarmMapPersist").Msg("failed to write state")
+	}
+}
+
+func readPersistedFarmMapState() (persistedStateData, bool) {
+	data, err := os.ReadFile(persistedFarmMapStatePath())
+	if err != nil {
+		return persistedStateData{}, false
+	}
+	var state persistedStateData
+	if err := sonic.Unmarshal(data, &state); err != nil {
+		log.Warn().Err(err).Str("component", "FarmMapPersist").Msg("failed to parse state")
+		return persistedStateData{}, false
+	}
+	return state, true
+}
 
 type loadPathParam struct {
 	MaxStepDistance int `json:"max_step_distance"`
@@ -95,6 +183,7 @@ func (a *ResetTrackerAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) boo
 	}
 	farmState.state.stuckIndex = 0
 	farmState.state.lastDistance = 0
+	writePersistedFarmMapState(farmState.state)
 	farmState.Unlock()
 	log.Info().Str("component", "FarmMapResetTracker").Msg("tracker and movement state reset")
 	return true
@@ -144,6 +233,7 @@ func (a *LoadPathAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
 		done:       false,
 		tracker:    NewMotionTracker(),
 	}
+	writePersistedFarmMapState(farmState.state)
 	farmState.Unlock()
 
 	ctx.GetTasker().GetController().PostClickKey(keycode.MustCode("ESC")).Wait()
@@ -165,6 +255,10 @@ func (r *PathDoneRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionAr
 	done := farmState.state.done || len(farmState.state.stars) == 0
 	left := len(farmState.state.stars)
 	farmState.Unlock()
+	if persisted, ok := readPersistedFarmMapState(); ok {
+		done = persisted.Done || len(persisted.Stars) == 0
+		left = len(persisted.Stars)
+	}
 	if !done {
 		return nil, false
 	}
@@ -183,7 +277,7 @@ func (r *LocateRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg)
 	state := farmState.state
 	farmState.Unlock()
 	if state.bigMap == nil || state.miniMapBox.W <= 0 || state.miniMapBox.H <= 0 {
-		log.Warn().Str("component", "MapLocateRecognition").Msg("farm-map state is not initialized")
+		log.Warn().Str("component", "FarmMapLocateRecognition").Msg("farm-map state is not initialized")
 		return nil, false
 	}
 
@@ -198,7 +292,7 @@ func (r *LocateRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg)
 			SearchRadius int `json:"search_radius"`
 		}
 		if err := sonic.Unmarshal([]byte(arg.CustomRecognitionParam), &param); err != nil {
-			log.Warn().Err(err).Str("component", "MapLocateRecognition").Msg("failed to parse param")
+			log.Warn().Err(err).Str("component", "FarmMapLocateRecognition").Msg("failed to parse param")
 		} else if param.SearchRadius > 0 {
 			radius = param.SearchRadius
 		}
@@ -206,7 +300,7 @@ func (r *LocateRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg)
 
 	loc, ok := findLocationInBigMap(state, img, radius)
 	if !ok {
-		log.Warn().Str("component", "MapLocateRecognition").Int("search_radius", radius).Msg("failed to locate minimap position")
+		log.Warn().Str("component", "FarmMapLocateRecognition").Int("search_radius", radius).Msg("failed to locate minimap position")
 		return nil, false
 	}
 
@@ -341,12 +435,14 @@ func walkTowardTarget(ctx *maa.Context, state stateData, loc pointBox, param wal
 func saveState(state stateData) {
 	farmState.Lock()
 	farmState.state = state
+	writePersistedFarmMapState(state)
 	farmState.Unlock()
 }
 
 func markDone() {
 	farmState.Lock()
 	farmState.state.done = true
+	writePersistedFarmMapState(farmState.state)
 	farmState.Unlock()
 }
 

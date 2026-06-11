@@ -2,7 +2,12 @@
 package echonhance
 
 import (
+	"encoding/json"
 	"fmt"
+	"image"
+	"image/png"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -185,7 +190,8 @@ func (a *EchoEnhanceAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool
 	param := defaultEchoEnhanceParam()
 	if arg.CustomActionParam != "" {
 		if err := sonic.Unmarshal([]byte(arg.CustomActionParam), &param); err != nil {
-			log.Warn().Err(err).Str("component", "EchoEnhance").Msg("failed to parse param")
+			log.Warn().Err(err).Str("component", "EchoEnhance").Msg("failed to parse param with direct unmarshal, trying tolerant parse")
+			parseEchoEnhanceParamCompat(arg.CustomActionParam, &param)
 		}
 	}
 
@@ -205,22 +211,25 @@ func (a *EchoEnhanceAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool
 	if err != nil || detail == nil || !detail.Hit {
 		a.failedCount++
 		log.Warn().Str("component", "EchoEnhance").Msg("failed to read echo stats, discarding")
+		a.captureEchoSnapshot(ctx, filepath.Join("failed", fmt.Sprintf("%03d_stats_read_failed.png", a.failedCount)))
 		// Press Z (discard) directly — pipeline WaitDropped node handles the rest.
 		ctrl.PostClickKey(keycode.MustCode("Z")).Wait()
 		return true
 	}
 
 	stats := parseEchoStats(detail.DetailJson)
-	keep := evaluateEcho(stats, param)
+	keep, reason := evaluateEcho(stats, param)
 
 	if keep {
 		a.successCount++
+		a.captureEchoSnapshot(ctx, filepath.Join("success", fmt.Sprintf("%03d.png", a.successCount)))
 		log.Info().
 			Str("component", "EchoEnhance").
 			Int("stats", len(stats)).
 			Int("success_count", a.successCount).
 			Int("failed_count", a.failedCount).
 			Bool("pause_on_success", param.PauseOnSuccess).
+			Str("result", "keep").
 			Msg("echo KEEP — locking (C key)")
 		// Press C (lock) — pipeline Esc node handles return.
 		ctrl.PostClickKey(keycode.MustCode("C")).Wait()
@@ -230,11 +239,13 @@ func (a *EchoEnhanceAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool
 		}
 	} else {
 		a.failedCount++
+		a.captureEchoSnapshot(ctx, filepath.Join("failed", fmt.Sprintf("%03d_%s.png", a.failedCount, sanitizeEchoFilename(reason))))
 		log.Info().
 			Str("component", "EchoEnhance").
 			Int("stats", len(stats)).
 			Int("success_count", a.successCount).
 			Int("failed_count", a.failedCount).
+			Str("reason", reason).
 			Msg("echo DISCARD (Z key)")
 		// Press Z (discard) — pipeline WaitDropped node handles confirmation.
 		ctrl.PostClickKey(keycode.MustCode("Z")).Wait()
@@ -243,9 +254,59 @@ func (a *EchoEnhanceAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool
 	return true
 }
 
-func evaluateEcho(stats []EchoStat, param echoEnhanceParam) bool {
+func parseEchoEnhanceParamCompat(raw string, param *echoEnhanceParam) {
+	var m map[string]any
+	if err := json.Unmarshal([]byte(raw), &m); err != nil {
+		return
+	}
+	if v, ok := readCompatFloat(m, "double_crit_min"); ok {
+		param.DoubleCritMin = v
+	}
+	if v, ok := readCompatFloat(m, "first_crit_min"); ok {
+		param.FirstCritMin = v
+	}
+	if v, ok := readCompatInt(m, "valid_stats_min"); ok {
+		param.ValidStatsMin = v
+	}
+}
+
+func readCompatFloat(m map[string]any, key string) (float64, bool) {
+	raw, ok := m[key]
+	if !ok || raw == nil {
+		return 0, false
+	}
+	switch v := raw.(type) {
+	case float64:
+		return v, true
+	case string:
+		f, err := strconv.ParseFloat(strings.TrimSpace(v), 64)
+		if err == nil {
+			return f, true
+		}
+	}
+	return 0, false
+}
+
+func readCompatInt(m map[string]any, key string) (int, bool) {
+	raw, ok := m[key]
+	if !ok || raw == nil {
+		return 0, false
+	}
+	switch v := raw.(type) {
+	case float64:
+		return int(v), true
+	case string:
+		i, err := strconv.Atoi(strings.TrimSpace(v))
+		if err == nil {
+			return i, true
+		}
+	}
+	return 0, false
+}
+
+func evaluateEcho(stats []EchoStat, param echoEnhanceParam) (bool, string) {
 	if len(stats) == 0 {
-		return false
+		return false, "empty_stats"
 	}
 
 	totalCount := len(stats)
@@ -273,7 +334,7 @@ func evaluateEcho(stats []EchoStat, param echoEnhanceParam) bool {
 			!hasEncounteredCrit {
 			if !isCritStat && !validSet[name] {
 				log.Debug().Str("stat", name).Msg("invalid stat before crit, discard")
-				return false
+				return false, "invalid_before_crit_" + sanitizeEchoFilename(name)
 			}
 			if isCritStat {
 				hasEncounteredCrit = true
@@ -292,7 +353,7 @@ func evaluateEcho(stats []EchoStat, param echoEnhanceParam) bool {
 				checkedFirstCrit = true
 				if val < param.FirstCritMin {
 					log.Debug().Float64("val", val).Msg("first crit rate too low")
-					return false
+					return false, "first_crit_rate_low"
 				}
 			}
 		} else if name == "暴击伤害" {
@@ -302,7 +363,7 @@ func evaluateEcho(stats []EchoStat, param echoEnhanceParam) bool {
 				checkedFirstCrit = true
 				if val/2 < param.FirstCritMin {
 					log.Debug().Float64("val", val).Msg("first crit dmg too low")
-					return false
+					return false, "first_crit_dmg_low"
 				}
 			}
 		}
@@ -320,7 +381,7 @@ func evaluateEcho(stats []EchoStat, param echoEnhanceParam) bool {
 		remaining := 5 - totalCount
 		if remaining < missing {
 			log.Debug().Int("missing", missing).Int("remaining", remaining).Msg("cannot get double crit")
-			return false
+			return false, "cannot_complete_double_crit"
 		}
 	}
 
@@ -329,14 +390,14 @@ func evaluateEcho(stats []EchoStat, param echoEnhanceParam) bool {
 		total := critRateVal + critDmgVal/2
 		if total < param.DoubleCritMin {
 			log.Debug().Float64("total", total).Msg("double crit total too low")
-			return false
+			return false, "double_crit_total_low"
 		}
 	}
 
 	// First must be valid check.
 	if totalCount == 1 && param.FirstMustBeValid && invalidCount == 1 {
 		log.Debug().Msg("first stat is invalid")
-		return false
+		return false, "first_stat_invalid"
 	}
 
 	// Valid stats count check.
@@ -344,10 +405,99 @@ func evaluateEcho(stats []EchoStat, param echoEnhanceParam) bool {
 	remainingSlots := 5 - totalCount
 	if (validCount + remainingSlots) < param.ValidStatsMin {
 		log.Debug().Int("max_possible", validCount+remainingSlots).Msg("insufficient valid stats")
-		return false
+		return false, "insufficient_valid_stats"
 	}
 
-	return true
+	return true, "keep"
+}
+
+func (a *EchoEnhanceAction) captureEchoSnapshot(ctx *maa.Context, relativeName string) {
+	ctrl := ctx.GetTasker().GetController()
+	ctrl.PostScreencap().Wait()
+	img, err := ctrl.CacheImage()
+	if err != nil || img == nil {
+		log.Warn().Err(err).Str("component", "EchoEnhance").Msg("failed to capture echo snapshot")
+		return
+	}
+
+	cropped := cropEchoPanel(img)
+	if cropped == nil {
+		log.Warn().Str("component", "EchoEnhance").Msg("failed to crop echo snapshot")
+		return
+	}
+
+	fullPath := filepath.Join("debug", "echo_enhance", relativeName)
+	if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
+		log.Warn().Err(err).Str("component", "EchoEnhance").Str("path", fullPath).Msg("failed to create snapshot directory")
+		return
+	}
+
+	file, err := os.Create(fullPath)
+	if err != nil {
+		log.Warn().Err(err).Str("component", "EchoEnhance").Str("path", fullPath).Msg("failed to create snapshot file")
+		return
+	}
+	defer file.Close()
+
+	if err := png.Encode(file, cropped); err != nil {
+		log.Warn().Err(err).Str("component", "EchoEnhance").Str("path", fullPath).Msg("failed to encode snapshot")
+		return
+	}
+
+	log.Info().Str("component", "EchoEnhance").Str("path", fullPath).Msg("saved echo snapshot")
+}
+
+func cropEchoPanel(img image.Image) image.Image {
+	b := img.Bounds()
+	if b.Empty() {
+		return nil
+	}
+	w := b.Dx()
+	h := b.Dy()
+	x0 := b.Min.X + int(float64(w)*0.09)
+	y0 := b.Min.Y + int(float64(h)*0.09)
+	x1 := b.Min.X + int(float64(w)*0.37)
+	y1 := b.Min.Y + int(float64(h)*0.55)
+	if x1 <= x0 || y1 <= y0 {
+		return nil
+	}
+	rect := image.Rect(x0, y0, x1, y1).Intersect(b)
+	if rect.Empty() {
+		return nil
+	}
+
+	dst := image.NewRGBA(image.Rect(0, 0, rect.Dx(), rect.Dy()))
+	for y := 0; y < rect.Dy(); y++ {
+		for x := 0; x < rect.Dx(); x++ {
+			dst.Set(x, y, img.At(rect.Min.X+x, rect.Min.Y+y))
+		}
+	}
+	return dst
+}
+
+func sanitizeEchoFilename(name string) string {
+	name = strings.TrimSpace(strings.ToLower(name))
+	if name == "" {
+		return "unknown"
+	}
+	var b strings.Builder
+	for _, r := range name {
+		switch {
+		case r >= 'a' && r <= 'z':
+			b.WriteRune(r)
+		case r >= '0' && r <= '9':
+			b.WriteRune(r)
+		case r == '_' || r == '-':
+			b.WriteRune(r)
+		default:
+			b.WriteRune('_')
+		}
+	}
+	out := strings.Trim(b.String(), "_")
+	if out == "" {
+		return "unknown"
+	}
+	return out
 }
 
 // ---------------------------------------------------------------------------
@@ -508,6 +658,7 @@ var _ maa.CustomActionRunner = &EchoChangeRecordSuccessAction{}
 
 func (a *EchoChangeRecordSuccessAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
 	echoChangeState.successCount++
+	(&EchoEnhanceAction{}).captureEchoSnapshot(ctx, filepath.Join("change_success", fmt.Sprintf("%03d.png", echoChangeState.successCount)))
 	log.Info().
 		Str("component", "EchoChange").
 		Int("success_count", echoChangeState.successCount).
@@ -523,6 +674,7 @@ func (a *EchoChangeSummaryAction) Run(ctx *maa.Context, arg *maa.CustomActionArg
 	log.Info().
 		Str("component", "EchoChange").
 		Int("success_count", echoChangeState.successCount).
+		Str("snapshot_dir", filepath.Join("debug", "echo_enhance", "change_success")).
 		Msg("change-echo task finished")
 	return true
 }

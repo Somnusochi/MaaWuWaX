@@ -143,7 +143,7 @@
         "action": "Custom",
         "custom_action": "RogueBuffSelect",
         "custom_action_param": {
-            "whitelist": ["心流", "悲鸣纪", "余音贝", "齿轮之心", "全知之眼", "指南针", "医疗箱"],
+            "whitelist": ["心流", "悲鸣纪", "余音贝", "齿轮之心", "全知之眼", "指南针", "医疗箱", "妄语的残谱", "激越的残谱"],
             "blacklist": ["雷暴", "旋风", "矛盾晶体"]
         },
         "next": [
@@ -272,6 +272,16 @@
                     150,
                     200,
                     50
+                ]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "奇异的白猫",
+                "roi": [
+                    50,
+                    150,
+                    240,
+                    60
                 ]
             }
         ],

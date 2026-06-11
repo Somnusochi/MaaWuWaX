@@ -13,6 +13,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var lastLoreleiNightChange time.Time
+
 // ---------------------------------------------------------------------------
 // MinimapNavigateRecognition — performs a single forward step (W key).
 // Used by EchoFarm and other navigation flows.
@@ -177,8 +179,8 @@ func (a *ClickFastTravelAction) confirmCustomTeleport(ctx *maa.Context) {
 }
 
 // ---------------------------------------------------------------------------
-// TeleportBossAction — navigates F2 book to teleport to a boss.
-// This is a simplified version; full boss selection would require OCR/index.
+// TeleportBossAction — navigates the F2 book to teleport to a boss, using
+// explicit OCR name matching when available and profile aliases as fallback.
 // ---------------------------------------------------------------------------
 
 type TeleportBossAction struct{}
@@ -229,6 +231,8 @@ func (a *TeleportBossAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) boo
 		Msg("teleporting to boss")
 	ctrl := ctx.GetTasker().GetController()
 
+	a.prepareBossProfile(ctx, param)
+
 	f2Code := keycode.MustCode("F2")
 	escCode := keycode.MustCode("ESC")
 
@@ -259,7 +263,7 @@ func (a *TeleportBossAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) boo
 	).Wait()
 	time.Sleep(500 * time.Millisecond)
 
-	if strings.TrimSpace(param.BossName) == "" || !a.selectBookTargetByName(ctx, param.BossName, param.TotalNumber) {
+	if !a.selectBookTargetByName(ctx, param, param.TotalNumber) {
 		a.selectBookTarget(ctx, param.SerialNumber, param.TotalNumber)
 	}
 
@@ -346,6 +350,49 @@ func (a *TeleportBossAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) boo
 	return false
 }
 
+func (a *TeleportBossAction) prepareBossProfile(ctx *maa.Context, param bossTeleportParam) {
+	switch normalizeBossBookText(param.BossProfile) {
+	case "lorelei":
+		a.ensureNightForLorelei(ctx)
+	}
+}
+
+func (a *TeleportBossAction) ensureNightForLorelei(ctx *maa.Context) {
+	elapsed := time.Since(lastLoreleiNightChange)
+	if !lastLoreleiNightChange.IsZero() && elapsed <= 11*time.Minute {
+		log.Info().
+			Str("component", "TeleportBoss").
+			Dur("elapsed", elapsed).
+			Msg("skip lorelei night change; recent enough")
+		return
+	}
+
+	log.Info().Str("component", "TeleportBoss").Msg("changing time to night for Lorelei")
+	ctrl := ctx.GetTasker().GetController()
+	escCode := keycode.MustCode("ESC")
+
+	ctrl.PostClickKey(escCode).Wait()
+	time.Sleep(1 * time.Second)
+	ctrl.PostClick(909, 691).Wait()
+	time.Sleep(2 * time.Second)
+	ctrl.PostClick(243, 101).Wait()
+	time.Sleep(1 * time.Second)
+
+	for i := 0; i < 3; i++ {
+		ctrl.PostClick(1050, 382).Wait()
+		time.Sleep(1 * time.Second)
+	}
+
+	ctrl.PostClick(666, 648).Wait()
+	time.Sleep(6 * time.Second)
+	ctrl.PostClickKey(escCode).Wait()
+	time.Sleep(1 * time.Second)
+	ctrl.PostClickKey(escCode).Wait()
+	time.Sleep(1 * time.Second)
+
+	lastLoreleiNightChange = time.Now()
+}
+
 func (a *TeleportBossAction) selectBookTarget(ctx *maa.Context, serialNumber int, totalNumber int) {
 	ctrl := ctx.GetTasker().GetController()
 	row := serialNumber
@@ -362,9 +409,9 @@ func (a *TeleportBossAction) selectBookTarget(ctx *maa.Context, serialNumber int
 	time.Sleep(1000 * time.Millisecond)
 }
 
-func (a *TeleportBossAction) selectBookTargetByName(ctx *maa.Context, bossName string, totalNumber int) bool {
-	bossName = normalizeBossBookText(bossName)
-	if bossName == "" {
+func (a *TeleportBossAction) selectBookTargetByName(ctx *maa.Context, param bossTeleportParam, totalNumber int) bool {
+	queries := bossBookQueries(param)
+	if len(queries) == 0 {
 		return false
 	}
 
@@ -381,7 +428,7 @@ func (a *TeleportBossAction) selectBookTargetByName(ctx *maa.Context, bossName s
 			time.Sleep(800 * time.Millisecond)
 		}
 
-		if box, ok := a.findBookTargetName(ctx, bossName); ok {
+		if query, box, ok := a.findBookTargetName(ctx, queries); ok {
 			y := box[1] + box[3]/2
 			if y < 120 {
 				y = 174
@@ -390,7 +437,8 @@ func (a *TeleportBossAction) selectBookTargetByName(ctx *maa.Context, bossName s
 			time.Sleep(1000 * time.Millisecond)
 			log.Info().
 				Str("component", "TeleportBoss").
-				Str("boss_name", bossName).
+				Str("boss_name", query).
+				Str("boss_profile", param.BossProfile).
 				Int("page", page).
 				Interface("box", box).
 				Msg("selected boss by OCR name")
@@ -400,12 +448,13 @@ func (a *TeleportBossAction) selectBookTargetByName(ctx *maa.Context, bossName s
 
 	log.Warn().
 		Str("component", "TeleportBoss").
-		Str("boss_name", bossName).
-		Msg("boss name not found, falling back to serial number")
+		Strs("boss_queries", queries).
+		Str("boss_profile", param.BossProfile).
+		Msg("boss name/profile not found, falling back to serial number")
 	return false
 }
 
-func (a *TeleportBossAction) findBookTargetName(ctx *maa.Context, bossName string) (maa.Rect, bool) {
+func (a *TeleportBossAction) findBookTargetName(ctx *maa.Context, queries []string) (string, maa.Rect, bool) {
 	detail, err := ctx.RunRecognition(
 		"__TeleportBoss_NameOCR",
 		nil,
@@ -417,7 +466,7 @@ func (a *TeleportBossAction) findBookTargetName(ctx *maa.Context, bossName strin
 		}`,
 	)
 	if err != nil || detail == nil || !detail.Hit || detail.Results == nil {
-		return maa.Rect{}, false
+		return "", maa.Rect{}, false
 	}
 
 	results := detail.Results.Filtered
@@ -429,11 +478,14 @@ func (a *TeleportBossAction) findBookTargetName(ctx *maa.Context, bossName strin
 		if !ok || ocr == nil {
 			continue
 		}
-		if strings.Contains(normalizeBossBookText(ocr.Text), bossName) {
-			return ocr.Box, true
+		text := normalizeBossBookText(ocr.Text)
+		for _, query := range queries {
+			if query != "" && strings.Contains(text, query) {
+				return query, ocr.Box, true
+			}
 		}
 	}
-	return maa.Rect{}, false
+	return "", maa.Rect{}, false
 }
 
 func normalizeBossBookText(text string) string {
@@ -443,6 +495,51 @@ func normalizeBossBookText(text string) string {
 	text = strings.ReplaceAll(text, "_", "")
 	text = strings.ReplaceAll(text, "：", ":")
 	return strings.ToLower(text)
+}
+
+func bossBookQueries(param bossTeleportParam) []string {
+	seen := map[string]struct{}{}
+	queries := make([]string, 0, 6)
+	appendQuery := func(raw string) {
+		q := normalizeBossBookText(raw)
+		if q == "" {
+			return
+		}
+		if _, ok := seen[q]; ok {
+			return
+		}
+		seen[q] = struct{}{}
+		queries = append(queries, q)
+	}
+
+	appendQuery(param.BossName)
+	for _, alias := range bossProfileAliases(param.BossProfile) {
+		appendQuery(alias)
+	}
+	return queries
+}
+
+func bossProfileAliases(profile string) []string {
+	switch normalizeBossBookText(profile) {
+	case "hyvatia":
+		return []string{"hyvatia", "海维夏"}
+	case "fallacy", "fallacyofnoreturn":
+		return []string{"fallacyofnoreturn", "无归的谬误"}
+	case "sentryconstruct":
+		return []string{"sentryconstruct", "异构武装", "加尔古耶"}
+	case "lorelei":
+		return []string{"lorelei", "罗蕾莱", "夜之女皇"}
+	case "lionessofglory":
+		return []string{"lionessofglory", "荣耀狮像", "亚狮诺索"}
+	case "nightmarehecate":
+		return []string{"nightmare:hecate", "nightmarehecate", "梦魇赫卡忒", "梦魇:赫卡忒", "梦魇·赫卡忒"}
+	case "fenrico":
+		return []string{"fenrico", "芬莱克"}
+	case "namelessexplorer":
+		return []string{"namelessexplorer", "无铭探索者"}
+	default:
+		return nil
+	}
 }
 
 func (a *TeleportBossAction) walkAfterTeleport(ctx *maa.Context, param bossTeleportParam) {

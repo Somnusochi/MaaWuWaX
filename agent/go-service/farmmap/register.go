@@ -7,5 +7,5 @@ func Register() {
 	maa.AgentServerRegisterCustomAction("FarmMapWalkStep", &WalkStepAction{})
 	maa.AgentServerRegisterCustomAction("FarmMapResetTracker", &ResetTrackerAction{})
 	maa.AgentServerRegisterCustomRecognition("FarmMapPathDone", &PathDoneRecognition{})
-	maa.AgentServerRegisterCustomRecognition("MapLocateRecognition", &LocateRecognition{})
+	maa.AgentServerRegisterCustomRecognition("FarmMapLocateRecognition", &LocateRecognition{})
 }

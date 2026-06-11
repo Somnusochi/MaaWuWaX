@@ -96,8 +96,7 @@
         "custom_action_param": {
             "nightmare_mode": "capture"
         },
-        "next": ["Daily_SpendStamina"],
-        "on_error": ["Daily_SpendStamina"]
+        "next": ["Daily_SpendStamina"]
     },
     "Daily_SpendStamina": {
         "recognition": "Custom",

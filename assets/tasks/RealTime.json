@@ -15,7 +15,10 @@
                 "AutoCombat",
                 "RealTimeCombatUseLiberation",
                 "RealTimeCombatSwitchHealer",
+                "RealTimeCombatChisaDPS",
+                "RealTimeCombatIunoC6",
                 "AutoPick",
+                "RealTimeAutoPickFilter",
                 "SkipDialog",
                 "FastTravel",
                 "AutoLogin",
@@ -70,6 +73,32 @@
                 }
             ]
         },
+        "RealTimeAutoPickFilter": {
+            "type": "input",
+            "label": "实时拾取文本过滤",
+            "inputs": [
+                {
+                    "name": "Whitelist",
+                    "label": "白名单",
+                    "description": "逗号分隔，匹配到这些文本时允许交互。",
+                    "default": "吸收,Absorb"
+                },
+                {
+                    "name": "Blacklist",
+                    "label": "黑名单",
+                    "description": "逗号分隔，匹配到这些文本时禁止交互。",
+                    "default": "开始合成,领取奖励,Claim,合成台"
+                }
+            ],
+            "pipeline_override": {
+                "RealTime_Pick": {
+                    "custom_recognition_param": {
+                        "whitelist": "{Whitelist}",
+                        "blacklist": "{Blacklist}"
+                    }
+                }
+            }
+        },
         "RealTimeCombatUseLiberation": {
             "type": "switch",
             "label": "$option.RealTimeCombatUseLiberation.label",
@@ -118,6 +147,60 @@
                         "RealTime_Combat": {
                             "custom_action_param": {
                                 "switch_healer": false
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "RealTimeCombatChisaDPS": {
+            "type": "switch",
+            "label": "Chisa 按主C站场",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "RealTime_Combat": {
+                            "custom_action_param": {
+                                "chisa_dps": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "RealTime_Combat": {
+                            "custom_action_param": {
+                                "chisa_dps": false
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "RealTimeCombatIunoC6": {
+            "type": "switch",
+            "label": "Iuno C6 按主C站场",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "RealTime_Combat": {
+                            "custom_action_param": {
+                                "iuno_c6": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "RealTime_Combat": {
+                            "custom_action_param": {
+                                "iuno_c6": false
                             }
                         }
                     }

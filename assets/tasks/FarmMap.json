@@ -12,6 +12,7 @@
                 "open_world"
             ],
             "option": [
+                "FarmMapLocateBackend",
                 {
                     "name": "FarmMapMaxStepDistance",
                     "label": "$option.FarmMapMaxStepDistance.label",
@@ -43,5 +44,51 @@
                 }
             ]
         }
-    ]
+    ],
+    "option": {
+        "FarmMapLocateBackend": {
+            "type": "select",
+            "label": "FarmMap 后端",
+            "default_case": "cpp",
+            "cases": [
+                {
+                    "name": "go",
+                    "label": "Go Fallback",
+                    "pipeline_override": {
+                        "FarmMap_WaitWorld": {
+                            "next": [
+                                "FarmMap_Loop"
+                            ]
+                        },
+                        "FarmMap_Locate": {
+                            "custom_recognition": "FarmMapLocateRecognition",
+                            "custom_recognition_param": {
+                                "search_radius": 420
+                            }
+                        },
+                        "FarmMap_Walk": {
+                            "custom_action": "FarmMapWalkStep"
+                        }
+                    }
+                },
+                {
+                    "name": "cpp",
+                    "label": "cpp-algo Locate",
+                    "pipeline_override": {
+                        "FarmMap_WaitWorld": {
+                            "next": [
+                                "FarmMap_Locate"
+                            ]
+                        },
+                        "FarmMap_Locate": {
+                            "custom_recognition": "MapLocateRecognition",
+                            "custom_recognition_param": {
+                                "force_global_search": true
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    }
 }

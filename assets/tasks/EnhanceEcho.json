@@ -60,7 +60,14 @@
                     "default": "13.8",
                     "pipeline_type": "string"
                 }
-            ]
+            ],
+            "pipeline_override": {
+                "EchoEnhance_Evaluate": {
+                    "custom_action_param": {
+                        "double_crit_min": "{value}"
+                    }
+                }
+            }
         },
         "EchoValidStatsCount": {
             "type": "input",
@@ -69,9 +76,16 @@
                 {
                     "name": "value",
                     "default": "3",
-                    "pipeline_type": "string"
+                    "pipeline_type": "int"
                 }
-            ]
+            ],
+            "pipeline_override": {
+                "EchoEnhance_Evaluate": {
+                    "custom_action_param": {
+                        "valid_stats_min": "{value}"
+                    }
+                }
+            }
         },
         "EchoFirstCritMin": {
             "type": "input",
@@ -82,7 +96,14 @@
                     "default": "6.9",
                     "pipeline_type": "string"
                 }
-            ]
+            ],
+            "pipeline_override": {
+                "EchoEnhance_Evaluate": {
+                    "custom_action_param": {
+                        "first_crit_min": "{value}"
+                    }
+                }
+            }
         },
         "EchoFirstMustBeValid": {
             "type": "switch",

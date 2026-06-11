@@ -123,9 +123,6 @@
         "next": [
             "EchoEnhance_Evaluate"
         ],
-        "on_error": [
-            "EchoEnhance_Evaluate"
-        ],
         "post_delay": 200
     },
     "EchoEnhance_Evaluate": {

@@ -95,6 +95,7 @@ func (r *DailyNeedsStaminaRecognition) Run(ctx *maa.Context, arg *maa.CustomReco
 
 type nightmareModeParam struct {
 	NightmareMode string `json:"nightmare_mode"`
+	StaminaType   string `json:"stamina_type"`
 }
 
 // DailyNeedsNightmareRecognition gates optional NightmareNest routing.
@@ -112,10 +113,19 @@ func (r *DailyNeedsNightmareRecognition) Run(ctx *maa.Context, arg *maa.CustomRe
 	if param.NightmareMode == "" || param.NightmareMode == "none" {
 		return nil, false
 	}
+	if param.NightmareMode == "capture" && param.StaminaType == "tacet" {
+		log.Info().
+			Str("component", "DailyNeedsNightmare").
+			Str("mode", param.NightmareMode).
+			Str("stamina_type", param.StaminaType).
+			Msg("skip capture-mode nightmare because tacet route already covers daily echo")
+		return nil, false
+	}
 	if lastDailyProgress >= 180 || lastDailyRewardReady {
 		log.Info().
 			Str("component", "DailyNeedsNightmare").
 			Str("mode", param.NightmareMode).
+			Str("stamina_type", param.StaminaType).
 			Int("daily_progress", lastDailyProgress).
 			Bool("daily_reward_ready", lastDailyRewardReady).
 			Msg("skip nightmare routing")
@@ -124,7 +134,7 @@ func (r *DailyNeedsNightmareRecognition) Run(ctx *maa.Context, arg *maa.CustomRe
 
 	return &maa.CustomRecognitionResult{
 		Box:    maa.Rect{0, 0, 1, 1},
-		Detail: fmt.Sprintf(`{"nightmare_mode":%q,"needs_nightmare":true}`, param.NightmareMode),
+		Detail: fmt.Sprintf(`{"nightmare_mode":%q,"stamina_type":%q,"needs_nightmare":true}`, param.NightmareMode, param.StaminaType),
 	}, true
 }
 
