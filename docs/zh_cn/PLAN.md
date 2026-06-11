@@ -1,5 +1,9 @@
 # MaaWuWaX 迁移计划
 
+> [!WARNING]
+> 本文已转为历史规划草案，包含大量已完成或已被后续实现替代的条目。
+> 当前实时迁移审计请以 `docs/zh_cn/OK-WW迁移计划.md` 为准，尤其是 Combat 角色贴源状态、EchoFarm/BossTeleport、NightmareNest、Rogue、MultiAccount、FarmMap cpp-algo 接线现状。
+
 > 将 ok-wuthering-waves 的功能迁移到 MaaFramework + MXU (macOS) 架构，
 > 参照 MaaEnd 的实现模式。
 
@@ -44,7 +48,7 @@
 ### 0.1 修复已知问题 (上轮审阅发现的 Bug)
 - [ ] 删除旧 Python Agent（`agent/main.py`、`requirements.txt`），后续由 Go Service 替代
 - [ ] 补充缺失的 `btn_teleport.png` 图片资源
-- [ ] 修复 `DailyRoutine.json` 中 `StaminaType` 选项缺少 `pipeline_override` 的问题
+- [x] `DailyRoutine.json` 的 `StaminaType` override 审计完成：当前代码中并不存在“缺少 pipeline_override”的问题，历史条目为过期误报
 - [ ] 修复 StaminaType case 名称与代码不匹配的问题（改为 Go Service 后通过 Pipeline Override 实现）
 - [ ] 清理未使用的 `domain` 分组或分配给实际任务
 - [ ] 为 `EchoFarm` 导航添加 `timeout` / 最大重试限制
