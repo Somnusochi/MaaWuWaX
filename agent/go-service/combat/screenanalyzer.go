@@ -4,8 +4,16 @@ import (
 	"fmt"
 	"image"
 	"math"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
+	"sync"
 	"time"
 
+	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/pkg/minicv"
+	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/pkg/resource"
 	maa "github.com/MaaXYZ/maa-framework-go/v4"
 	"github.com/rs/zerolog/log"
 )
@@ -27,6 +35,9 @@ type ScreenAnalyzer struct {
 	ResonancePct     float64
 	EchoPct          float64
 	LiberationPct    float64
+	ResonanceCD      bool
+	EchoCD           bool
+	LiberationCD     bool
 	FortePct         float64
 	Flying           bool
 	ForteFull        bool
@@ -54,8 +65,20 @@ type ScreenAnalyzer struct {
 	AugustaLibReady  bool
 	AugustaMajesty   bool
 	AugustaProwess   bool
+	LinnaiCheckRes   bool
+	LuhesiCheckRes   bool
+	GalbrenaCheckRes bool
+	XigelikaForte    bool
 	CamellyaBudding  bool
 	ChangliFortePct  float64
+	ZhezhiForteTier  int
+	CiacconaForte    int
+	LupaForte        int
+	PhoebeLightForte int
+	PhoebeBlueForte  int
+	PhoebeFullLight  bool
+	PhoebeFullBlue   bool
+	CarlottaForte    int
 	CamellyaFortePct float64
 	CamellyaBudPct   float64
 	ZaniFortePct     float64
@@ -91,6 +114,10 @@ const (
 	ringElementHavoc   = 5
 )
 
+var combatCDPattern = regexp.MustCompile(`\d{1,2}\.\d`)
+
+var charTemplateLoaders sync.Map // map[string]*minicv.TemplateLoader
+
 // Update runs all recognition nodes against one frame.
 func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
 	if img == nil {
@@ -98,94 +125,46 @@ func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
 	}
 
 	// 1. Target lock (ok-ww: has_target, threshold 0.6)
-	detail, err := ctx.RunRecognition("__Combat_Target", img, `{
-		"__Combat_Target": {
-			"recognition": "TemplateMatch",
-			"template": "has_target.png",
-			"threshold": 0.6
-		}
-	}`)
+	detail, err := ctx.RunRecognition("Combat_AnalyzerTarget", img)
 	sa.HasTarget = err == nil && detail != nil && detail.Hit
 
 	// 2. Dodge prompt (ok-ww: dodge_prompt, threshold 0.6)
-	detail, err = ctx.RunRecognition("__Combat_Dodge", img, `{
-		"__Combat_Dodge": {
-			"recognition": "TemplateMatch",
-			"template": "dodge_prompt.png",
-			"threshold": 0.6,
-			"roi": [500, 300, 280, 420]
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_AnalyzerDodge", img)
 	sa.HasDodge = err == nil && detail != nil && detail.Hit
 
 	// 3. Red HP bar via ColorMatch (ok-ww: enemy_health_color_red)
-	detail, err = ctx.RunRecognition("__Combat_HP", img, `{
-		"__Combat_HP": {
-			"recognition": "ColorMatch",
-			"lower": [55, 55, 174],
-			"upper": [76, 85, 225],
-			"min_width": 12,
-			"min_height": 4
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_AnalyzerHP", img)
 	sa.HasHPBar = err == nil && detail != nil && detail.Hit
 
 	// 4. Boss HP bar
-	detail, err = ctx.RunRecognition("__Combat_BossHP", img, `{
-		"__Combat_BossHP": {
-			"recognition": "ColorMatch",
-			"lower": [4, 30, 245],
-			"upper": [75, 185, 255],
-			"roi": [360, 10, 560, 60]
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_AnalyzerBossHP", img)
 	sa.HasBossHP = err == nil && detail != nil && detail.Hit
 
 	// 5. F pickup prompt
-	detail, err = ctx.RunRecognition("__Combat_Pick", img, `{
-		"__Combat_Pick": {
-			"recognition": "TemplateMatch",
-			"template": "pick_up_f_hcenter_vcenter.png",
-			"threshold": 0.65
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_AnalyzerPick", img)
 	sa.PickupF = err == nil && detail != nil && detail.Hit
 
 	// 6. Liberation availability hint.
-	detail, err = ctx.RunRecognition("__Combat_LiberationReady", img, `{
-		"__Combat_LiberationReady": {
-			"recognition": "TemplateMatch",
-			"template": "box_liberation.png",
-			"threshold": 0.6,
-			"roi": [1000, 500, 280, 220]
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_AnalyzerLiberationReady", img)
 	sa.Liberation = err == nil && detail != nil && detail.Hit
 
 	sa.RingElement = ringElementUnknown
 	ringChecks := []struct {
-		name     string
-		template string
-		element  int
+		name    string
+		element int
 	}{
-		{"__Combat_RingConFullHavoc", "con_full_havoc.png", ringElementHavoc},
-		{"__Combat_RingConFullSpectro", "con_full_spectro.png", ringElementSpectro},
-		{"__Combat_RingConFullWind", "con_full_wind.png", ringElementWind},
-		{"__Combat_RingConHavoc", "con_havoc.png", ringElementHavoc},
-		{"__Combat_RingConSpectro", "con_spectro.png", ringElementSpectro},
-		{"__Combat_RingConWind", "con_wind.png", ringElementWind},
-		{"__Combat_RingLibReadyHavoc", "lib_ready_havoc.png", ringElementHavoc},
-		{"__Combat_RingLibReadySpectro", "lib_ready_spectro.png", ringElementSpectro},
-		{"__Combat_RingLibReadyWind", "lib_ready_wind.png", ringElementWind},
+		{"Combat_RingConFullHavoc", ringElementHavoc},
+		{"Combat_RingConFullSpectro", ringElementSpectro},
+		{"Combat_RingConFullWind", ringElementWind},
+		{"Combat_RingConHavoc", ringElementHavoc},
+		{"Combat_RingConSpectro", ringElementSpectro},
+		{"Combat_RingConWind", ringElementWind},
+		{"Combat_RingLibReadyHavoc", ringElementHavoc},
+		{"Combat_RingLibReadySpectro", ringElementSpectro},
+		{"Combat_RingLibReadyWind", ringElementWind},
 	}
 	for _, rc := range ringChecks {
-		detail, err = ctx.RunRecognition(rc.name, img, `{
-			"`+rc.name+`": {
-				"recognition": "TemplateMatch",
-				"template": "`+rc.template+`",
-				"threshold": 0.7
-			}
-		}`)
+		detail, err = ctx.RunRecognition(rc.name, img)
 		if err == nil && detail != nil && detail.Hit {
 			sa.RingElement = rc.element
 			break
@@ -196,6 +175,7 @@ func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
 	sa.ResonancePct = sampleNearWhitePct(img, maa.Rect{1062, 626, 45, 38})
 	sa.EchoPct = sampleNearWhitePct(img, maa.Rect{1124, 626, 45, 39})
 	sa.LiberationPct = sampleNearWhitePct(img, maa.Rect{1190, 626, 42, 38})
+	sa.refreshCooldowns(ctx, img)
 	sa.FortePct = sampleNearWhitePct(img, maa.Rect{750, 664, 20, 8})
 	sa.Flying = sampleNearWhitePct(img, maa.Rect{1005, 629, 27, 27}) < 0.1
 	sa.ZhezhiBluePct = sampleColorPct(img, maa.Rect{560, 666, 15, 7}, 160, 180, 240, 255, 245, 255)
@@ -204,6 +184,16 @@ func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
 	sa.PhoebeRingBlue = sampleColorPct(img, maa.Rect{1055, 618, 54, 54}, 140, 200, 210, 255, 240, 255)
 	sa.CamellyaRedPct = sampleColorPct(img, maa.Rect{1055, 618, 54, 54}, 180, 255, 20, 120, 20, 120)
 	sa.ChangliFortePct = sampleStripeFillPct(img, maa.Rect{544, 668, 176, 4}, 240, 255, 85, 105, 95, 115)
+	sa.ZhezhiForteTier = sampleForteNumByFFT(img, scaledRect(5120, 2880, 2164, 2675, 2900, 2685), 736.0/3.0, colorRange{185, 215, 240, 255, 235, 255}, 3, 12, 14, 100, true)
+	sa.CiacconaForte = sampleForteNumByFFT(img, scaledRect(3840, 2160, 1612, 1987, 2188, 2008), 576.0/3.0, colorRange{70, 100, 240, 255, 180, 210}, 3, 12, 14, 100, true)
+	sa.LupaForte = sampleForteNumByFFT(img, scaledRect(3840, 2160, 1633, 2004, 2160, 2016), 527.0/2.0, colorRange{235, 255, 75, 105, 75, 105}, 2, 19, 21, 400, true)
+	phoebeForteBox := scaledRect(3840, 2160, 1633, 2004, 2160, 2014)
+	sa.PhoebeLightForte = sampleForteNumByFFT(img, phoebeForteBox, 527.0/4.0, colorRange{240, 255, 240, 255, 165, 195}, 4, 9, 11, 25, false)
+	sa.PhoebeBlueForte = sampleForteNumByFFT(img, phoebeForteBox, 527.0/2.0, colorRange{225, 255, 225, 255, 190, 225}, 2, 18, 20, 50, false)
+	sa.PhoebeFullLight = sampleForteFullByWhiteContrast(img, scaledRect(3840, 2160, 2286, 1992, 2306, 2018), 0.08)
+	sa.PhoebeFullBlue = sampleForteFullByWhiteContrast(img, scaledRect(3840, 2160, 2256, 1992, 2276, 2018), 0.08)
+	sa.CarlottaForte = sampleForteNumByFFT(img, scaledRect(5120, 2880, 2164, 2670, 2900, 2680), 736.0/4.0, colorRange{70, 100, 195, 225, 235, 255}, 4, 9, 11, 100, true)
+	sa.XigelikaForte = sampleNearWhitePct(img, scaledRect(5120, 2880, 3032, 2654, 3076, 2700)) > 0.1
 	sa.CamellyaFortePct = sampleStripeFillPct(img, maa.Rect{543, 667, 182, 2}, 193, 255, 46, 93, 127, 163)
 	sa.CamellyaBudPct = sampleStripeFillPct(img, maa.Rect{543, 667, 182, 2}, 220, 255, 161, 213, 168, 225)
 	sa.ZaniFortePct = sampleColorPct(img, maa.Rect{543, 665, 185, 3}, 239, 255, 222, 255, 156, 196)
@@ -211,173 +201,59 @@ func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
 	sa.ZaniBlazesPct = sampleColorPct(img, maa.Rect{543, 671, 183, 3}, 240, 255, 210, 255, 150, 220)
 	sa.LinnaiColorPct = sampleNearWhitePct(img, maa.Rect{711, 650, 11, 22})
 
-	detail, err = ctx.RunRecognition("__Combat_ZaniNotLiber", img, `{
-		"__Combat_ZaniNotLiber": {
-			"recognition": "TemplateMatch",
-			"template": "box_target_enemy_inner.png",
-			"threshold": 0.75,
-			"roi": [954, 637, 49, 48]
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_ZaniNotLiber", img)
 	sa.ZaniNotLiberBox = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_ZaniLiber", img, `{
-		"__Combat_ZaniLiber": {
-			"recognition": "TemplateMatch",
-			"template": "box_target_enemy_inner.png",
-			"threshold": 0.75,
-			"roi": [889, 636, 52, 49]
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_ZaniLiber", img)
 	sa.ZaniLiberBox = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_MouseForte", img, `{
-		"__Combat_MouseForte": {
-			"recognition": "TemplateMatch",
-			"template": "mouse_forte.png",
-			"threshold": 0.6,
-			"roi": [360, 300, 80, 80]
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_MouseForte", img)
 	sa.MouseForteFull = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_EForte", img, `{
-		"__Combat_EForte": {
-			"recognition": "TemplateMatch",
-			"template": "e_forte.png",
-			"threshold": 0.6,
-			"roi": [730, 650, 60, 40]
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_EForte", img)
 	sa.EForteFull = err == nil && detail != nil && detail.Hit
 	sa.ForteFull = sa.FortePct > 0.08 || sa.EForteFull
 
-	detail, err = ctx.RunRecognition("__Combat_LongAction1", img, `{
-		"__Combat_LongAction1": {
-			"recognition": "TemplateMatch",
-			"template": "box_target_enemy_long.png",
-			"threshold": 0.6,
-			"roi": [860, 615, 80, 50]
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_LongAction1", img)
 	sa.HasLongAction = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_LongAction2", img, `{
-		"__Combat_LongAction2": {
-			"recognition": "TemplateMatch",
-			"template": "target_box_long2.png",
-			"threshold": 0.6,
-			"roi": [820, 615, 70, 50]
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_LongAction2", img)
 	sa.HasLongAction2 = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_HiyukiLibForte", img, `{
-		"__Combat_HiyukiLibForte": {
-			"recognition": "TemplateMatch",
-			"template": "hiyuki_lib_forte.png",
-			"threshold": 0.7
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_HiyukiLibForte", img)
 	sa.HiyukiLibForte = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_HiyukiLeft", img, `{
-		"__Combat_HiyukiLeft": {
-			"recognition": "TemplateMatch",
-			"template": "hiyuki_left.png",
-			"threshold": 0.5
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_HiyukiLeft", img)
 	sa.HiyukiLeft = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_HiyukiRight", img, `{
-		"__Combat_HiyukiRight": {
-			"recognition": "TemplateMatch",
-			"template": "hiyuki_right.png",
-			"threshold": 0.5
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_HiyukiRight", img)
 	sa.HiyukiRight = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_AemeathEnhanceE", img, `{
-		"__Combat_AemeathEnhanceE": {
-			"recognition": "TemplateMatch",
-			"template": "aemeath_e1.png",
-			"threshold": 0.7
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_AemeathEnhanceE", img)
 	enhance1 := err == nil && detail != nil && detail.Hit
-	detail, err = ctx.RunRecognition("__Combat_AemeathEnhanceE2", img, `{
-		"__Combat_AemeathEnhanceE2": {
-			"recognition": "TemplateMatch",
-			"template": "aemeath_e2.png",
-			"threshold": 0.7
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_AemeathEnhanceE2", img)
 	enhance2 := err == nil && detail != nil && detail.Hit
 	sa.AemeathEnhanceE = enhance1 || enhance2
 
-	detail, err = ctx.RunRecognition("__Combat_AemeathLib2", img, `{
-		"__Combat_AemeathLib2": {
-			"recognition": "TemplateMatch",
-			"template": "aemeath_lib2.png",
-			"threshold": 0.7
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_AemeathLib2", img)
 	sa.AemeathLib2 = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_LupaWolfReady", img, `{
-		"__Combat_LupaWolfReady": {
-			"recognition": "TemplateMatch",
-			"template": "lupa_wolf_icon2.png",
-			"threshold": 0.85
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_LupaWolfReady", img)
 	sa.LupaWolfReady = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_CartethyiaSword1", img, `{
-		"__Combat_CartethyiaSword1": {
-			"recognition": "TemplateMatch",
-			"template": "forte_cartethyia_sword1.png",
-			"threshold": 0.9
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_CartethyiaSword1", img)
 	sa.CartethyiaSword1 = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_CartethyiaSword2", img, `{
-		"__Combat_CartethyiaSword2": {
-			"recognition": "TemplateMatch",
-			"template": "forte_cartethyia_sword2.png",
-			"threshold": 0.9
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_CartethyiaSword2", img)
 	sa.CartethyiaSword2 = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_CartethyiaSword3", img, `{
-		"__Combat_CartethyiaSword3": {
-			"recognition": "TemplateMatch",
-			"template": "forte_cartethyia_sword3.png",
-			"threshold": 0.9
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_CartethyiaSword3", img)
 	sa.CartethyiaSword3 = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_CartethyiaBigLib", img, `{
-		"__Combat_CartethyiaBigLib": {
-			"recognition": "TemplateMatch",
-			"template": "lib_cartethyia_big.png",
-			"threshold": 0.6
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_CartethyiaBigLib", img)
 	sa.CartethyiaBigLib = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_CartethyiaSmall", img, `{
-		"__Combat_CartethyiaSmall": {
-			"recognition": "TemplateMatch",
-			"template": "forte_cartethyia_sword3.png",
-			"threshold": 0.5
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_CartethyiaSmall", img)
 	sa.CartethyiaSmall = err == nil && detail != nil && detail.Hit
 	if sa.CartethyiaSword3 {
 		sa.CartethyiaSmall = true
@@ -391,76 +267,31 @@ func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
 		sa.CartethyiaMidAir = false
 	}
 
-	detail, err = ctx.RunRecognition("__Combat_LuhesiKickReady", img, `{
-		"__Combat_LuhesiKickReady": {
-			"recognition": "TemplateMatch",
-			"template": "luhesi_kick.png",
-			"threshold": 0.7
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_LuhesiKickReady", img)
 	sa.LuhesiKickReady = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_LuhesiLibReady", img, `{
-		"__Combat_LuhesiLibReady": {
-			"recognition": "TemplateMatch",
-			"template": "box_luhesi_lib.png",
-			"threshold": 0.7
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_LuhesiLibReady", img)
 	sa.LuhesiLibReady = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_IunoHeavyReady", img, `{
-		"__Combat_IunoHeavyReady": {
-			"recognition": "TemplateMatch",
-			"template": "iuno_heavy.png",
-			"threshold": 0.6
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_IunoHeavyReady", img)
 	sa.IunoHeavyReady = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_IunoJumpReady", img, `{
-		"__Combat_IunoJumpReady": {
-			"recognition": "TemplateMatch",
-			"template": "iuno_jump.png",
-			"threshold": 0.6
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_IunoJumpReady", img)
 	sa.IunoJumpReady = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_AugustaLibReady", img, `{
-		"__Combat_AugustaLibReady": {
-			"recognition": "TemplateMatch",
-			"template": "Augusta_lib1.png",
-			"threshold": 0.5
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_AugustaLibReady", img)
 	sa.AugustaLibReady = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_AugustaMajesty", img, `{
-		"__Combat_AugustaMajesty": {
-			"recognition": "TemplateMatch",
-			"template": "Augusta_lib2.png",
-			"threshold": 0.5
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_AugustaMajesty", img)
 	sa.AugustaMajesty = err == nil && detail != nil && detail.Hit
 
-	detail, err = ctx.RunRecognition("__Combat_AugustaProwess", img, `{
-		"__Combat_AugustaProwess": {
-			"recognition": "TemplateMatch",
-			"template": "target_enemy_long_inner.png",
-			"threshold": 0.8
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_AugustaProwess", img)
 	sa.AugustaProwess = err == nil && detail != nil && detail.Hit
+	sa.LinnaiCheckRes = sa.anyPipelineHit(ctx, img, "Combat_LinnaiCheckResTarget", "Combat_LinnaiCheckResNoTarget")
+	sa.LuhesiCheckRes = sa.anyPipelineHit(ctx, img, "Combat_LuhesiCheckResTarget", "Combat_LuhesiCheckResNoTarget")
+	sa.GalbrenaCheckRes = sa.anyPipelineHit(ctx, img, "Combat_GalbrenaCheckResTarget", "Combat_GalbrenaCheckResNoTarget")
 
-	detail, err = ctx.RunRecognition("__Combat_CamellyaBudding", img, `{
-		"__Combat_CamellyaBudding": {
-			"recognition": "TemplateMatch",
-			"template": "camellya_budding.png",
-			"threshold": 0.7
-		}
-	}`)
+	detail, err = ctx.RunRecognition("Combat_CamellyaBudding", img)
 	sa.CamellyaBudding = err == nil && detail != nil && detail.Hit
 
 	// 7. Character portraits
@@ -468,14 +299,7 @@ func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
 	existCount := 0
 	currentIdx := -1
 	for i := range 3 {
-		tpl := []string{"char_1_text.png", "char_2_text.png", "char_3_text.png"}[i]
-		detail, err = ctx.RunRecognition("__Combat_Char"+string(rune('1'+i)), img, `{
-			"__Combat_Char`+string(rune('1'+i))+`": {
-				"recognition": "TemplateMatch",
-				"template": "`+tpl+`",
-				"threshold": 0.7
-			}
-		}`)
+		detail, err = ctx.RunRecognition(fmt.Sprintf("Combat_AnalyzerChar%d", i+1), img)
 		textHit := err == nil && detail != nil && detail.Hit
 		if textHit {
 			existCount++
@@ -483,14 +307,7 @@ func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
 			currentIdx = i
 		}
 
-		conTpl := []string{"con_mark_char_1.png", "con_mark_char_2.png", "con_mark_char_3.png"}[i]
-		detail, err = ctx.RunRecognition("__Combat_Con"+string(rune('1'+i)), img, `{
-			"__Combat_Con`+string(rune('1'+i))+`": {
-				"recognition": "TemplateMatch",
-				"template": "`+conTpl+`",
-				"threshold": 0.6
-			}
-		}`)
+		detail, err = ctx.RunRecognition(fmt.Sprintf("Combat_AnalyzerCon%d", i+1), img)
 		if err == nil && detail != nil && detail.Hit {
 			sa.ConcertoPct = 1.0
 		}
@@ -534,7 +351,17 @@ func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
 		Bool("iuno_heavy", sa.IunoHeavyReady).
 		Bool("iuno_jump", sa.IunoJumpReady).
 		Float64("linnai_color", sa.LinnaiColorPct).
+		Bool("linnai_check_res", sa.LinnaiCheckRes).
+		Bool("luhesi_check_res", sa.LuhesiCheckRes).
+		Bool("galbrena_check_res", sa.GalbrenaCheckRes).
+		Bool("xigelika_forte", sa.XigelikaForte).
 		Float64("zhezhi_blue", sa.ZhezhiBluePct).
+		Int("zhezhi_forte", sa.ZhezhiForteTier).
+		Int("ciaccona_forte", sa.CiacconaForte).
+		Int("lupa_forte", sa.LupaForte).
+		Int("phoebe_light_forte", sa.PhoebeLightForte).
+		Int("phoebe_blue_forte", sa.PhoebeBlueForte).
+		Int("carlotta_forte", sa.CarlottaForte).
 		Float64("changli_forte", sa.ChangliFortePct).
 		Float64("phoebe_star_light", sa.PhoebeStarLight).
 		Float64("camellya_red", sa.CamellyaRedPct).
@@ -560,30 +387,14 @@ func (sa *ScreenAnalyzer) detectCharSlot(ctx *maa.Context, img image.Image, inde
 	if !ok {
 		return slot
 	}
+	imgRGBA := minicv.ImageConvertRGBA(img)
+	imgIntegral := minicv.GetIntegralArray(imgRGBA)
 	bestScore := 0.0
 	bestMeta := charMeta{}
 	for _, meta := range charTemplates {
-		nodeName := fmt.Sprintf("__Combat_CharName_%d_%s", index+1, meta.Name)
-		detail, err := ctx.RunRecognition(
-			nodeName,
-			img,
-			fmt.Sprintf(`{
-				%q: {
-					"recognition": "TemplateMatch",
-					"template": %q,
-					"threshold": 0.55,
-					"roi": [%d, %d, %d, %d]
-				}
-			}`, nodeName, meta.Template, box[0], box[1], box[2], box[3]),
-		)
-		if err != nil || detail == nil || !detail.Hit {
+		score := matchCharTemplateInBox(imgRGBA, imgIntegral, meta.Template, box)
+		if score < 0.55 {
 			continue
-		}
-		score := 0.6
-		if detail.Results != nil && detail.Results.Best != nil {
-			if tm, ok := detail.Results.Best.AsTemplateMatch(); ok {
-				score = tm.Score
-			}
 		}
 		if score > bestScore {
 			bestScore = score
@@ -597,6 +408,54 @@ func (sa *ScreenAnalyzer) detectCharSlot(ctx *maa.Context, img image.Image, inde
 	slot.Role = bestMeta.Role
 	slot.Detected = true
 	return slot
+}
+
+func matchCharTemplateInBox(img *image.RGBA, imgIntegral minicv.IntegralArray, template string, box maa.Rect) float64 {
+	tpl, err := charTemplateLoader(template).Get()
+	if err != nil {
+		log.Debug().Err(err).Str("template", template).Msg("char template unavailable")
+		return 0
+	}
+	_, _, score := minicv.MatchTemplateInArea(
+		img,
+		imgIntegral,
+		tpl.Image,
+		tpl.Stats,
+		[4]int{box[0], box[1], box[2], box[3]},
+	)
+	return score
+}
+
+func charTemplateLoader(template string) *minicv.TemplateLoader {
+	if loader, ok := charTemplateLoaders.Load(template); ok {
+		return loader.(*minicv.TemplateLoader)
+	}
+	loader := minicv.NewTemplateLoaderOfDynamicPath(func() string {
+		return resolveResourceImagePath(template)
+	})
+	actual, _ := charTemplateLoaders.LoadOrStore(template, loader)
+	return actual.(*minicv.TemplateLoader)
+}
+
+func resolveResourceImagePath(template string) string {
+	bases := make([]string, 0, len(resource.GetStandardResourceBase())+1)
+	if base := resource.GetResourceBase(); base != "" {
+		bases = append(bases, base)
+	}
+	bases = append(bases, resource.GetStandardResourceBase()...)
+
+	for _, base := range bases {
+		for _, candidate := range []string{
+			filepath.Join(base, "image", template),
+			filepath.Join(base, "resource", "image", template),
+			filepath.Join(base, "assets", "resource", "image", template),
+		} {
+			if _, err := os.Stat(candidate); err == nil {
+				return candidate
+			}
+		}
+	}
+	return ""
 }
 
 // TrackFrame records the current frame timestamp and detects freezes (>100ms gap).
@@ -629,19 +488,7 @@ func (sa *ScreenAnalyzer) HasHealthLow() bool {
 }
 
 func (sa *ScreenAnalyzer) findCharBox(ctx *maa.Context, img image.Image, index int) (maa.Rect, bool) {
-	template := []string{"box_char_1.png", "box_char_2.png", "box_char_3.png"}[index]
-	nodeName := fmt.Sprintf("__Combat_BoxChar_%d", index+1)
-	detail, err := ctx.RunRecognition(
-		nodeName,
-		img,
-		fmt.Sprintf(`{
-			%q: {
-				"recognition": "TemplateMatch",
-				"template": %q,
-				"threshold": 0.5
-			}
-		}`, nodeName, template),
-	)
+	detail, err := ctx.RunRecognition(fmt.Sprintf("Combat_BoxChar%d", index+1), img)
 	if err == nil && detail != nil && detail.Hit {
 		box := detail.Box
 		return maa.Rect{
@@ -657,6 +504,30 @@ func (sa *ScreenAnalyzer) findCharBox(ctx *maa.Context, img image.Image, index i
 		{1070, 430, 190, 170},
 	}[index]
 	return fallback, true
+}
+
+func (sa *ScreenAnalyzer) anyPipelineHit(ctx *maa.Context, img image.Image, nodes ...string) bool {
+	for _, nodeName := range nodes {
+		detail, err := ctx.RunRecognition(nodeName, img)
+		if err == nil && detail != nil && detail.Hit {
+			return true
+		}
+	}
+	return false
+}
+
+type colorRange struct {
+	rMin, rMax uint32
+	gMin, gMax uint32
+	bMin, bMax uint32
+}
+
+func scaledRect(srcW, srcH, x1, y1, x2, y2 int) maa.Rect {
+	left := int(math.Round(float64(x1) * 1280 / float64(srcW)))
+	top := int(math.Round(float64(y1) * 720 / float64(srcH)))
+	right := int(math.Round(float64(x2) * 1280 / float64(srcW)))
+	bottom := int(math.Round(float64(y2) * 720 / float64(srcH)))
+	return maa.Rect{left, top, maxInt(1, right-left), maxInt(1, bottom-top)}
 }
 
 func sampleNearWhitePct(img image.Image, box maa.Rect) float64 {
@@ -716,6 +587,117 @@ func sampleColorPct(img image.Image, box maa.Rect, rMin, rMax, gMin, gMax, bMin,
 		return 0
 	}
 	return float64(hit) / float64(total)
+}
+
+func sampleForteFullByWhiteContrast(img image.Image, box maa.Rect, whiteThreshold float64) bool {
+	if sampleNearWhitePct(img, box) <= whiteThreshold {
+		return false
+	}
+	mean, std := sampleGrayMeanStd(img, box)
+	return mean > 190 && std < 50
+}
+
+func sampleForteNumByFFT(img image.Image, box maa.Rect, sourceStepWidth float64, cr colorRange, num, minFreq, maxFreq int, minAmp float64, scanFromRight bool) int {
+	if img == nil || box[2] <= 0 || box[3] <= 0 || num <= 0 {
+		return 0
+	}
+	mask, width, height := colorMask(img, box, cr)
+	if width == 0 || height == 0 {
+		return 0
+	}
+	step := width / num
+	if step <= 0 {
+		return 0
+	}
+	if scanFromRight {
+		for forte := num; forte > 0; forte-- {
+			left := step * (forte - 1)
+			right := left + step
+			if forte == num {
+				right = width
+			}
+			if judgeForteSegment(mask, left, right, sourceStepWidth, minFreq, maxFreq, minAmp) {
+				return forte
+			}
+		}
+		return 0
+	}
+
+	forte := 0
+	failCount := 0
+	for left := 0; left+step < width; left += step {
+		right := left + step
+		if judgeForteSegment(mask, left, right, sourceStepWidth, minFreq, maxFreq, minAmp) {
+			if failCount == 0 {
+				forte++
+			}
+		} else {
+			failCount++
+		}
+	}
+	return forte
+}
+
+func colorMask(img image.Image, box maa.Rect, cr colorRange) ([][]bool, int, int) {
+	bounds := img.Bounds()
+	x1 := maxInt(bounds.Min.X, box[0])
+	y1 := maxInt(bounds.Min.Y, box[1])
+	x2 := minInt(bounds.Max.X, box[0]+box[2])
+	y2 := minInt(bounds.Max.Y, box[1]+box[3])
+	if x2 <= x1 || y2 <= y1 {
+		return nil, 0, 0
+	}
+	width := x2 - x1
+	height := y2 - y1
+	mask := make([][]bool, height)
+	for y := 0; y < height; y++ {
+		mask[y] = make([]bool, width)
+		for x := 0; x < width; x++ {
+			r, g, b, _ := img.At(x1+x, y1+y).RGBA()
+			r8, g8, b8 := r>>8, g>>8, b>>8
+			mask[y][x] = r8 >= cr.rMin && r8 <= cr.rMax && g8 >= cr.gMin && g8 <= cr.gMax && b8 >= cr.bMin && b8 <= cr.bMax
+		}
+	}
+	return mask, width, height
+}
+
+func judgeForteSegment(mask [][]bool, left, right int, sourceStepWidth float64, minFreq, maxFreq int, minAmp float64) bool {
+	height := len(mask)
+	if height == 0 || right <= left {
+		return false
+	}
+	width := len(mask[0])
+	left = maxInt(0, left)
+	right = minInt(width, right)
+	segWidth := right - left
+	if segWidth <= 0 {
+		return false
+	}
+	profile := make([]float64, segWidth)
+	white := 0
+	for x := 0; x < segWidth; x++ {
+		count := 0
+		for y := 0; y < height; y++ {
+			if mask[y][left+x] {
+				count++
+				white++
+			}
+		}
+		profile[x] = float64(count)
+	}
+	if white == 0 {
+		return false
+	}
+
+	peakFreq, peakAmp := fftPeakWithFrequency(profile)
+	if sourceStepWidth <= 0 {
+		sourceStepWidth = float64(segWidth)
+	}
+	scale := float64(segWidth) / sourceStepWidth
+	scaledMin := maxInt(1, int(math.Round(float64(minFreq)*scale)))
+	scaledMax := maxInt(scaledMin, int(math.Round(float64(maxFreq)*scale)))
+	scaledAmp := minAmp * math.Max(0.2, float64(height)/7.0) * math.Max(0.2, scale)
+	return (peakFreq >= scaledMin && peakFreq <= scaledMax) || peakAmp >= scaledAmp
 }
 
 func sampleGrayMeanStd(img image.Image, box maa.Rect) (float64, float64) {
@@ -970,6 +952,118 @@ func fftPeak(profile []float64) float64 {
 		}
 	}
 	return maxAmp
+}
+
+func fftPeakWithFrequency(profile []float64) (int, float64) {
+	n := len(profile)
+	if n < 2 {
+		return 0, 0
+	}
+	mean := 0.0
+	for _, v := range profile {
+		mean += v
+	}
+	mean /= float64(n)
+	maxAmp := 0.0
+	maxFreq := 0
+	for k := 1; k < n; k++ {
+		realPart := 0.0
+		imagPart := 0.0
+		for i, v := range profile {
+			adj := v - mean
+			angle := 2 * math.Pi * float64(k*i) / float64(n)
+			realPart += adj * math.Cos(angle)
+			imagPart -= adj * math.Sin(angle)
+		}
+		amp := math.Hypot(realPart, imagPart)
+		if amp > maxAmp {
+			maxAmp = amp
+			maxFreq = k
+		}
+	}
+	return maxFreq, maxAmp
+}
+
+type combatOCRItem struct {
+	text string
+	box  maa.Rect
+}
+
+// refreshCooldowns ports ok-ww BaseCombatTask.refresh_cd(): OCR reads decimal
+// cooldown labels in the lower-right skill strip, then maps them by x-position.
+func (sa *ScreenAnalyzer) refreshCooldowns(ctx *maa.Context, img image.Image) {
+	sa.ResonanceCD = false
+	sa.EchoCD = false
+	sa.LiberationCD = false
+	detail, err := ctx.RunRecognition("Combat_CooldownOCR", img)
+	if err != nil || detail == nil {
+		return
+	}
+	for _, item := range combatOCRItems(detail) {
+		text := normalizeCombatCDText(item.text)
+		for _, token := range combatCDPattern.FindAllString(text, -1) {
+			value, parseErr := strconv.ParseFloat(token, 64)
+			if parseErr != nil || value <= 0.2 {
+				continue
+			}
+			x := item.box[0]
+			if x <= 0 {
+				x = detail.Box[0]
+			}
+			switch {
+			case x < 1101:
+				sa.ResonanceCD = true
+			case x > 1165:
+				sa.LiberationCD = true
+			default:
+				sa.EchoCD = true
+			}
+		}
+	}
+}
+
+func combatOCRItems(detail *maa.RecognitionDetail) []combatOCRItem {
+	if detail == nil {
+		return nil
+	}
+	if detail.Results == nil {
+		return []combatOCRItem{{text: detail.DetailJson, box: detail.Box}}
+	}
+	results := detail.Results.Filtered
+	if len(results) == 0 {
+		results = detail.Results.All
+	}
+	items := make([]combatOCRItem, 0, len(results))
+	for _, result := range results {
+		ocr, ok := result.AsOCR()
+		if !ok || ocr == nil {
+			continue
+		}
+		items = append(items, combatOCRItem{text: ocr.Text, box: ocr.Box})
+	}
+	if len(items) == 0 {
+		items = append(items, combatOCRItem{text: detail.DetailJson, box: detail.Box})
+	}
+	return items
+}
+
+func normalizeCombatCDText(text string) string {
+	text = strings.TrimSpace(text)
+	replacer := strings.NewReplacer(
+		"：", ".",
+		":", ".",
+		"，", ".",
+		",", ".",
+		"·", ".",
+		"。", ".",
+		"O", "0",
+		"o", "0",
+		"I", "1",
+		"l", "1",
+		"|", "1",
+		" ", "",
+	)
+	return replacer.Replace(text)
 }
 
 func minInt(a, b int) int {

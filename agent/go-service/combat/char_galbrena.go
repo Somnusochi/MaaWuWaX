@@ -54,7 +54,7 @@ func performGalbrena(c combatActor) {
 // galbrenaClickLiberation mirrors ok-ww Galbrena.click_liberation():
 // standard liberation cast with finishLiberationCast.
 func galbrenaClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()

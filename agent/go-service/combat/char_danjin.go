@@ -26,7 +26,7 @@ func performDanjin(c combatActor) {
 	if c.recentlyIntroSwitchedIn(1800 * time.Millisecond) {
 		c.attackFor(1100 * time.Millisecond)
 	} else {
-		c.waitDown(900 * time.Millisecond)
+		c.waitDown(2500 * time.Millisecond)
 		c.attackFor(400 * time.Millisecond)
 	}
 	// Python uses continues_click(get_resonance_key(), 1.1, interval=0.2) to send the
@@ -44,7 +44,7 @@ func performDanjin(c combatActor) {
 // danjinClickLiberation mirrors ok-ww Danjin.click_liberation():
 // standard liberation cast with finishLiberationCast.
 func danjinClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()

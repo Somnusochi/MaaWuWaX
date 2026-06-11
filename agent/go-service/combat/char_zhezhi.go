@@ -16,13 +16,13 @@ func performZhezhi(c combatActor) {
 		c.attackFor(1500 * time.Millisecond)
 	}
 	zhezhiClickLiberation(c)
-	if (c.state.zhezhiBlueReady || c.zhezhiBlueReady()) && c.currentResonance() > 0.05 {
+	if (c.state.zhezhiBlueReady || c.zhezhiBlueReady()) && zhezhiResonanceAvailable(c) {
 		c.state.zhezhiBlueReady = false
 		zhezhiResonanceUntilNotBlue(c, false)
 		c.requestSwitch()
 		return
 	}
-	if c.currentResonance() > 0.05 && c.forteFull() && zhezhiClickResonance(c) {
+	if zhezhiResonanceAvailable(c) && c.forteFull() && zhezhiClickResonance(c) {
 		c.attackFor(800 * time.Millisecond)
 		c.state.zhezhiBlueReady = true
 		c.requestSwitch()
@@ -36,9 +36,10 @@ func performZhezhi(c combatActor) {
 
 // performZhezhiInterlock mirrors ok-ww Zhezhi.do_perform_interlock():
 // carlotta interlock: intro(1.3s attack)→flying→wait_down→right_click →
-//   !blue+forte<3: normal_attack→switch /
-//   !blue+resonance+forte>1: liberation+resonance+normal_attack /
-//   con_lock: resonance_until_not_blue→liberation/echo → echo→switch
+//
+//	!blue+forte<3: normal_attack→switch /
+//	!blue+resonance+forte>1: liberation+resonance+normal_attack /
+//	con_lock: resonance_until_not_blue→liberation/echo → echo→switch
 func performZhezhiInterlock(c combatActor) {
 	if c.recentlyIntroSwitchedIn(1500 * time.Millisecond) {
 		c.attackFor(1300 * time.Millisecond)
@@ -58,7 +59,7 @@ func performZhezhiInterlock(c combatActor) {
 			return
 		}
 	}
-	if !c.zhezhiBlueReady() && c.currentResonance() > 0.05 && forteTier > 1 && !conFullAndCarlottaReady {
+	if !c.zhezhiBlueReady() && zhezhiResonanceAvailable(c) && forteTier > 1 && !conFullAndCarlottaReady {
 		if zhezhiConLock(c) {
 			if zhezhiClickLiberationWait(c, 500*time.Millisecond) {
 				c.sleep(200 * time.Millisecond)
@@ -69,7 +70,7 @@ func performZhezhiInterlock(c combatActor) {
 		}
 	}
 	if zhezhiConLock(c) {
-		if c.zhezhiBlueReady() && c.currentResonance() > 0.05 {
+		if c.zhezhiBlueReady() && zhezhiResonanceAvailable(c) {
 			zhezhiResonanceUntilNotBlue(c, true)
 			if zhezhiConLock(c) {
 				if zhezhiClickLiberationWait(c, 500*time.Millisecond) {
@@ -86,7 +87,7 @@ func performZhezhiInterlock(c combatActor) {
 }
 
 func zhezhiClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation {
+	if !zhezhiLiberationAvailable(c) {
 		return false
 	}
 	start := time.Now()
@@ -127,8 +128,8 @@ func zhezhiClickLiberationWait(c combatActor, wait time.Duration) bool {
 func zhezhiClickResonance(c combatActor) bool {
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
-		if c.forceSkill() {
+	for zhezhiResonanceAvailable(c) && time.Since(start) < 15*time.Second {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)
@@ -148,7 +149,7 @@ func zhezhiResonanceUntilNotBlue(c combatActor, stopOnConcerto bool) {
 	ctrl := c.ctx.GetTasker().GetController()
 	ctrl.PostTouchDown(0, 640, 360, 1).Wait()
 	defer ctrl.PostTouchUp(0).Wait()
-	for c.currentResonance() > 0.05 && c.zhezhiBlueReady() {
+	for zhezhiResonanceAvailable(c) && c.zhezhiBlueReady() {
 		c.forceSkill()
 		if c.needFastPerform() && time.Since(start) > 1100*time.Millisecond {
 			break
@@ -169,6 +170,20 @@ func zhezhiResonanceUntilNotBlue(c combatActor, stopOnConcerto bool) {
 	}
 }
 
+func zhezhiLiberationAvailable(c combatActor) bool {
+	return c.param.UseLiberation && c.liberationNoCD() && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05)
+}
+
+func zhezhiResonanceAvailable(c combatActor) bool {
+	if c.zhezhiBlueReady() {
+		return true
+	}
+	if !c.resonanceNoCD() {
+		return false
+	}
+	return c.freezeElapsed(c.state.lastResonance, c.state.lastResonanceFreeze) >= 2*time.Second
+}
+
 func zhezhiCarlottaReady(c combatActor) bool {
 	carlottaState := c.action.charStates["carlotta"]
 	if carlottaState == nil {
@@ -185,7 +200,7 @@ func zhezhiConLock(c combatActor) bool {
 }
 
 func zhezhiEcho(c combatActor) bool {
-	if c.currentEcho() <= 0.05 {
+	if !c.echoNoCD() {
 		return false
 	}
 	c.run("Combat_RotationEcho")

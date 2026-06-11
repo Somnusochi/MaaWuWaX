@@ -25,7 +25,7 @@ func performLuhesi(c combatActor) {
 	}
 	resCount := 0
 	tryJump := false
-	detectReady := c.currentEcho() > 0
+	detectReady := c.echoNoCD()
 	deadline := time.Now().Add(12 * time.Second)
 	for time.Now().Before(deadline) {
 		if luhesiDetectElbowStrike(c, detectReady) {

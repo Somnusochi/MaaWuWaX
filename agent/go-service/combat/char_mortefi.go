@@ -6,7 +6,7 @@ import "time"
 //
 //	wait_down → liberation → resonance → echo → !liberated→retry_liberation(wait 1s) → switch
 func performMortefi(c combatActor) {
-	c.waitDown(1200 * time.Millisecond)
+	c.waitDown(2500 * time.Millisecond)
 	liberated := mortefiClickLiberation(c)
 	mortefiClickResonance(c)
 	c.echoWait(1 * time.Second)
@@ -17,17 +17,17 @@ func performMortefi(c combatActor) {
 }
 
 func mortefiClickResonance(c combatActor) bool {
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() {
 		return false
 	}
 	start := time.Now()
 	clicked := false
 	lastOp := "click"
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
+	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
 		if lastOp == "resonance" {
 			c.attack()
 			lastOp = "click"
-		} else if c.forceSkill() {
+		} else if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 			lastOp = "resonance"
 		}
@@ -51,7 +51,7 @@ func mortefiTryLiberationWait(c combatActor, wait time.Duration) bool {
 }
 
 func mortefiClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()

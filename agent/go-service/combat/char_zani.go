@@ -43,7 +43,7 @@ func performZani(c combatActor) {
 	}
 
 	c.fBreak()
-	if c.currentEcho() > 0.05 {
+	if c.echoNoCD() {
 		c.echoImmediate()
 	}
 
@@ -51,7 +51,7 @@ func performZani(c combatActor) {
 	waitCrisisBeforeLiberation := false
 	if !c.state.lastCrisis.IsZero() && c.freezeElapsed(c.state.lastCrisis, c.state.zaniCrisisFreeze) < 2450*time.Millisecond {
 		zaniWaitCrisisProtocolEnd(c)
-		if zaniCrisisTimeLeft(c) > -1*time.Second && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05) && c.zaniPrepared() {
+		if zaniCrisisTimeLeft(c) > -1*time.Second && zaniLiberationReady(c) && c.zaniPrepared() {
 			castLiberation = true
 			waitCrisisBeforeLiberation = screenAnalyzer.ZaniBlazesPct < 0.99
 		} else {
@@ -87,7 +87,7 @@ func performZani(c combatActor) {
 
 		breakthroughResult := zaniBasicAttackBreakthroughCombo(c)
 		if c.zaniPrepared() {
-			libAvailable := screenAnalyzer.Liberation || c.currentLiberation() > 0.05
+			libAvailable := zaniLiberationReady(c)
 			if libAvailable {
 				result := zaniWaitFailed
 				if breakthroughResult == zaniWaitDone {
@@ -102,10 +102,10 @@ func performZani(c combatActor) {
 					c.waitDown(600 * time.Millisecond)
 				}
 				if zaniCrisisResponseProtocolCombo(c) {
-					castLiberation = screenAnalyzer.Liberation || c.currentLiberation() > 0.05
+					castLiberation = zaniLiberationReady(c)
 				}
 			} else if c.forteFull() && zaniCrisisResponseProtocolCombo(c) {
-				castLiberation = screenAnalyzer.Liberation || c.currentLiberation() > 0.05
+				castLiberation = zaniLiberationReady(c)
 			}
 			if castLiberation {
 				waitCrisisBeforeLiberation = screenAnalyzer.ZaniBlazesPct < 0.99
@@ -151,7 +151,7 @@ func performZani(c combatActor) {
 }
 
 func zaniClickLiberation1(c combatActor) bool {
-	if !c.param.UseLiberation {
+	if !zaniLiberationReady(c) {
 		return false
 	}
 	start := time.Now()
@@ -170,6 +170,10 @@ func zaniClickLiberation1(c combatActor) bool {
 		}
 	}
 	return confirmLiberationCast(c, clicked, 7*time.Second)
+}
+
+func zaniLiberationReady(c combatActor) bool {
+	return c.param.UseLiberation && c.liberationNoCD() && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05)
 }
 
 func zaniResetExpiredWindow(c combatActor) {
@@ -237,13 +241,13 @@ func zaniStandardDefenseProtocolCombo(c combatActor) zaniWaitState {
 	if c.forteFull() {
 		return zaniWaitFull
 	}
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() {
 		return zaniWaitFailed
 	}
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 200*time.Millisecond {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 200*time.Millisecond {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(50 * time.Millisecond)

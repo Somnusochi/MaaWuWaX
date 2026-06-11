@@ -97,6 +97,8 @@ type combatCharState struct {
 	mornyeHeavyFreeze          int64     // Mornye heavy timestamp freeze snapshot
 	xiangliyaoLiberationFreeze int64     // Xiangliyao liberation timestamp freeze snapshot
 	carlottaForte              int       // Carlotta manual memory forte points tracker
+	hasToolBox                 bool      // ok-ww BaseChar.has_tool_box: use Tool key before switching out
+	grantToolBoxOnIntro        bool      // Roccia post-switch payload for the next intro character
 }
 
 type combatActor struct {
@@ -188,7 +190,7 @@ func (c combatActor) forceSkill() bool {
 }
 
 func (c combatActor) liberation() bool {
-	if !c.param.UseLiberation {
+	if !c.liberationAvailable() {
 		return false
 	}
 	if c.freezeElapsed(c.state.lastLiberation, c.state.lastLiberationFreeze) < 12*time.Second {
@@ -208,7 +210,7 @@ func (c combatActor) liberation() bool {
 }
 
 func (c combatActor) echo() bool {
-	if c.currentEcho() <= 0.05 {
+	if !c.echoNoCD() {
 		return false
 	}
 	// Keep only a short debounce so repeated perform ticks do not double-send
@@ -223,7 +225,7 @@ func (c combatActor) echo() bool {
 }
 
 func (c combatActor) echoImmediate() bool {
-	if c.currentEcho() <= 0.05 {
+	if !c.echoNoCD() {
 		return false
 	}
 	c.run("Combat_RotationEcho")
@@ -346,6 +348,29 @@ func (c combatActor) currentEcho() float64 {
 	return screenAnalyzer.EchoPct
 }
 
+func (c combatActor) resonanceNoCD() bool {
+	return !screenAnalyzer.ResonanceCD
+}
+
+func (c combatActor) echoNoCD() bool {
+	return !screenAnalyzer.EchoCD
+}
+
+func (c combatActor) liberationNoCD() bool {
+	return !screenAnalyzer.LiberationCD
+}
+
+func (c combatActor) resonanceAvailable() bool {
+	if !c.resonanceNoCD() {
+		return false
+	}
+	return c.freezeElapsed(c.state.lastResonance, c.state.lastResonanceFreeze) >= 2*time.Second
+}
+
+func (c combatActor) liberationAvailable() bool {
+	return c.param.UseLiberation && c.liberationNoCD() && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05)
+}
+
 func (c combatActor) currentForte() float64 {
 	return screenAnalyzer.FortePct
 }
@@ -362,6 +387,9 @@ func (c combatActor) flying() bool {
 }
 
 func (c combatActor) forteFull() bool {
+	if c.slot.Name == "xigelika" && screenAnalyzer.XigelikaForte {
+		return true
+	}
 	return screenAnalyzer.ForteFull
 }
 
@@ -382,10 +410,20 @@ func (c combatActor) iunoC6() bool {
 }
 
 func (c combatActor) hasLongAction() bool {
+	switch c.slot.Name {
+	case "galbrena":
+		return screenAnalyzer.GalbrenaCheckRes
+	}
 	return screenAnalyzer.HasLongAction
 }
 
 func (c combatActor) hasLongAction2() bool {
+	switch c.slot.Name {
+	case "linnai":
+		return screenAnalyzer.LinnaiCheckRes
+	case "luhesi":
+		return screenAnalyzer.LuhesiCheckRes
+	}
 	return screenAnalyzer.HasLongAction2
 }
 
@@ -470,6 +508,9 @@ func (c combatActor) aemeathLib2Ready() bool {
 }
 
 func (c combatActor) zhezhiForteTier() int {
+	if screenAnalyzer.ZhezhiForteTier > 0 {
+		return screenAnalyzer.ZhezhiForteTier
+	}
 	switch forte := c.currentForte(); {
 	case forte > 0.66:
 		return 3
@@ -626,6 +667,11 @@ func (c combatActor) fBreak() {
 }
 
 func (c combatActor) requestSwitch() {
+	if c.state.hasToolBox {
+		c.ctx.GetTasker().GetController().PostClickKey(keycode.MustCode("T")).Wait()
+		c.state.hasToolBox = false
+		c.sleep(100 * time.Millisecond)
+	}
 	hasIntro := screenAnalyzer.ConcertoPct >= 1.0
 	if (c.slot.Name == "zani" || c.slot.Name == "zani2") &&
 		hasIntro &&
@@ -670,12 +716,19 @@ func (c combatActor) requestSwitch() {
 	c.action.lastSwitchIn[target] = time.Now()
 	if hasIntro && target >= 0 && target < len(screenAnalyzer.CharSlots) {
 		if targetName := screenAnalyzer.CharSlots[target].Name; targetName != "" {
-			if targetState := c.action.charStates[targetName]; targetState != nil {
-				targetState.lastIntroSwitchIn = time.Now()
-				targetState.lastIntroSwitchFreeze = screenAnalyzer.FreezeDuration
+			targetState := c.action.charStates[targetName]
+			if targetState == nil {
+				targetState = &combatCharState{}
+				c.action.charStates[targetName] = targetState
+			}
+			targetState.lastIntroSwitchIn = time.Now()
+			targetState.lastIntroSwitchFreeze = screenAnalyzer.FreezeDuration
+			if c.state.grantToolBoxOnIntro {
+				targetState.hasToolBox = true
 			}
 		}
 	}
+	c.state.grantToolBoxOnIntro = false
 	c.action.lastSwitch = time.Now()
 }
 

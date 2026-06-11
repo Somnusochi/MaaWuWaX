@@ -12,9 +12,9 @@ func performSanhua(c combatActor) {
 	start := time.Now()
 	startFreeze := screenAnalyzer.FreezeDuration
 	ctrl.PostTouchDown(0, 640, 360, 1).Wait()
-	sanhuaWaitDownNoClick(c, 900*time.Millisecond)
+	sanhuaWaitDownNoClick(c, 2500*time.Millisecond)
 	liberClicked := sanhuaClickLiberation(c)
-	if !liberClicked && c.currentResonance() > 0.05 {
+	if !liberClicked && c.resonanceAvailable() {
 		ctrl.PostTouchUp(0).Wait()
 		sanhuaClickResonance(c)
 		start = time.Now()
@@ -62,7 +62,7 @@ func sanhuaWaitDownNoClick(c combatActor, timeout time.Duration) bool {
 }
 
 func sanhuaClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -76,13 +76,13 @@ func sanhuaClickLiberation(c combatActor) bool {
 }
 
 func sanhuaClickResonance(c combatActor) bool {
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() {
 		return false
 	}
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

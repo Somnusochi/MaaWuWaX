@@ -16,7 +16,7 @@ func performChisa(c combatActor) {
 			c.requestSwitch()
 			return
 		}
-		if c.flying() && !screenAnalyzer.Liberation && c.currentLiberation() <= 0.05 && c.currentResonance() <= 0.05 {
+		if c.flying() && !c.liberationAvailable() && !c.resonanceAvailable() {
 			c.waitDown(1200 * time.Millisecond)
 		}
 		c.echo()
@@ -35,7 +35,7 @@ func performChisa(c combatActor) {
 		c.attackFor(800 * time.Millisecond)
 		timeout = 2300 * time.Millisecond
 	}
-	if c.flying() && !screenAnalyzer.Liberation && c.currentLiberation() <= 0.05 && c.currentResonance() <= 0.05 {
+	if c.flying() && !c.liberationAvailable() && !c.resonanceAvailable() {
 		c.waitDown(1200 * time.Millisecond)
 	}
 	c.echoWait(1 * time.Second)
@@ -48,7 +48,7 @@ func performChisa(c combatActor) {
 			timeout = 10 * time.Second
 			c.sleep(200 * time.Millisecond)
 		}
-		if time.Since(start) < 500*time.Millisecond && !c.mouseForteFull() && chisaClickResonance(c, 15*time.Second) {
+		if time.Since(start) < 500*time.Millisecond && !c.forteFull() && chisaClickResonance(c, 15*time.Second) {
 			start = time.Now()
 			if !underLiberation {
 				timeout = 1700 * time.Millisecond
@@ -67,7 +67,7 @@ func performChisa(c combatActor) {
 // chisaClickLiberation mirrors ok-ww Chisa.click_liberation():
 // standard liberation cast with finishLiberationCast.
 func chisaClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -83,13 +83,13 @@ func chisaClickLiberation(c combatActor) bool {
 // chisaClickResonance mirrors ok-ww Chisa.click_resonance():
 // casts resonance while available for the given timeout.
 func chisaClickResonance(c combatActor, timeout time.Duration) bool {
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() {
 		return false
 	}
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < timeout {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < timeout {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

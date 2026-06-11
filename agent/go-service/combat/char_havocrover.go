@@ -52,7 +52,7 @@ func havocRoverFastPerformWind(c combatActor) {
 		return
 	}
 	c.echo()
-	if c.currentResonance() > 0.05 && !havocRoverWindFlying(c) {
+	if c.resonanceAvailable() && !havocRoverWindFlying(c) {
 		c.forceSkill()
 		c.sleep(100 * time.Millisecond)
 	}
@@ -127,7 +127,8 @@ func havocRoverPerformSpectro(c combatActor) {
 
 // havocRoverPerformWind mirrors ok-ww HavocRover.perform_wind_routine():
 // intro_flying→click_while_flying(2s)→liberation→wait_down /
-//   wait_down→resonance+echo→resonance_spam(1s)→flying_click→liberation→wait_down.
+//
+//	wait_down→resonance+echo→resonance_spam(1s)→flying_click→liberation→wait_down.
 func havocRoverPerformWind(c combatActor) {
 	if c.recentlyIntroSwitchedIn(1600*time.Millisecond) && c.flying() {
 		havocRoverClickWhileFlying(c, 2*time.Second)
@@ -137,7 +138,7 @@ func havocRoverPerformWind(c combatActor) {
 		}
 	}
 	havocRoverWindWaitDown(c, false)
-	if c.currentResonance() > 0.05 && !c.forteFull() {
+	if c.resonanceAvailable() && !c.forteFull() {
 		c.echo()
 		start := time.Now()
 		flying := false
@@ -214,7 +215,7 @@ func havocRoverWindWaitDown(c combatActor, checkForte bool) {
 // havocRoverClickLiberation mirrors ok-ww HavocRover.click_liberation(send_click=True):
 // standard liberation cast with finishLiberationCast.
 func havocRoverClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -230,13 +231,13 @@ func havocRoverClickLiberation(c combatActor) bool {
 // havocRoverClickResonance mirrors ok-ww HavocRover.click_resonance(send_click=True):
 // casts resonance while available for up to 15s.
 func havocRoverClickResonance(c combatActor) bool {
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() {
 		return false
 	}
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

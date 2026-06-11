@@ -63,7 +63,7 @@ func performPhrolova(c combatActor) {
 			return
 		}
 		if c.flying() {
-				shorekeeperAutoDodge(c, func() bool { return c.flying() })
+			shorekeeperAutoDodge(c, func() bool { return c.flying() })
 		}
 		if phrolovaHeavyAndLiber(c) {
 			c.requestSwitch()
@@ -72,7 +72,7 @@ func performPhrolova(c combatActor) {
 		if time.Since(start) > 1*time.Second && phrolovaResAvailableInMode(c, performUnderOutro) {
 			if performUnderOutro {
 				c.attackFor(300 * time.Millisecond)
-				if phrolovaClickResonance(c) {
+				if phrolovaClickResonanceInMode(c, performUnderOutro) {
 					c.attackFor(100 * time.Millisecond)
 					phrolovaWaitResonanceEnd(c, 300*time.Millisecond)
 				}
@@ -91,9 +91,13 @@ func performPhrolova(c combatActor) {
 }
 
 func phrolovaClickResonance(c combatActor) bool {
+	return phrolovaClickResonanceInMode(c, false)
+}
+
+func phrolovaClickResonanceInMode(c combatActor, performUnderOutro bool) bool {
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
+	for phrolovaResAvailableInMode(c, performUnderOutro) && time.Since(start) < 15*time.Second {
 		if c.forceSkill() {
 			clicked = true
 		}
@@ -126,7 +130,7 @@ func phrolovaClickLiberation(c combatActor) bool {
 
 func phrolovaWaitResonanceEnd(c combatActor, timeout time.Duration) {
 	deadline := time.Now().Add(timeout)
-	for time.Now().Before(deadline) && c.currentResonance() > 0.05 {
+	for time.Now().Before(deadline) && phrolovaResAvailable(c) {
 		c.attack()
 		c.sleep(100 * time.Millisecond)
 	}
@@ -137,10 +141,16 @@ func phrolovaResAvailable(c combatActor) bool {
 }
 
 func phrolovaResAvailableInMode(c combatActor, performUnderOutro bool) bool {
-	if performUnderOutro {
-		return !c.flying() && c.currentResonance() > 0.05
+	if !c.resonanceNoCD() {
+		return false
 	}
-	return c.currentResonance() > 0.05
+	if c.freezeElapsed(c.state.lastResonance, c.state.lastResonanceFreeze) < 2*time.Second {
+		return false
+	}
+	if performUnderOutro {
+		return !c.flying()
+	}
+	return true
 }
 
 // phrolovaHeavyAndLiber mirrors ok-ww Phrolova.heavy_and_liber():

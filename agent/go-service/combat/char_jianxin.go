@@ -10,10 +10,10 @@ func performJianxin(c combatActor) {
 		c.attackFor(1 * time.Second)
 	}
 	defaultClickLiberation(c)
-	if c.currentResonance() > 0.05 {
+	if c.resonanceAvailable() {
 		defaultClickResonance(c)
 	}
-	if c.currentEcho() > 0.05 {
+	if c.echoNoCD() {
 		c.echoWait(1 * time.Second)
 	}
 	c.requestSwitch()

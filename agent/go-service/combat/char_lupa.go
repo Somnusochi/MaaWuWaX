@@ -49,8 +49,7 @@ func performLupa(c combatActor) {
 	if c.currentResonance() > 0.05 && lupaClickResonance(c) {
 		c.state.lastLiberation = time.Time{}
 		c.state.lupaLiberationFreeze = 0
-		// KNOWN_DIFF: Python checks liberation_available() (CD-based); Go uses UI energy/state check
-		if screenAnalyzer.Liberation || c.currentLiberation() > 0.05 {
+		if lupaLiberationAvailable(c) {
 			c.waitDown(1200 * time.Millisecond)
 		} else {
 			c.requestSwitch()
@@ -101,15 +100,17 @@ func lupaStillInLiberation(c combatActor) bool {
 	return !c.state.lastLiberation.IsZero() && c.freezeElapsed(c.state.lastLiberation, c.state.lupaLiberationFreeze) < 12*time.Second
 }
 
-// KNOWN_DIFF: Python uses FFT frequency analysis on forte bar stripes; Go uses simplified threshold (framework limitation)
 func lupaJudgeForte(c combatActor) int {
 	if !c.forteFull() {
 		return 0
 	}
-	if c.mouseForteFull() || c.currentForte() > 0.14 {
+	if screenAnalyzer.LupaForte > 0 {
+		return screenAnalyzer.LupaForte
+	}
+	if c.mouseForteFull() {
 		return 2
 	}
-	return 1
+	return 0
 }
 
 func lupaJumpWithClick(c combatActor, delay time.Duration) {
@@ -132,7 +133,7 @@ func lupaJumpWithClick(c combatActor, delay time.Duration) {
 func lupaClickResonance(c combatActor) bool {
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
+	for lupaResonanceAvailable(c) && time.Since(start) < 15*time.Second {
 		if c.forceSkill() {
 			clicked = true
 		}
@@ -142,7 +143,7 @@ func lupaClickResonance(c combatActor) bool {
 }
 
 func lupaClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation {
+	if !lupaLiberationAvailable(c) {
 		return false
 	}
 	start := time.Now()
@@ -165,6 +166,17 @@ func lupaClickLiberation(c combatActor) bool {
 	}
 	c.state.lupaLiberationFreeze = screenAnalyzer.FreezeDuration
 	return true
+}
+
+func lupaResonanceAvailable(c combatActor) bool {
+	if !c.resonanceNoCD() {
+		return false
+	}
+	return c.freezeElapsed(c.state.lastResonance, c.state.lastResonanceFreeze) >= 2*time.Second
+}
+
+func lupaLiberationAvailable(c combatActor) bool {
+	return c.param.UseLiberation && c.liberationNoCD() && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05)
 }
 
 func lupaWaitWolfReady(c combatActor, timeout time.Duration) bool {

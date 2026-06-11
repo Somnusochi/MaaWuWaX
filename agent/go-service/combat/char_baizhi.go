@@ -9,7 +9,7 @@ func performBaizhi(c combatActor) {
 	if c.recentlyIntroSwitchedIn(1800 * time.Millisecond) {
 		start := time.Now()
 		for time.Since(start) < 1200*time.Millisecond {
-			if c.currentResonance() > 0.05 {
+			if c.resonanceAvailable() {
 				baizhiClickResonance(c)
 				break
 			}
@@ -17,10 +17,8 @@ func performBaizhi(c combatActor) {
 			c.sleep(100 * time.Millisecond)
 		}
 	}
-	if screenAnalyzer.ConcertoPct < 1.0 {
-		baizhiClickLiberation(c)
-	}
-	if c.currentResonance() > 0.05 {
+	baizhiClickLiberation(c)
+	if c.resonanceAvailable() {
 		baizhiClickResonance(c)
 	}
 	if c.echoWait(1 * time.Second) {
@@ -33,7 +31,7 @@ func performBaizhi(c combatActor) {
 // baizhiClickLiberation mirrors ok-ww Baizhi.click_liberation(con_less_than=1):
 // casts liberation with up to 800ms wait, then finishLiberationCast with 3s timeout.
 func baizhiClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -51,8 +49,8 @@ func baizhiClickLiberation(c combatActor) bool {
 func baizhiClickResonance(c combatActor) bool {
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

@@ -47,7 +47,7 @@ func performXigelika(c combatActor) {
 }
 
 func xigelikaClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -76,8 +76,8 @@ func xigelikaHandleHeavy(c combatActor) bool {
 func xigelikaClickResonance(c combatActor) bool {
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 2*time.Second {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 2*time.Second {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)
@@ -99,7 +99,7 @@ func xigelikaHeavyWaitHighlightDown(c combatActor) bool {
 		c.sleep(10 * time.Millisecond)
 		return true
 	}
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() {
 		c.attack()
 		c.sleep(50 * time.Millisecond)
 		return false

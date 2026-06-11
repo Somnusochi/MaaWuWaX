@@ -30,11 +30,11 @@ func performHiyuki(c combatActor) {
 }
 
 func hiyukiLiberationAvailable(c combatActor) bool {
-	return screenAnalyzer.Liberation || c.currentLiberation() > 0.05
+	return c.liberationAvailable()
 }
 
 func hiyukiLiberationNotGray(c combatActor) bool {
-	return screenAnalyzer.Liberation || c.currentLiberation() > 0.001
+	return c.liberationNoCD()
 }
 
 func hiyukiTimeout(c combatActor) time.Duration {
@@ -88,8 +88,9 @@ func performHiyukiStandard(c combatActor) {
 
 // performHiyukiLiberationWindow mirrors ok-ww Hiyuki.perform_lib():
 // loop while has_long_action2: f_break→echo→lib_permission→hold_liberation /
-//   resonance(exit if >2s) / lib_heavy→heavy_click→wait_liberation→hold /
-//   left_prompt→click_loop / right_prompt→right_click / normal_attack.
+//
+//	resonance(exit if >2s) / lib_heavy→heavy_click→wait_liberation→hold /
+//	left_prompt→click_loop / right_prompt→right_click / normal_attack.
 func performHiyukiLiberationWindow(c combatActor) {
 	start := time.Now()
 	startFreeze := screenAnalyzer.FreezeDuration
@@ -153,8 +154,8 @@ func performHiyukiLiberationWindow(c combatActor) {
 func hiyukiClickResonance(c combatActor) bool {
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

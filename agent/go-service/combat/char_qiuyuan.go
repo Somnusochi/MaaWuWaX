@@ -12,7 +12,7 @@ func performQiuyuan(c combatActor) {
 		c.attackFor(1170 * time.Millisecond)
 	}
 	if c.flying() {
-		c.waitDown(900 * time.Millisecond)
+		c.waitDown(2500 * time.Millisecond)
 	}
 	start := time.Now()
 	timeout := 1200 * time.Millisecond
@@ -51,7 +51,7 @@ func performQiuyuan(c combatActor) {
 }
 
 func qiuyuanClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -65,13 +65,13 @@ func qiuyuanClickLiberation(c combatActor) bool {
 }
 
 func qiuyuanClickResonance(c combatActor) bool {
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() {
 		return false
 	}
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

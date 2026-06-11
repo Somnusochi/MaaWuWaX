@@ -86,11 +86,11 @@ func performAugusta(c combatActor) {
 	c.requestSwitch()
 }
 
-// augustaResonanceAvailable mirrors ok-ww Augusta.resonance_available() more closely than
-// a plain gauge check: avoid re-sending resonance while the local skill CD window is still
-// active or while a higher-priority Augusta follow-up prompt is already visible.
+// augustaResonanceAvailable mirrors ok-ww Augusta.resonance_available():
+// not has_cd('resonance'), with local debounce to stop repeated sends between
+// analyzer frames and while higher-priority Augusta follow-up prompts are visible.
 func augustaResonanceAvailable(c combatActor) bool {
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceNoCD() {
 		return false
 	}
 	if c.freezeElapsed(c.state.lastResonance, c.state.lastResonanceFreeze) < 2*time.Second {

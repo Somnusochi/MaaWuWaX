@@ -9,8 +9,6 @@ import "time"
 //	!intro: echo→perform_under_intro / flying→attack / liberation→attack / resonance→switch
 func performLinnai(c combatActor) {
 	if c.recentlyIntroSwitchedIn(1700 * time.Millisecond) {
-		// KNOWN_DIFF: Python uses check_res() image-template matching for enemy target;
-		// Go uses hasLongAction2() (framework limitation).
 		if c.hasLongAction2() {
 			c.attackFor(1330 * time.Millisecond)
 		} else {
@@ -55,7 +53,7 @@ func performLinnai(c combatActor) {
 }
 
 func linnaiClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -71,8 +69,8 @@ func linnaiClickLiberation(c combatActor) bool {
 func linnaiClickResonance(c combatActor, timeout time.Duration) bool {
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < timeout {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < timeout {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

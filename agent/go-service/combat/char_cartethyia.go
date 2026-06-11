@@ -95,7 +95,7 @@ func cartethyiaAcquireMissingBuffs(c combatActor) bool {
 	if !sword3 {
 		resUsed = cartethyiaClickResonance(c, 1200*time.Millisecond)
 	}
-	if screenAnalyzer.Liberation || c.currentLiberation() > 0.05 {
+	if c.liberationAvailable() {
 		if resUsed {
 			c.sleep(200 * time.Millisecond)
 		}
@@ -121,7 +121,7 @@ func cartethyiaAcquireMissingBuffs(c combatActor) bool {
 	sword1, sword2, sword3 = c.cartethyiaSwordBuffs()
 	c.state.cartethyiaTryMidAirOnce = !sword1 && !sword2 && !sword3
 
-	return !screenAnalyzer.Liberation && c.currentLiberation() <= 0.05
+	return !c.liberationAvailable()
 }
 
 // cartethyiaTransformAttackWindow mirrors ok-ww Cartethyia.fleurdelys_n4_duration():
@@ -140,11 +140,11 @@ func cartethyiaTransformAttackWindow(c combatActor) time.Duration {
 			return window
 		}
 	}
-	if c.state.cartethyiaN4At.IsZero() {
-		return 0
-	}
 	if c.state.transformed || c.isFirstEngage() || c.freezeElapsed(c.state.cartethyiaN4At, c.state.cartethyiaN4Freeze) < 1500*time.Millisecond {
 		return 3250 * time.Millisecond
+	}
+	if c.state.cartethyiaN4At.IsZero() {
+		return 0
 	}
 	if !c.state.cartethyiaResAt.IsZero() {
 		if backswing := c.freezeElapsed(c.state.cartethyiaResAt, c.state.cartethyiaResFreeze); backswing < 2500*time.Millisecond {
@@ -170,13 +170,13 @@ func cartethyiaTransformAttackWindow(c combatActor) time.Duration {
 // cartethyiaClickResonanceWithBigLiber mirrors ok-ww Cartethyia.click_resonance_with_lib_big():
 // casts resonance with big liberation check; handles resonance<0.17 attack padding.
 func cartethyiaClickResonanceWithBigLiber(c combatActor) bool {
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() {
 		return false
 	}
 	start := time.Now()
 	clicked := false
 	resonanceStarted := time.Time{}
-	for c.currentResonance() > 0.05 && time.Since(start) < 8*time.Second {
+	for c.resonanceAvailable() && time.Since(start) < 8*time.Second {
 		if cartethyiaTryBigLiber(c) {
 			return true
 		}
@@ -185,7 +185,7 @@ func cartethyiaClickResonanceWithBigLiber(c combatActor) bool {
 			c.sleep(100 * time.Millisecond)
 			continue
 		}
-		if c.forceSkill() {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 			if resonanceStarted.IsZero() {
 				resonanceStarted = time.Now()
@@ -214,7 +214,7 @@ func cartethyiaTryBigLiber(c combatActor) bool {
 // cartethyiaClickLiberation mirrors ok-ww Cartethyia.click_liberation():
 // standard liberation cast with finishLiberationCast.
 func cartethyiaClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -232,8 +232,8 @@ func cartethyiaClickLiberation(c combatActor) bool {
 func cartethyiaClickResonance(c combatActor, timeout time.Duration) bool {
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < timeout {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < timeout {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 			c.state.cartethyiaResAt = time.Now()
 			c.state.cartethyiaResFreeze = screenAnalyzer.FreezeDuration

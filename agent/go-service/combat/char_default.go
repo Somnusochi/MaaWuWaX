@@ -18,7 +18,7 @@ func performDefault(c combatActor) {
 }
 
 func defaultClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -41,17 +41,17 @@ func defaultClickLiberation(c combatActor) bool {
 }
 
 func defaultClickResonance(c combatActor) bool {
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() {
 		return false
 	}
 	start := time.Now()
 	clicked := false
 	lastOp := "click"
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
+	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
 		if lastOp == "resonance" {
 			c.attack()
 			lastOp = "click"
-		} else if c.forceSkill() {
+		} else if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 			lastOp = "resonance"
 		}

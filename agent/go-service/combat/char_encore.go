@@ -60,7 +60,8 @@ func encoreCanResonanceStep2(c combatActor, delay time.Duration) bool {
 
 // encorePerformN4 mirrors ok-ww Encore.n4():
 // resonance→attack(2.7s) / resonance_failed→attack(2.4s) /
-//   liberation<6s: attack n4 / mouse_forte_full: heavy / else: resonance.
+//
+//	liberation<6s: attack n4 / mouse_forte_full: heavy / else: resonance.
 func encorePerformN4(c combatActor) {
 	duration := 2400 * time.Millisecond
 	if encoreClickResonance(c) {
@@ -86,7 +87,7 @@ func encorePerformN4(c combatActor) {
 // field that must NOT be overwritten by routine resonance casts. We save
 // and restore it around the cast so can_resonance_step2 windows stay correct.
 func encoreClickResonance(c combatActor) bool {
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() {
 		return false
 	}
 	savedResonance := c.state.lastResonance
@@ -94,8 +95,8 @@ func encoreClickResonance(c combatActor) bool {
 
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

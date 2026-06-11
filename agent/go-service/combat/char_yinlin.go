@@ -36,7 +36,7 @@ func performYinlin(c combatActor) {
 }
 
 func yinlinClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -50,13 +50,13 @@ func yinlinClickLiberation(c combatActor) bool {
 }
 
 func yinlinClickResonance(c combatActor) bool {
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() {
 		return false
 	}
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)
@@ -65,9 +65,6 @@ func yinlinClickResonance(c combatActor) bool {
 }
 
 func yinlinHeavyAttack(c combatActor) {
-	// Keep this duration state-driven instead of a fixed hardcoded hold so it
-	// stays closer to the ok-ww heavy timing across different entry states.
-	c.holdHeavyUntil(1200*time.Millisecond, 100*time.Millisecond, func() bool {
-		return !c.mouseForteFull()
-	})
+	c.heavy(600 * time.Millisecond)
+	c.sleep(10 * time.Millisecond)
 }

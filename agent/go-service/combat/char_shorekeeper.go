@@ -18,16 +18,14 @@ func performShorekeeper(c combatActor) {
 	c.echoImmediate()
 	shorekeeperClickLiberation(c)
 	if !shorekeeperClickResonance(c) {
-		c.holdHeavyUntil(15*time.Second, 100*time.Millisecond, func() bool {
-			return c.mouseForteFull()
-		})
+		defaultHeavyClickForte(c)
 	}
 	shorekeeperPrepareOutro(c)
 	c.requestSwitch()
 }
 
 func shorekeeperClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -41,13 +39,13 @@ func shorekeeperClickLiberation(c combatActor) bool {
 }
 
 func shorekeeperClickResonance(c combatActor) bool {
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() {
 		return false
 	}
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

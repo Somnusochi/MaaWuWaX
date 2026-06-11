@@ -56,8 +56,8 @@ func performLucy(c combatActor) {
 func lucyClickResonance(c combatActor) bool {
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 800*time.Millisecond {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 800*time.Millisecond {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)
@@ -66,7 +66,7 @@ func lucyClickResonance(c combatActor) bool {
 }
 
 func lucyClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()

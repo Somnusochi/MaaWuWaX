@@ -23,7 +23,7 @@ func performYuanwu(c combatActor) {
 
 func yuanwuClickLiberation(c combatActor) bool {
 	if !c.param.UseLiberation || screenAnalyzer.ConcertoPct >= 1.0 ||
-		(!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+		!c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -37,13 +37,13 @@ func yuanwuClickLiberation(c combatActor) bool {
 }
 
 func yuanwuClickResonance(c combatActor) bool {
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() {
 		return false
 	}
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

@@ -27,16 +27,16 @@ func performCarlotta(c combatActor) {
 		c.requestSwitch()
 		return
 	}
-	if (screenAnalyzer.Liberation || c.currentLiberation() > 0.05) && !c.needFastPerform() {
+	if carlottaLiberationAvailable(c) && !c.needFastPerform() {
 		// Python loops while self.liberation_available() to fire multiple shots
-		for screenAnalyzer.Liberation || c.currentLiberation() > 0.05 {
+		for carlottaLiberationAvailable(c) {
 			carlottaCastLiberation(c, carlottaShouldPressW(c))
 		}
 		carlottaEchoWait(c, time.Second)
 		c.requestSwitch()
 		return
 	}
-	if c.currentResonance() > 0.05 {
+	if carlottaResonanceAvailable(c) {
 		if bullet == 0 {
 			c.heavy(600 * time.Millisecond)
 		}
@@ -68,7 +68,7 @@ func performCarlottaInterlock(c combatActor) {
 			return
 		}
 	}
-	if carlottaGetForte(c) < 4 && c.currentResonance() > 0.05 && !c.state.liberationReady {
+	if carlottaGetForte(c) < 4 && carlottaResonanceAvailable(c) && !c.state.liberationReady {
 		if bullet == 0 {
 			c.heavy(600 * time.Millisecond)
 		}
@@ -86,8 +86,8 @@ func performCarlottaInterlock(c combatActor) {
 		c.requestSwitch()
 		return
 	}
-	if (screenAnalyzer.Liberation || c.currentLiberation() > 0.05) && c.state.carlottaContinueLiberation {
-		for screenAnalyzer.Liberation || c.currentLiberation() > 0.05 {
+	if carlottaLiberationAvailable(c) && c.state.carlottaContinueLiberation {
+		for carlottaLiberationAvailable(c) {
 			if carlottaCastLiberation(c, false) {
 				c.state.carlottaContinueLiberation = false
 				c.state.liberationReady = false
@@ -109,7 +109,7 @@ func performCarlottaOutro(c combatActor) {
 	if !c.state.liberationReady {
 		carlottaGetForte(c)
 		for !c.mouseForteFull() && c.performElapsed() < 6*time.Second {
-			if c.currentResonance() > 0.05 {
+			if carlottaResonanceAvailable(c) {
 				carlottaClickResonance(c)
 			} else {
 				c.attack()
@@ -126,9 +126,9 @@ func performCarlottaOutro(c combatActor) {
 	castLiberation := false
 	if c.state.liberationReady {
 		for c.performElapsed() < 14*time.Second {
-			if (screenAnalyzer.Liberation || c.currentLiberation() > 0.05) && !castLiberation {
+			if carlottaLiberationAvailable(c) && !castLiberation {
 				// Python: while self.liberation_available() to fire multiple shots
-				for screenAnalyzer.Liberation || c.currentLiberation() > 0.05 {
+				for carlottaLiberationAvailable(c) {
 					if carlottaCastLiberation(c, false) {
 						c.state.liberationReady = false
 						castLiberation = true
@@ -138,7 +138,7 @@ func performCarlottaOutro(c combatActor) {
 					c.sleep(200 * time.Millisecond)
 				}
 			}
-			if c.currentResonance() > 0.05 {
+			if carlottaResonanceAvailable(c) {
 				if carlottaClickResonance(c) {
 					c.attackFor(800 * time.Millisecond)
 					c.state.carlottaForte += 1
@@ -146,7 +146,7 @@ func performCarlottaOutro(c combatActor) {
 				}
 			}
 			c.attackFor(100 * time.Millisecond)
-			if !castLiberation && !screenAnalyzer.Liberation && c.currentLiberation() <= 0.05 && c.currentResonance() <= 0.05 && clickedResonance {
+			if !castLiberation && !carlottaLiberationAvailable(c) && !carlottaResonanceAvailable(c) && clickedResonance {
 				break
 			}
 			c.sleep(100 * time.Millisecond)
@@ -168,7 +168,7 @@ func carlottaReady(c combatActor) bool {
 	if forte > 2 {
 		return true
 	}
-	return c.currentResonance() > 0.05 && forte > 0
+	return carlottaResonanceAvailable(c) && forte > 0
 }
 
 // carlottaHeavyClickForte mirrors ok-ww Carlotta.heavy_click_forte():
@@ -202,7 +202,7 @@ func carlottaCastLiberation(c combatActor, holdForward bool) bool {
 		ctrl.PostKeyDown(keycode.MustCode("W")).Wait()
 		defer ctrl.PostKeyUp(keycode.MustCode("W")).Wait()
 	}
-	for (screenAnalyzer.Liberation || c.currentLiberation() > 0.05) && time.Since(start) < 400*time.Millisecond {
+	for carlottaLiberationAvailable(c) && time.Since(start) < 400*time.Millisecond {
 		if !autoDodgeStart.IsZero() && time.Since(autoDodgeStart) > 500*time.Millisecond && c.flying() {
 			c.waitDown(1200 * time.Millisecond)
 		}
@@ -260,11 +260,11 @@ func carlottaClickResonance(c combatActor) bool {
 	start := time.Now()
 	clicked := false
 	clickAttack := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 10*time.Second {
+	for carlottaResonanceAvailable(c) && time.Since(start) < 10*time.Second {
 		if clickAttack {
 			c.attack()
 			clickAttack = false
-		} else if c.forceSkill() {
+		} else if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 			clickAttack = true
 		}
@@ -273,10 +273,21 @@ func carlottaClickResonance(c combatActor) bool {
 	return clicked
 }
 
+func carlottaLiberationAvailable(c combatActor) bool {
+	return c.param.UseLiberation && c.liberationNoCD() && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05)
+}
+
+func carlottaResonanceAvailable(c combatActor) bool {
+	if !c.resonanceNoCD() {
+		return false
+	}
+	return c.freezeElapsed(c.state.lastResonance, c.state.lastResonanceFreeze) >= 2*time.Second
+}
+
 // carlottaEcho mirrors ok-ww Carlotta.click_echo():
 // sends echo via rotation task if available.
 func carlottaEcho(c combatActor) bool {
-	if c.currentEcho() <= 0.05 {
+	if !c.echoNoCD() {
 		return false
 	}
 	c.run("Combat_RotationEcho")
@@ -299,12 +310,16 @@ func carlottaEchoWait(c combatActor, wait time.Duration) bool {
 	return carlottaEcho(c)
 }
 
-// carlottaGetForte returns the manual memory forte points tracker
+// carlottaGetForte mirrors ok-ww Carlotta.get_forte(): prefer visual FFT
+// detection, with the local counter kept as a fallback for transient misses.
 func carlottaGetForte(c combatActor) int {
 	if c.mouseForteFull() {
 		c.state.carlottaForte = 4
 		return 4
 	}
+	if screenAnalyzer.CarlottaForte > 0 {
+		c.state.carlottaForte = screenAnalyzer.CarlottaForte
+		return screenAnalyzer.CarlottaForte
+	}
 	return c.state.carlottaForte
 }
-

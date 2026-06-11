@@ -85,7 +85,7 @@ func jinhsiIntroResonanceOnCooldown(c combatActor) bool {
 // jinhsiClickLiberation mirrors ok-ww Jinhsi.click_liberation(send_click=True):
 // standard liberation cast with finishLiberationCast.
 func jinhsiClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()

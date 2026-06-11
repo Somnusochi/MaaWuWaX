@@ -39,7 +39,7 @@ func performChangli(c combatActor) {
 		return
 	}
 
-	if !(forte >= 3 && c.currentResonance() > 0.05) && changliLiberationAndHeavy(c, false, 0, 5*time.Second) {
+	if !(forte >= 3 && c.resonanceAvailable()) && changliLiberationAndHeavy(c, false, 0, 5*time.Second) {
 		c.requestSwitch()
 		return
 	}
@@ -91,7 +91,7 @@ func changliPerformOutro(c combatActor, forte int) {
 		c.sleep(1 * time.Second)
 	}
 
-	if (screenAnalyzer.Liberation || c.currentLiberation() > 0.05) && changliLiberationAndHeavy(c, false, 0, 5*time.Second) {
+	if c.liberationAvailable() && changliLiberationAndHeavy(c, false, 0, 5*time.Second) {
 		c.sleep(600 * time.Millisecond)
 		forte = 0
 	}
@@ -120,20 +120,20 @@ func changliHeavyRelease(c combatActor) bool {
 // casts liberation, holds heavy during animation (after 1.5s→5.5s boundary),
 // waits for mouse_forte_full→drop cycle after return.
 func changliLiberationAndHeavy(c combatActor, sendClick bool, waitIfReady time.Duration, timeout time.Duration) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
 	clicked := false
 
-	for time.Since(start) < waitIfReady && !screenAnalyzer.Liberation && c.currentLiberation() <= 0.05 {
+	for time.Since(start) < waitIfReady && !c.liberationAvailable() {
 		if sendClick {
 			c.attack()
 		}
 		c.sleep(100 * time.Millisecond)
 	}
 
-	for (screenAnalyzer.Liberation || c.currentLiberation() > 0.05) && c.isCurrentChar() {
+	for c.liberationAvailable() && c.isCurrentChar() {
 		if time.Since(start) > timeout {
 			return false
 		}
@@ -190,7 +190,7 @@ func changliLiberationAndHeavy(c combatActor, sendClick bool, waitIfReady time.D
 // changliFlickResonance mirrors ok-ww Changli.flick_resonance():
 // if sendClick, attacks until resonance>0; then spams resonance until exhausted or timeout.
 func changliFlickResonance(c combatActor, timeout time.Duration, sendClick bool) bool {
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() || c.currentResonance() <= 0.05 {
 		return false
 	}
 	start := time.Now()
@@ -204,8 +204,8 @@ func changliFlickResonance(c combatActor, timeout time.Duration, sendClick bool)
 		return false
 	}
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < timeout {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && c.currentResonance() > 0.05 && time.Since(start) < timeout {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

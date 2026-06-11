@@ -32,6 +32,7 @@ func performCantarella(c combatActor) {
 			c.requestSwitch()
 			return
 		} else {
+			c.attackFor(100 * time.Millisecond)
 			c.requestSwitch()
 			return
 		}
@@ -53,7 +54,7 @@ func performCantarella(c combatActor) {
 // cantarellaClickLiberation mirrors ok-ww Cantarella.click_liberation():
 // casts liberation with up to 800ms wait, then finishLiberationCast.
 func cantarellaClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -85,19 +86,13 @@ func cantarellaSkill(c combatActor) bool {
 
 // cantarellaResonanceAvailable mirrors ok-ww Cantarella.resonance_available():
 // Python: `not mouse_forte_full and is_forte_full -> not has_cd('resonance') else super`.
-// Go approximates has_cd with the local resonance cast anchor tracked on combat state.
+// BaseChar.super().resonance_available() is available('resonance', check_color=False),
+// so both paths are CD-driven; the local debounce only prevents same-frame resends.
 func cantarellaResonanceAvailable(c combatActor) bool {
-	if !cantarellaResonanceGaugeReady(c) {
+	if !c.resonanceNoCD() {
 		return false
 	}
-	if c.forteFull() && !c.mouseForteFull() {
-		return !cantarellaResonanceOnCooldown(c)
-	}
 	return !cantarellaResonanceOnCooldown(c)
-}
-
-func cantarellaResonanceGaugeReady(c combatActor) bool {
-	return c.currentResonance() > 0.05
 }
 
 func cantarellaResonanceOnCooldown(c combatActor) bool {

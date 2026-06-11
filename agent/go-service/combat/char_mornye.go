@@ -62,7 +62,7 @@ func mornyeGroundActions(c combatActor) {
 // mornyeAirActions mirrors ok-ww Mornye.on_air_actions():
 // 10s loop: elbow_strike→right_click / liberation / mouse_forte_full→heavy_click_forte→echo→switch / resonance+attack.
 func mornyeAirActions(c combatActor) bool {
-	detectReady := c.currentEcho() > 0.05
+	detectReady := c.echoNoCD()
 	start := time.Now()
 	for time.Since(start) < 10*time.Second && mornyeOnAir(c) {
 		if mornyeDetectElbowStrike(c, detectReady) {
@@ -76,6 +76,9 @@ func mornyeAirActions(c combatActor) bool {
 			c.holdHeavyUntil(2*time.Second, 100*time.Millisecond, func() bool {
 				return !c.mouseForteFull() || mornyeDetectElbowStrike(c, detectReady)
 			})
+			if c.mouseForteFull() {
+				continue
+			}
 			if mornyeDetectElbowStrike(c, detectReady) {
 				continue
 			}
@@ -95,7 +98,7 @@ func mornyeAirActions(c combatActor) bool {
 }
 
 func mornyeClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -109,13 +112,13 @@ func mornyeClickLiberation(c combatActor) bool {
 }
 
 func mornyeClickResonance(c combatActor) bool {
-	if c.currentResonance() <= 0.05 {
+	if !c.resonanceAvailable() {
 		return false
 	}
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

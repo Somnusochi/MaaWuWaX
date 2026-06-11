@@ -46,7 +46,7 @@ func performRebecca(c combatActor) {
 }
 
 func rebeccaClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -80,8 +80,8 @@ func rebeccaPerformEnhancedHeavy(c combatActor) bool {
 func rebeccaClickResonance(c combatActor) bool {
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 800*time.Millisecond {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 800*time.Millisecond {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

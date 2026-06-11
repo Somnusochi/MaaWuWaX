@@ -9,7 +9,7 @@ func performDenia(c combatActor) {
 	if c.recentlyIntroSwitchedIn(1800 * time.Millisecond) {
 		c.waitIntro(1200*time.Millisecond, true)
 	}
-	if c.currentResonance() > 0.05 {
+	if c.resonanceAvailable() {
 		defaultClickResonance(c)
 	}
 	if defaultClickLiberation(c) {

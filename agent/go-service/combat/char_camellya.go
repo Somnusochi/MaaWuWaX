@@ -16,7 +16,7 @@ func performCamellya(c combatActor) {
 		c.state.lastHeavy = time.Now()
 	}
 
-	if screenAnalyzer.ConcertoPct < 0.82 && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05) {
+	if screenAnalyzer.ConcertoPct < 0.82 && c.liberationAvailable() {
 		if camellyyaClickLiberation(c) {
 			c.attackFor(300 * time.Millisecond)
 		}
@@ -25,7 +25,7 @@ func performCamellya(c combatActor) {
 	loopTime := 1100 * time.Millisecond
 	if screenAnalyzer.ConcertoPct >= 0.82 {
 		loopTime = 4600 * time.Millisecond
-	} else if c.currentResonance() > 0.05 {
+	} else if c.resonanceAvailable() {
 		camellyyaClickResonance(c)
 	}
 
@@ -69,7 +69,7 @@ func performCamellya(c combatActor) {
 				heavyAtt = true
 				c.ctx.GetTasker().GetController().PostTouchDown(0, 640, 360, 1).Wait()
 			}
-			if time.Since(buddingStart) < 1500*time.Millisecond && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05) {
+			if time.Since(buddingStart) < 1500*time.Millisecond && c.liberationAvailable() {
 				if camellyyaClickLiberation(c) {
 					c.ctx.GetTasker().GetController().PostTouchUp(0).Wait()
 					c.sleep(200 * time.Millisecond)
@@ -107,7 +107,7 @@ func performCamellya(c combatActor) {
 // camellyyaEcho mirrors ok-ww Camellya.click_echo():
 // sends echo key immediately if available.
 func camellyyaEcho(c combatActor) bool {
-	if c.currentEcho() <= 0.05 {
+	if !c.echoNoCD() {
 		return false
 	}
 	c.run("Combat_RotationEcho")
@@ -120,8 +120,8 @@ func camellyyaEcho(c combatActor) bool {
 func camellyyaClickResonance(c combatActor) bool {
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)
@@ -132,7 +132,7 @@ func camellyyaClickResonance(c combatActor) bool {
 // camellyyaClickLiberation mirrors ok-ww Camellya.click_liberation():
 // casts liberation with standard retry; finishLiberationCast on success.
 func camellyyaClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()

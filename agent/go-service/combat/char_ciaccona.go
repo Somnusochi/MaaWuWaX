@@ -40,7 +40,7 @@ func performCiaccona(c combatActor) {
 		waitAfterAction = true
 		jumpNeeded = false
 	}
-	if c.mouseForteFull() || c.forteFull() {
+	if c.mouseForteFull() || screenAnalyzer.CiacconaForte >= 3 {
 		if jumpNeeded && !c.flying() {
 			jumpDeadline := time.Now().Add(300 * time.Millisecond)
 			for !c.flying() && time.Now().Before(jumpDeadline) {
@@ -55,7 +55,7 @@ func performCiaccona(c combatActor) {
 	}
 	// Mirror ok-ww: self.liberation_available() guard wraps the 0.4s wait.
 	// Only wait when liberation is actually available; otherwise skip the sleep.
-	if waitAfterAction && c.param.UseLiberation && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05) {
+	if waitAfterAction && c.liberationAvailable() {
 		c.sleep(400 * time.Millisecond)
 	}
 	if ciacconaClickLiberation(c) {
@@ -73,7 +73,7 @@ func performCiaccona(c combatActor) {
 // ciacconaClickLiberation mirrors ok-ww Ciaccona.click_liberation():
 // standard liberation cast with finishLiberationCast.
 func ciacconaClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !c.liberationAvailable() {
 		return false
 	}
 	start := time.Now()
@@ -91,8 +91,8 @@ func ciacconaClickLiberation(c combatActor) bool {
 func ciacconaClickResonance(c combatActor) bool {
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 10*time.Second {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && time.Since(start) < 10*time.Second {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

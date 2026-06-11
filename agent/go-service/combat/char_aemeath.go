@@ -47,7 +47,7 @@ func performAemeath(c combatActor) {
 				c.echo()
 				c.fBreak()
 			}
-			if (aemeathIntroLibReady(c) && aemeathCanCastLib1(c) && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05)) || c.hasLongAction() {
+			if (aemeathIntroLibReady(c) && aemeathCanCastLib1(c) && c.liberationAvailable()) || c.hasLongAction() {
 				start = time.Now()
 				startFreeze = screenAnalyzer.FreezeDuration
 			} else {
@@ -74,8 +74,8 @@ func aemeathClickEnhanceE(c combatActor) bool {
 	start := time.Now()
 	startFreeze := screenAnalyzer.FreezeDuration
 	clicked := false
-	for c.currentResonance() > 0.05 && c.freezeElapsed(start, startFreeze) < 1500*time.Millisecond {
-		if c.forceSkill() {
+	for c.resonanceAvailable() && c.freezeElapsed(start, startFreeze) < 1500*time.Millisecond {
+		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
 		c.sleep(100 * time.Millisecond)

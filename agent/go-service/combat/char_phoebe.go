@@ -69,8 +69,7 @@ func performPhoebe(c combatActor) {
 	if statusEntered == phoebeActionSuccess || phoebeHasForte(c) {
 		phoebeStarflashCombo(c, preferredSupport)
 	}
-	// KNOWN_DIFF: Python uses available('resonance', check_color=False) (CD check); Go uses energy threshold (framework limitation)
-	if c.currentResonance() > 0.05 {
+	if phoebeResonanceAvailable(c) {
 		if preferredSupport {
 			phoebeClickResonanceOnce(c)
 		} else {
@@ -122,7 +121,7 @@ func phoebeCastRemainingSkills(c combatActor, support bool, liber bool) time.Tim
 		skillCount = 2
 	}
 	for range skillCount {
-		if liber && c.state.phoebeLiberationCount < 1 && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05) {
+		if liber && c.state.phoebeLiberationCount < 1 && phoebeLiberationAvailable(c) {
 			if phoebeClickLiberation(c, false) {
 				c.state.phoebeLiberationCount++
 			}
@@ -135,13 +134,29 @@ func phoebeCastRemainingSkills(c combatActor, support bool, liber bool) time.Tim
 	return start
 }
 
-// KNOWN_DIFF: Python uses FFT frequency analysis for forte tier; Go uses simplified threshold (framework limitation)
 func phoebeHasForte(c combatActor) bool {
-	return c.forteFull() || c.currentForte() > 0.02
+	return phoebeForteTier(c) > 0 || c.forteFull()
 }
 
 func phoebeForteEmpty(c combatActor) bool {
-	return c.currentForte() <= 0.01
+	return phoebeForteTier(c) == 0 && c.currentForte() <= 0.01
+}
+
+func phoebeForteTier(c combatActor) int {
+	if c.phoebePreferredSupport() {
+		return screenAnalyzer.PhoebeBlueForte
+	}
+	return screenAnalyzer.PhoebeLightForte
+}
+
+func phoebeForteFull(c combatActor, support bool) bool {
+	if !c.phoebeStarAvailable() {
+		return c.forteFull()
+	}
+	if support {
+		return screenAnalyzer.PhoebeFullBlue || c.forteFull()
+	}
+	return screenAnalyzer.PhoebeFullLight || c.forteFull()
 }
 
 func phoebeResetAction(c combatActor, support bool) {
@@ -159,7 +174,7 @@ func phoebeResetAction(c combatActor, support bool) {
 func phoebeAbsolutionOrConfession(c combatActor, support bool) phoebeActionState {
 	condition := func() bool {
 		if !c.phoebeStarAvailable() {
-			return c.forteFull()
+			return phoebeForteFull(c, support)
 		}
 		if c.phoebeConfessionReady() {
 			return true
@@ -218,8 +233,8 @@ func phoebeStarflashCombo(c combatActor, support bool) {
 		return false
 	}
 
-	if !condition() && !c.forteFull() {
-		for !c.forteFull() {
+	if !condition() && !phoebeForteFull(c, support) {
+		for !phoebeForteFull(c, support) {
 			if c.flying() {
 				c.waitDown(2 * time.Second)
 			}
@@ -248,12 +263,12 @@ func phoebePerformHeavyAttack(c combatActor, support bool) bool {
 		return false
 	}
 	outerStart := time.Now()
-	for c.forteFull() {
+	for phoebeForteFull(c, support) {
 		if time.Since(outerStart) > 2*time.Second {
 			return false
 		}
 		c.holdHeavyUntil(500*time.Millisecond, 50*time.Millisecond, func() bool {
-			return !c.forteFull() || c.flying()
+			return !phoebeForteFull(c, support) || c.flying()
 		})
 		if c.flying() {
 			waitDeadline := time.Now().Add(2 * time.Second)
@@ -265,7 +280,7 @@ func phoebePerformHeavyAttack(c combatActor, support bool) bool {
 			outerStart = time.Now()
 			continue
 		}
-		if !c.forteFull() {
+		if !phoebeForteFull(c, support) {
 			return true
 		}
 		c.sleep(100 * time.Millisecond)
@@ -275,7 +290,7 @@ func phoebePerformHeavyAttack(c combatActor, support bool) bool {
 
 func phoebeClickResonanceOnce(c combatActor) bool {
 	start := time.Now()
-	for c.currentResonance() > 0.05 {
+	for phoebeResonanceAvailable(c) {
 		if time.Since(start) > 500*time.Millisecond {
 			return true
 		}
@@ -289,7 +304,7 @@ func phoebeClickResonance(c combatActor, sendClick bool) bool {
 	start := time.Now()
 	clicked := false
 	lastOp := "click"
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
+	for phoebeResonanceAvailable(c) && time.Since(start) < 15*time.Second {
 		if sendClick && lastOp == "resonance" {
 			c.attack()
 			lastOp = "click"
@@ -303,7 +318,7 @@ func phoebeClickResonance(c combatActor, sendClick bool) bool {
 }
 
 func phoebeClickLiberation(c combatActor, sendClick bool) bool {
-	if !c.param.UseLiberation {
+	if !phoebeLiberationAvailable(c) {
 		return false
 	}
 	start := time.Now()
@@ -357,6 +372,17 @@ func phoebeClickLiberation(c combatActor, sendClick bool) bool {
 	return true
 }
 
+func phoebeResonanceAvailable(c combatActor) bool {
+	if !c.resonanceNoCD() {
+		return false
+	}
+	return c.freezeElapsed(c.state.lastResonance, c.state.lastResonanceFreeze) >= 2*time.Second
+}
+
+func phoebeLiberationAvailable(c combatActor) bool {
+	return c.param.UseLiberation && c.liberationNoCD() && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05)
+}
+
 func phoebeZaniLinkage(c combatActor, support bool) bool {
 	zaniState := phoebeFindZaniState(c)
 	if zaniState == nil {
@@ -364,7 +390,7 @@ func phoebeZaniLinkage(c combatActor, support bool) bool {
 	}
 
 	if screenAnalyzer.ZaniBlazesPct >= 0.9 {
-		if c.currentResonance() <= 0.05 {
+		if !phoebeResonanceAvailable(c) {
 			if !zaniState.zaniInLiberation || zaniLiberationTimeLeft(combatActor{action: c.action, state: zaniState}) > 3*time.Second {
 				c.attackFor(1 * time.Second)
 			}

@@ -11,8 +11,7 @@ func performRoccia(c combatActor) {
 		c.heavy(1600 * time.Millisecond)
 		c.sleep(100 * time.Millisecond)
 		rocciaPlunge(c)
-		if c.currentLiberation() <= 0.05 && c.currentResonance() <= 0.05 {
-			// KNOWN_DIFF: Python uses CD-based availability check; Go uses UI energy check (semantically equivalent for skill-available guard)
+		if !rocciaLiberationAvailable(c) && !rocciaResonanceAvailable(c) {
 			rocciaRequestSwitch(c)
 			return
 		}
@@ -45,9 +44,8 @@ func rocciaPlunge(c combatActor) {
 	start := time.Now()
 	for c.mouseForteFull() && time.Since(start) < 6*time.Second {
 		if time.Since(start) > 2*time.Second &&
-			c.currentResonance() > 0.05 &&
-			c.currentLiberation() > 0.05 {
-			// KNOWN_DIFF: Python uses CD-based availability check; Go uses UI energy check (semantically equivalent for skill-available guard)
+			c.resonanceNoCD() &&
+			c.liberationNoCD() {
 			if rocciaClickLiberation(c) {
 				rocciaClickResonance(c)
 				start = time.Now() // reset timer on successful lib+res
@@ -60,7 +58,7 @@ func rocciaPlunge(c combatActor) {
 }
 
 func rocciaClickLiberation(c combatActor) bool {
-	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+	if !rocciaLiberationAvailable(c) {
 		return false
 	}
 	start := time.Now()
@@ -74,12 +72,12 @@ func rocciaClickLiberation(c combatActor) bool {
 }
 
 func rocciaClickResonance(c combatActor) bool {
-	if c.currentResonance() <= 0.05 {
+	if !rocciaResonanceAvailable(c) {
 		return false
 	}
 	start := time.Now()
 	clicked := false
-	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
+	for rocciaResonanceAvailable(c) && time.Since(start) < 15*time.Second {
 		if c.forceSkill() {
 			clicked = true
 		}
@@ -88,10 +86,18 @@ func rocciaClickResonance(c combatActor) bool {
 	return clicked
 }
 
+func rocciaLiberationAvailable(c combatActor) bool {
+	return c.param.UseLiberation && c.liberationNoCD() && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05)
+}
+
+func rocciaResonanceAvailable(c combatActor) bool {
+	if !c.resonanceNoCD() {
+		return false
+	}
+	return c.freezeElapsed(c.state.lastResonance, c.state.lastResonanceFreeze) >= 2*time.Second
+}
+
 func rocciaRequestSwitch(c combatActor) {
-	// ok-ww can hand a tool_box payload to the next character on switch. The
-	// current Go combat framework only exposes base switch metadata handled by
-	// requestSwitch() (source slot, intro timing, buff refresh) and has no
-	// per-switch payload channel we can safely set from this file alone.
+	c.state.grantToolBoxOnIntro = true
 	c.requestSwitch()
 }

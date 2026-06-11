@@ -8,6 +8,7 @@ import "time"
 func performTaoqi(c combatActor) {
 	if c.recentlyIntroSwitchedIn(3 * time.Second) {
 		c.waitDown(900 * time.Millisecond)
+		c.attackFor(900 * time.Millisecond)
 		c.attackFor(2500 * time.Millisecond)
 		c.requestSwitch()
 		return
@@ -15,5 +16,6 @@ func performTaoqi(c combatActor) {
 	defaultClickLiberation(c)
 	defaultClickResonance(c)
 	c.echo()
+	c.sleep(100 * time.Millisecond)
 	c.requestSwitch()
 }
