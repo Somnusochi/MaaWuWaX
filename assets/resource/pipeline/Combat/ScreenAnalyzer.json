@@ -1,7 +1,7 @@
 {
   "Combat_AnalyzerTarget": {"recognition": "TemplateMatch", "template": "has_target.png", "threshold": 0.6},
   "Combat_AnalyzerDodge": {"recognition": "TemplateMatch", "template": "dodge_prompt.png", "threshold": 0.6, "roi": [500, 300, 280, 420]},
-  "Combat_AnalyzerHP": {"recognition": "ColorMatch", "lower": [55, 55, 174], "upper": [76, 85, 225], "min_width": 12, "min_height": 4},
+  "Combat_AnalyzerHP": {"recognition": "ColorMatch", "lower": [55, 55, 174], "upper": [76, 85, 225], "count": 48, "connected": true},
   "Combat_AnalyzerBossHP": {"recognition": "ColorMatch", "lower": [4, 30, 245], "upper": [75, 185, 255], "roi": [360, 10, 560, 60]},
   "Combat_AnalyzerPick": {"recognition": "TemplateMatch", "template": "pick_up_f_hcenter_vcenter.png", "threshold": 0.65},
   "Combat_AnalyzerLiberationReady": {"recognition": "TemplateMatch", "template": "box_liberation.png", "threshold": 0.6, "roi": [1000, 500, 280, 220]},
