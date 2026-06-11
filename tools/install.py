@@ -68,6 +68,13 @@ def sync_interface_agents():
         jsonc.dump(interface, f, ensure_ascii=False, indent=4)
 
 
+def remove_path(path: Path):
+    if path.is_symlink() or path.is_file():
+        path.unlink(missing_ok=True)
+    elif path.is_dir():
+        shutil.rmtree(path)
+
+
 def get_dotnet_platform_tag():
     """自动检测当前平台并返回对应的dotnet平台标签"""
     if os_name == "win" and arch == "x86_64":
@@ -142,26 +149,36 @@ def install_resource():
 
     configure_ocr_model()
 
+    resource_path = install_path / "resource"
+    interface_path = install_path / "interface.json"
+    if resource_path.is_symlink():
+        resource_path.unlink()
+    if interface_path.is_symlink():
+        interface_path.unlink()
+
     shutil.copytree(
         working_dir / "assets" / "resource",
-        install_path / "resource",
+        resource_path,
         dirs_exist_ok=True,
     )
     shutil.copy2(
         working_dir / "assets" / "interface.json",
-        install_path,
+        interface_path,
     )
 
-    with open(install_path / "interface.json", "r", encoding="utf-8") as f:
+    with open(interface_path, "r", encoding="utf-8") as f:
         interface = jsonc.load(f)
 
     interface["version"] = version
 
-    with open(install_path / "interface.json", "w", encoding="utf-8") as f:
+    with open(interface_path, "w", encoding="utf-8") as f:
         jsonc.dump(interface, f, ensure_ascii=False, indent=4)
 
 
 def install_chores():
+    for name in ("README.md", "LICENSE", "MaaWuWaX.icns"):
+        remove_path(install_path / name)
+
     shutil.copy2(
         working_dir / "README.md",
         install_path,
@@ -176,6 +193,17 @@ def install_chores():
             icon_path,
             install_path / "MaaWuWaX.icns",
         )
+
+
+def copy_into_app_bundle(source: Path, destination: Path):
+    if source.name == "MaaWuWaX.app":
+        return
+
+    if source.is_dir():
+        shutil.copytree(source, destination, dirs_exist_ok=True)
+    else:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
 
 
 def create_macos_app_bundle():
@@ -198,9 +226,8 @@ def create_macos_app_bundle():
         """#!/bin/sh
 set -eu
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-INSTALL_DIR="$(CDPATH= cd -- "${SCRIPT_DIR}/../../.." && pwd)"
-cd "${INSTALL_DIR}"
-exec "${INSTALL_DIR}/mxu" "$@"
+cd "${SCRIPT_DIR}"
+exec "${SCRIPT_DIR}/mxu" "$@"
 """,
         encoding="utf-8",
     )
@@ -247,6 +274,11 @@ exec "${INSTALL_DIR}/mxu" "$@"
     icon_source = working_dir / "assets" / "icon" / "MaaWuWaX.icns"
     if icon_source.is_file():
         shutil.copy2(icon_source, resources_dir / "MaaWuWaX.icns")
+
+    for item in install_path.iterdir():
+        if item == app_dir:
+            continue
+        copy_into_app_bundle(item, macos_dir / item.name)
 
 
 def install_agent():

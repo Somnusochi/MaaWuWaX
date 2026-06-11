@@ -202,6 +202,32 @@ exec "${INSTALL_DIR}/mxu" "$@"
     if icon_source.is_file():
         shutil.copy2(icon_source, resources_dir / "MaaWuWaX.icns")
 
+    def copy_into_app_bundle(source: Path, destination: Path) -> None:
+        if source.name == "MaaWuWaX.app":
+            return
+
+        if source.is_dir():
+            shutil.copytree(source, destination, dirs_exist_ok=True)
+        else:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, destination)
+
+    launcher_path.write_text(
+        """#!/bin/sh
+set -eu
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+cd "${SCRIPT_DIR}"
+exec "${SCRIPT_DIR}/mxu" "$@"
+""",
+        encoding="utf-8",
+    )
+    launcher_path.chmod(0o755)
+
+    for item in install_dir.iterdir():
+        if item == app_dir:
+            continue
+        copy_into_app_bundle(item, macos_dir / item.name)
+
 
 def build_go_agent(
     root_dir: Path,
@@ -409,7 +435,9 @@ def main():
         elif item.is_file():
             if dst.exists():
                 dst.unlink()
-            if use_copy:
+            # interface.json will be rewritten by sync_interface_agents(), so it
+            # must never remain a symlink to assets/interface.json.
+            if use_copy or item.name == "interface.json":
                 shutil.copy2(item, dst)
             else:
                 dst.symlink_to(item)

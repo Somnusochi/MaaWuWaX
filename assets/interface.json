@@ -3,7 +3,7 @@
     "name": "MaaWuWaX",
     "label": "MaaWuWaX - 鸣潮助手",
     "title": "MaaWuWaX",
-    "icon": "resource/image/app_icon.png",
+    "icon": "resource/image/app_icon_statusbar_tight.png",
     "description": "基于 MaaFramework 的鸣潮自动化助手 (macOS)",
     "github": "https://github.com/MaaWuWaX/MaaWuWaX",
     "license": "AGPL-3.0",
