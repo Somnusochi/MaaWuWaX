@@ -310,6 +310,23 @@ def check_cmake_environment() -> bool:
     return False
 
 
+def run_streaming_command(cmd: list[str], cwd: Path | None = None, env: dict[str, str] | None = None) -> bool:
+    print(f"  执行: {' '.join(cmd)}")
+    process = subprocess.Popen(
+        cmd,
+        cwd=cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+    )
+    assert process.stdout is not None
+    for line in process.stdout:
+        print(line, end="")
+    return process.wait() == 0
+
+
 def build_cpp_algo(
     root_dir: Path,
     install_dir: Path,
@@ -342,57 +359,81 @@ def build_cpp_algo(
         machine = platform.machine().lower()
         resolved_arch = "x86_64" if machine in ("x86_64", "amd64") else "aarch64" if machine in ("aarch64", "arm64") else machine
 
+    build_type = "RelWithDebInfo"
+
+    if resolved_os == "win":
+        if resolved_arch == "aarch64":
+            configure_preset_candidates = ["MSVC 2022 ARM", "MSVC 2026 ARM"]
+        else:
+            configure_preset_candidates = ["MSVC 2022", "MSVC 2026"]
+    elif resolved_os == "linux":
+        if resolved_arch == "aarch64":
+            configure_preset_candidates = ["NinjaMulti Linux arm64"]
+        else:
+            configure_preset_candidates = ["NinjaMulti Linux x64"]
+    else:
+        configure_preset_candidates = ["NinjaMulti"]
+
     arch_part = "x64" if resolved_arch == "x86_64" else "arm64"
-    os_part = {"win": "windows", "macos": "osx", "linux": "linux"}.get(resolved_os, resolved_os)
+    os_part = {"win": "windows", "macos": "osx", "linux": "linux"}.get(
+        resolved_os, resolved_os
+    )
     maadeps_triplet = f"maa-{arch_part}-{os_part}"
 
     build_dir = cpp_algo_dir / "build"
-    build_type = "Release"
-
+    print(f"  Build mode: {build_type}")
     print(f"  目标平台: {resolved_os}/{resolved_arch}")
+    print(f"  Configure preset candidates: {', '.join(configure_preset_candidates)}")
     print(f"  MaaDeps triplet: {maadeps_triplet}")
 
-    # CMake configure
     deps_dir = root_dir / "deps"
     if not (deps_dir / "share" / "cmake" / "MaaFramework").exists():
         deps_dir = install_dir
 
-    configure_cmd = [
-        "cmake", "-S", str(cpp_algo_dir), "-B", str(build_dir),
-        f"-DCMAKE_BUILD_TYPE={build_type}",
-        f"-DMAADEPS_TRIPLET={maadeps_triplet}",
-        f"-DDEPS_DIR={deps_dir}",
-    ]
+    configure_succeeded = False
+    last_preset = ""
+    for preset in configure_preset_candidates:
+        last_preset = preset
+        configure_cmd = [
+            "cmake",
+            "--preset",
+            preset,
+            f"-DMAADEPS_TRIPLET={maadeps_triplet}",
+            f"-DDEPS_DIR={deps_dir}",
+            f"-DCMAKE_INSTALL_PREFIX={install_dir}",
+        ]
+        if resolved_os == "macos":
+            configure_cmd.append("-DCMAKE_OSX_SYSROOT=macosx")
 
-    if resolved_os == "macos":
-        osx_arch = "x86_64" if resolved_arch == "x86_64" else "arm64"
-        configure_cmd.extend([
-            f"-DCMAKE_OSX_ARCHITECTURES={osx_arch}",
-        ])
+        print(f"  Configure command: {' '.join(configure_cmd)}")
+        if run_streaming_command(configure_cmd, cwd=cpp_algo_dir):
+            configure_succeeded = True
+            break
 
-    print(f"  配置: {' '.join(configure_cmd)}")
-    result = subprocess.run(configure_cmd, capture_output=True, text=True)
-    if result.returncode != 0:
+        print(f"  {warn('警告')}: preset {preset} 配置失败，尝试下一个")
+
+    if not configure_succeeded:
         print(f"  {err('错误')}: CMake 配置失败")
-        if result.stderr:
-            print(result.stderr)
         return False
 
-    # CMake build
-    build_cmd = ["cmake", "--build", str(build_dir), "--config", build_type, "--parallel"]
-    print(f"  构建: {' '.join(build_cmd)}")
-    result = subprocess.run(build_cmd, capture_output=True, text=True)
-    if result.returncode != 0:
+    build_cmd = [
+        "cmake",
+        "--build",
+        "--preset",
+        f"{last_preset} - {build_type}",
+    ]
+    print(f"  Build command: {' '.join(build_cmd)}")
+    if not run_streaming_command(build_cmd, cwd=cpp_algo_dir):
         print(f"  {err('错误')}: CMake 构建失败")
-        if result.stderr:
-            print(result.stderr)
         return False
 
     # Copy cpp-algo binary to install/agent/
     agent_dir = install_dir / "agent"
     agent_dir.mkdir(parents=True, exist_ok=True)
     ext = ".exe" if resolved_os == "win" else ""
-    src = build_dir / "bin" / f"cpp-algo{ext}"
+    src = build_dir / build_type / f"cpp-algo{ext}"
+    if not src.exists():
+        src = build_dir / "bin" / f"cpp-algo{ext}"
     dst = agent_dir / f"cpp-algo{ext}"
     if src.exists():
         if dst.is_dir():
