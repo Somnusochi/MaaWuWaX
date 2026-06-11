@@ -2,16 +2,55 @@ package combat
 
 import "time"
 
+// performShorekeeper mirrors ok-ww ShoreKeeper.do_perform():
+//
+//	intro(sleep 0.1s, wait_in_team_and_world 4s if needed / attack 1.2s if already in world)
+//	→ echo → liberation → resonance(fallback: heavy_click_forte until mouse_forte_full) → switch
 func performShorekeeper(c combatActor) {
-	if c.recentlySwitchedIn(1800 * time.Millisecond) {
-		c.attackFor(1200 * time.Millisecond)
-	} else {
-		c.attackFor(300 * time.Millisecond)
+	if c.recentlyIntroSwitchedIn(1800 * time.Millisecond) {
+		c.sleep(100 * time.Millisecond)
+		if !c.isCurrentChar() {
+			c.waitIntro(4*time.Second, false)
+		} else {
+			c.attackFor(1200 * time.Millisecond)
+		}
 	}
-	c.echo()
-	c.liberation()
-	if !c.skill() {
-		c.heavy(500 * time.Millisecond)
+	c.echoImmediate()
+	shorekeeperClickLiberation(c)
+	if !shorekeeperClickResonance(c) {
+		c.holdHeavyUntil(15*time.Second, 100*time.Millisecond, func() bool {
+			return c.mouseForteFull()
+		})
 	}
+	shorekeeperPrepareOutro(c)
 	c.requestSwitch()
+}
+
+func shorekeeperClickLiberation(c combatActor) bool {
+	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+		return false
+	}
+	start := time.Now()
+	clicked := false
+	for time.Since(start) < 800*time.Millisecond && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05) {
+		c.forceLiberation()
+		clicked = true
+		c.sleep(100 * time.Millisecond)
+	}
+	return finishLiberationCast(c, clicked, 3*time.Second)
+}
+
+func shorekeeperClickResonance(c combatActor) bool {
+	if c.currentResonance() <= 0.05 {
+		return false
+	}
+	start := time.Now()
+	clicked := false
+	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
+		if c.forceSkill() {
+			clicked = true
+		}
+		c.sleep(100 * time.Millisecond)
+	}
+	return clicked
 }

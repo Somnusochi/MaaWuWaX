@@ -1,18 +1,8 @@
 package combat
 
-import "time"
-
+// performChixia mirrors ok-ww Chixia: do_perform() is commented out in Python,
+// so the character falls through to BaseChar.do_perform() (the default rotation).
+// In Go this is equivalent to performDefault().
 func performChixia(c combatActor) {
-	if !c.state.flag {
-		c.attackFor(900 * time.Millisecond)
-		c.state.flag = true
-	}
-	if c.skill() {
-		c.attackFor(700 * time.Millisecond)
-	}
-	if c.liberation() {
-		c.attackFor(900 * time.Millisecond)
-	}
-	c.echo()
-	c.requestSwitch()
+	performDefault(c)
 }

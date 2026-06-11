@@ -11,8 +11,6 @@ func dispatchCharStrategy(c combatActor) {
 		performShorekeeper(c)
 	case "baizhi":
 		performBaizhi(c)
-	case "youhu":
-		performYouhu(c)
 	case "douling":
 		performDouling(c)
 	case "jianxin":
@@ -75,8 +73,6 @@ func dispatchCharStrategy(c combatActor) {
 		performZani(c)
 	case "lupa":
 		performLupa(c)
-	case "chixia":
-		performChixia(c)
 
 	// ── CUSTOM: ok-ww do_perform() overrides ─────────────────────────
 	case "havocrover", "rover", "rover_male":

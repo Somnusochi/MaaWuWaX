@@ -1,17 +1,8 @@
 package combat
 
-import "time"
-
+// performYouhu mirrors ok-ww Youhu: class has no do_perform() override,
+// so the character falls through to BaseChar.do_perform() (the default rotation).
+// In Go this is equivalent to performDefault().
 func performYouhu(c combatActor) {
-	if c.recentlySwitchedIn(1200 * time.Millisecond) {
-		c.attackFor(500 * time.Millisecond)
-	}
-	c.echo()
-	if c.liberation() {
-		c.attackFor(200 * time.Millisecond)
-		c.requestSwitch()
-		return
-	}
-	c.skill()
-	c.requestSwitch()
+	performDefault(c)
 }

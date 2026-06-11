@@ -6,13 +6,68 @@ import "time"
 //
 //	wait_intro(1.2s) → echo → liberation → resonance → [if !res] heavy_click_forte → switch
 func performDefault(c combatActor) {
-	if c.recentlySwitchedIn(1800 * time.Millisecond) {
-		c.attackFor(1200 * time.Millisecond)
+	if c.recentlyIntroSwitchedIn(1800 * time.Millisecond) {
+		c.waitIntro(1200*time.Millisecond, true)
 	}
-	c.echo()
-	c.liberation()
-	if !c.skill() {
-		c.heavy(600 * time.Millisecond)
+	c.echoImmediate()
+	defaultClickLiberation(c)
+	if !defaultClickResonance(c) {
+		defaultHeavyClickForte(c)
 	}
 	c.requestSwitch()
+}
+
+func defaultClickLiberation(c combatActor) bool {
+	if !c.param.UseLiberation {
+		return false
+	}
+	start := time.Now()
+	clicked := false
+	for time.Since(start) < 800*time.Millisecond && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05) {
+		c.forceLiberation()
+		clicked = true
+		c.sleep(100 * time.Millisecond)
+	}
+	if !clicked {
+		retryDeadline := time.Now().Add(100 * time.Millisecond)
+		for time.Now().Before(retryDeadline) && c.currentLiberation() > 0.001 {
+			if c.forceLiberation() {
+				clicked = true
+			}
+			c.sleep(50 * time.Millisecond)
+		}
+	}
+	return finishLiberationCast(c, clicked, 7*time.Second)
+}
+
+func defaultClickResonance(c combatActor) bool {
+	if c.currentResonance() <= 0.05 {
+		return false
+	}
+	start := time.Now()
+	clicked := false
+	lastOp := "click"
+	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
+		if lastOp == "resonance" {
+			c.attack()
+			lastOp = "click"
+		} else if c.forceSkill() {
+			clicked = true
+			lastOp = "resonance"
+		}
+		c.sleep(100 * time.Millisecond)
+	}
+	return clicked
+}
+
+func defaultHeavyClickForte(c combatActor) bool {
+	if !c.mouseForteFull() {
+		return false
+	}
+	c.holdHeavyUntil(1200*time.Millisecond, 100*time.Millisecond, func() bool {
+		return !c.mouseForteFull()
+	})
+	success := !c.mouseForteFull()
+	c.sleep(50 * time.Millisecond)
+	return success
 }

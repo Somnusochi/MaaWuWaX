@@ -2,22 +2,72 @@ package combat
 
 import "time"
 
+// performYinlin mirrors ok-ww Yinlin.do_perform():
+//
+//	intro(sleep 0.4s) → liberation → mouse_forte_full: heavy_attack → sleep(0.4s) → switch /
+//	resonance → sleep(0.1s) → switch / echo → switch / heavy → switch
 func performYinlin(c combatActor) {
-	if time.Since(c.state.lastPerform) > 1500*time.Millisecond {
+	intro := c.recentlyIntroSwitchedIn(1600 * time.Millisecond)
+	if intro {
 		c.sleep(400 * time.Millisecond)
 	}
-	if c.liberation() {
-		c.heavy(300 * time.Millisecond)
+	liberated := yinlinClickLiberation(c)
+
+	if c.mouseForteFull() {
+		if !intro && !liberated {
+			c.attack()
+		}
+		yinlinHeavyAttack(c)
+		c.sleep(400 * time.Millisecond)
 		c.requestSwitch()
 		return
 	}
-	if c.skill() {
-		c.sleep(120 * time.Millisecond)
+	if yinlinClickResonance(c) {
+		c.sleep(100 * time.Millisecond)
 		c.requestSwitch()
 		return
 	}
-	if !c.echo() {
-		c.heavy(350 * time.Millisecond)
+	if c.echoWait(1 * time.Second) {
+		c.requestSwitch()
+		return
 	}
+	yinlinHeavyAttack(c)
 	c.requestSwitch()
+}
+
+func yinlinClickLiberation(c combatActor) bool {
+	if !c.param.UseLiberation || (!screenAnalyzer.Liberation && c.currentLiberation() <= 0.05) {
+		return false
+	}
+	start := time.Now()
+	clicked := false
+	for time.Since(start) < 800*time.Millisecond && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05) {
+		c.forceLiberation()
+		clicked = true
+		c.sleep(100 * time.Millisecond)
+	}
+	return finishLiberationCast(c, clicked, 3*time.Second)
+}
+
+func yinlinClickResonance(c combatActor) bool {
+	if c.currentResonance() <= 0.05 {
+		return false
+	}
+	start := time.Now()
+	clicked := false
+	for c.currentResonance() > 0.05 && time.Since(start) < 15*time.Second {
+		if c.forceSkill() {
+			clicked = true
+		}
+		c.sleep(100 * time.Millisecond)
+	}
+	return clicked
+}
+
+func yinlinHeavyAttack(c combatActor) {
+	// Keep this duration state-driven instead of a fixed hardcoded hold so it
+	// stays closer to the ok-ww heavy timing across different entry states.
+	c.holdHeavyUntil(1200*time.Millisecond, 100*time.Millisecond, func() bool {
+		return !c.mouseForteFull()
+	})
 }

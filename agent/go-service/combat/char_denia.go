@@ -2,20 +2,19 @@ package combat
 
 import "time"
 
+// performDenia mirrors ok-ww Denia.do_perform():
+//
+//	intro(wait_intro 1.2s) → resonance → liberation→resonance → echo → switch
 func performDenia(c combatActor) {
-	if !c.state.flag {
-		c.attackFor(1200 * time.Millisecond)
-		c.state.flag = true
-	} else {
-		c.attackFor(450 * time.Millisecond)
+	if c.recentlyIntroSwitchedIn(1800 * time.Millisecond) {
+		c.waitIntro(1200*time.Millisecond, true)
 	}
-	if c.skill() {
-		c.attackFor(300 * time.Millisecond)
+	if c.currentResonance() > 0.05 {
+		defaultClickResonance(c)
 	}
-	if c.liberation() {
-		c.skill()
-		c.attackFor(600 * time.Millisecond)
+	if defaultClickLiberation(c) {
+		defaultClickResonance(c)
 	}
-	c.echo()
+	c.echoWait(1 * time.Second)
 	c.requestSwitch()
 }

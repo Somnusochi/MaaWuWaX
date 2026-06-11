@@ -2,29 +2,24 @@ package combat
 
 import "time"
 
+// performCalcharo mirrors ok-ww Calcharo.do_perform():
+//
+//	intro(sleep 1s, wait_in_team 3s) → super().do_perform():
+//	  wait_intro(1.2s) → echo → liberation → resonance / heavy_click_forte → switch
 func performCalcharo(c combatActor) {
-	if c.slot.Role != roleMain {
-		c.attackFor(500 * time.Millisecond)
-		c.echo()
-		c.requestSwitch()
-		return
+	intro := c.recentlyIntroSwitchedIn(1800 * time.Millisecond)
+	if intro {
+		c.sleep(1 * time.Second)
+		c.waitIntro(3*time.Second, false)
 	}
-
-	if time.Since(c.state.lastPerform) > 8*time.Second {
-		c.state.flag = false
+	// ok-ww: super().do_perform() = wait_intro(1.2) → echo → lib → res → heavy → switch
+	if intro {
+		c.waitIntro(1200*time.Millisecond, true)
 	}
-	if !c.state.flag {
-		c.attackFor(1 * time.Second)
-		c.state.flag = true
+	c.echoImmediate()
+	defaultClickLiberation(c)
+	if !defaultClickResonance(c) {
+		defaultHeavyClickForte(c)
 	}
-
-	c.echo()
-	if c.liberation() {
-		c.attackFor(900 * time.Millisecond)
-	}
-	if !c.skill() {
-		c.heavy(600 * time.Millisecond)
-	}
-	c.attackFor(1100 * time.Millisecond)
 	c.requestSwitch()
 }
