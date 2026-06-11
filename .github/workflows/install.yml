@@ -16,14 +16,24 @@ on:
     paths:
       - ".github/workflows/install.yml"
       - "assets/**"
+      - "agent/**"
+      - "tools/**"
       - "**.py"
+      - "**.go"
+      - "**/CMakeLists.txt"
+      - "**.cmake"
   pull_request:
     branches:
       - "**"
     paths:
       - ".github/workflows/install.yml"
       - "assets/**"
+      - "agent/**"
+      - "tools/**"
       - "**.py"
+      - "**.go"
+      - "**/CMakeLists.txt"
+      - "**.cmake"
   workflow_dispatch:
 
 jobs:
@@ -150,34 +160,47 @@ jobs:
         run: |
           python -m pip install -r tools/requirements.txt
 
-      - name: Build cpp-algo
-        if: matrix.os == 'macos'
+      - name: Install
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Downloading MaaDeps..."
-          MAADEPS_TARGET="${{ matrix.arch == 'x86_64' && 'x64-osx' || 'arm64-osx' }}"
-          python tools/maadeps-download.py "${MAADEPS_TARGET}"
+          CPP_ALGO_ARG=""
+          if [[ "${{ matrix.os }}" == "macos" ]]; then
+            echo "Downloading MaaDeps..."
+            MAADEPS_TARGET="${{ matrix.arch == 'x86_64' && 'x64-osx' || 'arm64-osx' }}"
+            python tools/maadeps-download.py "${MAADEPS_TARGET}"
+            CPP_ALGO_ARG="--cpp-algo"
+          fi
 
-          echo "Building cpp-algo..."
-          python tools/build_and_install.py --cpp-algo --ci --os ${{ matrix.os }} --arch ${{ matrix.arch }}
+          if [[ "${{ matrix.os }}" != "android" ]]; then
+            echo "Building agents..."
+            python tools/build_and_install.py ${CPP_ALGO_ARG} --ci --os ${{ matrix.os }} --arch ${{ matrix.arch }} --version ${{ needs.meta.outputs.tag }}
+          else
+            echo "Skipping agent build for Android."
+          fi
 
-      - name: Build go-service
-        if: matrix.os != 'macos' && matrix.os != 'android'
-        shell: bash
-        run: |
-          echo "Building go-service..."
-          python tools/build_and_install.py --ci --os ${{ matrix.os }} --arch ${{ matrix.arch }}
-
-      - name: Install
-        shell: bash
-        run: |
           if [[ "${{ matrix.os }}" != "android" ]]; then
             if [ -d "MFA" ]; then
               echo "Copying MFA files to install directory..."
               mkdir -p install
-              rsync -av --ignore-existing MFA/ install/
+              python - <<'PY'
+import os
+import shutil
+
+src_root = "MFA"
+dst_root = "install"
+
+for root, dirs, files in os.walk(src_root):
+    rel = os.path.relpath(root, src_root)
+    dst_dir = dst_root if rel == "." else os.path.join(dst_root, rel)
+    os.makedirs(dst_dir, exist_ok=True)
+    for name in files:
+        src_file = os.path.join(root, name)
+        dst_file = os.path.join(dst_dir, name)
+        if not os.path.exists(dst_file):
+            shutil.copy2(src_file, dst_file)
+PY
               echo "MFA files copied successfully."
             else
               echo "MFA directory not found, skipping copy."
