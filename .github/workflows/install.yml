@@ -69,7 +69,7 @@ jobs:
 
   install:
     needs: meta
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os == 'win' && 'windows-latest' || (matrix.os == 'macos' && 'macos-latest' || 'ubuntu-latest') }}
     strategy:
       matrix:
         os: [win, macos, linux, android]
@@ -80,6 +80,34 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'linux'
+        shell: bash
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ninja-build cmake
+
+      - name: Install macOS dependencies
+        if: matrix.os == 'macos'
+        shell: bash
+        run: |
+          brew list ninja >/dev/null 2>&1 || brew install ninja
+          brew list cmake >/dev/null 2>&1 || brew install cmake
+
+      - name: Setup Go
+        if: matrix.os != 'android'
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: "agent/go-service/go.mod"
+          cache-dependency-path: |
+            agent/go-service/go.mod
+            agent/go-service/go.sum
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
 
       - name: Download MaaFramework
         uses: robinraju/release-downloader@v1
@@ -120,7 +148,7 @@ jobs:
       - name: Install Python requirements
         shell: bash
         run: |
-          python3 -m pip install -r tools/requirements.txt
+          python -m pip install -r tools/requirements.txt
 
       - name: Build cpp-algo
         if: matrix.os == 'macos'
@@ -132,17 +160,17 @@ jobs:
           else
             MAADEPS_TRIPLET="maa-arm64-osx"
           fi
-          python3 tools/maadeps-download.py "${MAADEPS_TRIPLET}"
+          python tools/maadeps-download.py "${MAADEPS_TRIPLET}"
 
           echo "Building cpp-algo..."
-          python3 tools/build_and_install.py --cpp-algo --ci --os ${{ matrix.os }} --arch ${{ matrix.arch }}
+          python tools/build_and_install.py --cpp-algo --ci --os ${{ matrix.os }} --arch ${{ matrix.arch }}
 
       - name: Build go-service
         if: matrix.os != 'macos' && matrix.os != 'android'
         shell: bash
         run: |
           echo "Building go-service..."
-          python3 tools/build_and_install.py --ci --os ${{ matrix.os }} --arch ${{ matrix.arch }}
+          python tools/build_and_install.py --ci --os ${{ matrix.os }} --arch ${{ matrix.arch }}
 
       - name: Install
         shell: bash
@@ -160,7 +188,7 @@ jobs:
             echo "Skipping copy MFA for Android."
           fi
 
-          python3 tools/install.py ${{ needs.meta.outputs.tag }} ${{ matrix.os }} ${{ matrix.arch }}
+          python tools/install.py ${{ needs.meta.outputs.tag }} ${{ matrix.os }} ${{ matrix.arch }}
 
       - uses: actions/upload-artifact@v4
         with:
