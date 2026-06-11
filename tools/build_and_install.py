@@ -403,7 +403,9 @@ def build_cpp_algo(
             f"-DCMAKE_INSTALL_PREFIX={install_dir}",
         ]
         if resolved_os == "macos":
+            osx_arch = "x86_64" if resolved_arch == "x86_64" else "arm64"
             configure_cmd.append("-DCMAKE_OSX_SYSROOT=macosx")
+            configure_cmd.append(f"-DCMAKE_OSX_ARCHITECTURES={osx_arch}")
 
         print(f"  Configure command: {' '.join(configure_cmd)}")
         if run_streaming_command(configure_cmd, cwd=cpp_algo_dir):
@@ -419,6 +421,7 @@ def build_cpp_algo(
     build_cmd = [
         "cmake",
         "--build",
+        "build",
         "--preset",
         f"{last_preset} - {build_type}",
     ]
@@ -427,24 +430,27 @@ def build_cpp_algo(
         print(f"  {err('错误')}: CMake 构建失败")
         return False
 
-    # Copy cpp-algo binary to install/agent/
-    agent_dir = install_dir / "agent"
-    agent_dir.mkdir(parents=True, exist_ok=True)
-    ext = ".exe" if resolved_os == "win" else ""
-    src = build_dir / build_type / f"cpp-algo{ext}"
-    if not src.exists():
-        src = build_dir / "bin" / f"cpp-algo{ext}"
-    dst = agent_dir / f"cpp-algo{ext}"
-    if src.exists():
-        if dst.is_dir():
-            shutil.rmtree(dst)
-        elif dst.exists():
-            dst.unlink()
-        shutil.copy2(src, dst)
-        print(f"  {ok('->')} {dst}")
-    else:
-        print(f"  {warn('警告')}: 二进制文件未找到: {src}")
+    install_cmd = [
+        "cmake",
+        "--install",
+        "build",
+        "--prefix",
+        str(install_dir),
+        "--config",
+        build_type,
+    ]
+    print(f"  Install command: {' '.join(install_cmd)}")
+    if not run_streaming_command(install_cmd, cwd=cpp_algo_dir):
+        print(f"  {err('错误')}: CMake 安装失败")
         return False
+
+    agent_dir = install_dir / "agent"
+    ext = ".exe" if resolved_os == "win" else ""
+    dst = agent_dir / f"cpp-algo{ext}"
+    if not dst.exists():
+        print(f"  {warn('警告')}: 安装后的二进制文件未找到: {dst}")
+        return False
+    print(f"  {ok('->')} {dst}")
 
     return True
 
