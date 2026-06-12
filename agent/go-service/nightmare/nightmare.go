@@ -28,6 +28,14 @@ type findNestParam struct {
 
 var countRe = regexp.MustCompile(`(\d{1,2})\s*/\s*(\d{1,2})`)
 
+const (
+	nightmareCountOCRNode     = "NightmareNest_CountOCR"
+	nightmareScrollOCRNode    = "NightmareNest_ScrollOCR"
+	nightmareScrollEndOCRNode = "NightmareNest_ScrollEndOCR"
+	nightmareApproachCombat   = "NightmareNest_ApproachCombat"
+	nightmareApproachFPrompt  = "NightmareNest_ApproachFPrompt"
+)
+
 func (r *FindNestRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
 	param := findNestParam{Denominators: []int{24, 36, 48}}
 	if arg.CustomRecognitionParam != "" {
@@ -36,16 +44,7 @@ func (r *FindNestRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionAr
 		}
 	}
 
-	detail, err := ctx.RunRecognition(
-		"__NightmareNest_CountOCR",
-		arg.Img,
-		`{
-			"__NightmareNest_CountOCR": {
-				"recognition": "OCR",
-				"roi": [460, 95, 780, 560]
-			}
-		}`,
-	)
+	detail, err := ctx.RunRecognition(nightmareCountOCRNode, arg.Img)
 	if err != nil || detail == nil || !detail.Hit {
 		return nil, false
 	}
@@ -191,16 +190,7 @@ func (r *NestScrollRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognition
 
 // nestScanPage runs OCR on the current page and checks for incomplete nests.
 func nestScanPage(ctx *maa.Context) (*maa.CustomRecognitionResult, bool) {
-	detail, err := ctx.RunRecognition(
-		"__NestScroll_OCR",
-		nil,
-		`{
-			"__NestScroll_OCR": {
-				"recognition": "OCR",
-				"roi": [460, 95, 780, 560]
-			}
-		}`,
-	)
+	detail, err := ctx.RunRecognition(nightmareScrollOCRNode, nil)
 	if err != nil || detail == nil || !detail.Hit {
 		return nil, false
 	}
@@ -233,16 +223,7 @@ func nestScanPage(ctx *maa.Context) (*maa.CustomRecognitionResult, bool) {
 
 // nestOCRFingerprint returns a stable page fingerprint for end-of-list detection.
 func nestOCRFingerprint(ctx *maa.Context) string {
-	detail, err := ctx.RunRecognition(
-		"__NestScroll_OCREnd",
-		nil,
-		`{
-			"__NestScroll_OCREnd": {
-				"recognition": "OCR",
-				"roi": [460, 95, 780, 560]
-			}
-		}`,
-	)
+	detail, err := ctx.RunRecognition(nightmareScrollEndOCRNode, nil)
 	if err != nil || detail == nil || !detail.Hit {
 		return ""
 	}
@@ -266,22 +247,6 @@ func normalizeNightmareOCR(text string) string {
 	text = strings.ReplaceAll(text, " ", "")
 	text = strings.ReplaceAll(text, "\n", "")
 	return text
-}
-
-// ---------------------------------------------------------------------------
-// ScrollBookAction — replaced by NestScrollRecognition (CustomRecognition).
-// Kept as a compatibility shim that delegates to the recognition loop.
-// ---------------------------------------------------------------------------
-
-type ScrollBookAction struct{}
-
-var _ maa.CustomActionRunner = &ScrollBookAction{}
-
-func (a *ScrollBookAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	_, ok := (&NestScrollRecognition{}).Run(ctx, &maa.CustomRecognitionArg{
-		CustomRecognitionParam: `{"max_pages":5}`,
-	})
-	return ok
 }
 
 // ---------------------------------------------------------------------------
@@ -317,34 +282,11 @@ func (a *ApproachNestAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) boo
 }
 
 func (a *ApproachNestAction) inCombat(ctx *maa.Context) bool {
-	detail, err := ctx.RunRecognition(
-		"__NightmareApproach_Combat",
-		nil,
-		`{
-			"__NightmareApproach_Combat": {
-				"recognition": "TemplateMatch",
-				"template": "has_target.png",
-				"threshold": 0.6,
-				"roi": [400, 200, 800, 600]
-			}
-		}`,
-	)
+	detail, err := ctx.RunRecognition(nightmareApproachCombat, nil)
 	return err == nil && detail != nil && detail.Hit
 }
 
 func (a *ApproachNestAction) hasFPrompt(ctx *maa.Context) bool {
-	detail, err := ctx.RunRecognition(
-		"__NightmareApproach_F",
-		nil,
-		`{
-			"__NightmareApproach_F": {
-				"recognition": "Or",
-				"any_of": [
-					{"recognition": "TemplateMatch", "template": "pick_up_f.png", "threshold": 0.6},
-					{"recognition": "TemplateMatch", "template": "pick_up_f_hcenter_vcenter.png", "threshold": 0.6}
-				]
-			}
-		}`,
-	)
+	detail, err := ctx.RunRecognition(nightmareApproachFPrompt, nil)
 	return err == nil && detail != nil && detail.Hit
 }

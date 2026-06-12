@@ -1,0 +1,6 @@
+{
+    "Stamina_OCR": {
+        "recognition": "OCR",
+        "roi": [500, 60, 200, 40]
+    }
+}

@@ -1,0 +1,74 @@
+{
+    "Forgery_Loot": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "Forgery_Loot2"
+        ],
+        "on_error": [
+            "Forgery_LootDone"
+        ],
+        "post_delay": 300
+    },
+    "Forgery_Loot2": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "Forgery_Loot3"
+        ],
+        "on_error": [
+            "Forgery_LootDone"
+        ],
+        "post_delay": 300
+    },
+    "Forgery_Loot3": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "Forgery_LootDone"
+        ],
+        "on_error": [
+            "Forgery_LootNoMore"
+        ],
+        "post_delay": 300
+    },
+    "Forgery_LootDone": {
+        "next": [
+            "Forgery_CheckComplete",
+            "Forgery_Fight"
+        ]
+    },
+    "Forgery_LootNoMore": {
+        "next": [
+            "Forgery_CheckComplete",
+            "Forgery_Fight"
+        ]
+    }
+}

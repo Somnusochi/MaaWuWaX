@@ -10,5 +10,7 @@ func Register() {
 	maa.AgentServerRegisterCustomAction("DirectionWalk", &DirectionWalkAction{})
 	maa.AgentServerRegisterCustomAction("ClickFastTravel", &ClickFastTravelAction{})
 	maa.AgentServerRegisterCustomAction("TeleportBoss", &TeleportBossAction{})
+	maa.AgentServerRegisterCustomAction("BossBookPrepareProfile", &BossBookPrepareProfileAction{})
+	maa.AgentServerRegisterCustomAction("BossBookTargetSelect", &BossBookTargetSelectAction{})
 	log.Info().Str("component", "navigation").Msg("registered navigation components")
 }

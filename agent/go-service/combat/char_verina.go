@@ -57,7 +57,7 @@ func verinaClickResonance(c combatActor) bool {
 	}
 	start := time.Now()
 	clicked := false
-	for c.resonanceAvailable() && time.Since(start) < 800*time.Millisecond {
+	for c.resonanceChainAvailable() && time.Since(start) < 800*time.Millisecond {
 		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}

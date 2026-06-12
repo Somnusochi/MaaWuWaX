@@ -26,6 +26,7 @@ type ScreenAnalyzer struct {
 	HasBossHP        bool
 	PickupF          bool
 	Liberation       bool
+	HasLavitator     bool
 	CharAlive        [3]bool
 	CharSlots        [3]charSlot
 	CurrentIdx       int
@@ -69,6 +70,7 @@ type ScreenAnalyzer struct {
 	LuhesiCheckRes   bool
 	GalbrenaCheckRes bool
 	XigelikaForte    bool
+	CantarellaForte  bool
 	CamellyaBudding  bool
 	ChangliFortePct  float64
 	ZhezhiForteTier  int
@@ -194,6 +196,7 @@ func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
 	sa.PhoebeFullBlue = sampleForteFullByWhiteContrast(img, scaledRect(3840, 2160, 2256, 1992, 2276, 2018), 0.08)
 	sa.CarlottaForte = sampleForteNumByFFT(img, scaledRect(5120, 2880, 2164, 2670, 2900, 2680), 736.0/4.0, colorRange{70, 100, 195, 225, 235, 255}, 4, 9, 11, 100, true)
 	sa.XigelikaForte = sampleNearWhitePct(img, scaledRect(5120, 2880, 3032, 2654, 3076, 2700)) > 0.1
+	sa.CantarellaForte = sampleNearWhitePct(img, scaledRect(5120, 2880, 3034, 2640, 3090, 2700)) > 0.06
 	sa.CamellyaFortePct = sampleStripeFillPct(img, maa.Rect{543, 667, 182, 2}, 193, 255, 46, 93, 127, 163)
 	sa.CamellyaBudPct = sampleStripeFillPct(img, maa.Rect{543, 667, 182, 2}, 220, 255, 161, 213, 168, 225)
 	sa.ZaniFortePct = sampleColorPct(img, maa.Rect{543, 665, 185, 3}, 239, 255, 222, 255, 156, 196)
@@ -206,6 +209,8 @@ func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
 
 	detail, err = ctx.RunRecognition("Combat_ZaniLiber", img)
 	sa.ZaniLiberBox = err == nil && detail != nil && detail.Hit
+	detail, err = ctx.RunRecognition("Combat_AnalyzerHasLavitator", img)
+	sa.HasLavitator = err == nil && detail != nil && detail.Hit
 
 	detail, err = ctx.RunRecognition("Combat_MouseForte", img)
 	sa.MouseForteFull = err == nil && detail != nil && detail.Hit
@@ -331,7 +336,7 @@ func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
 	log.Debug().Str("component", "ScreenAnalyzer").
 		Bool("target", sa.HasTarget).Bool("hp", sa.HasHPBar).
 		Bool("boss", sa.HasBossHP).Bool("dodge", sa.HasDodge).Bool("liberation", sa.Liberation).
-		Bool("flying", sa.Flying).Bool("forte_full", sa.ForteFull).
+		Bool("has_lavitator", sa.HasLavitator).Bool("flying", sa.Flying).Bool("forte_full", sa.ForteFull).
 		Int("current", sa.CurrentIdx+1).Int("team_size", sa.TeamSize).
 		Int("ring", sa.RingElement).
 		Float64("concerto", sa.ConcertoPct).

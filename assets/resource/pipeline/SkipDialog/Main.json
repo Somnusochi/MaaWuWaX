@@ -1,43 +1,149 @@
 {
     "SkipDialog_Main": {
-        "next": ["SkipDialog_Advanced", "SkipDialog_Main"]
+        "next": ["SkipDialog_ClickSkipNew"]
     },
-    "SkipDialog_Advanced": {
-        "action": "Custom",
-        "custom_action": "SkipDialogAdvanced",
+    "SkipDialog_ClickSkipNew": {
+        "recognition": "TemplateMatch",
+        "template": "skip_dialog_new.png",
+        "threshold": 0.72,
+        "action": "Click",
         "next": ["SkipDialog_Main"],
+        "on_error": ["SkipDialog_ClickSkip"],
         "post_delay": 200
     },
-    "SkipDialog_CheckSkip": {
+    "SkipDialog_ClickSkip": {
+        "recognition": "TemplateMatch",
+        "template": "skip_dialog.png",
+        "threshold": 0.72,
+        "action": "Click",
+        "next": ["SkipDialog_Main"],
+        "on_error": ["SkipDialog_ClickBtn"],
+        "post_delay": 200
+    },
+    "SkipDialog_ClickBtn": {
         "recognition": "TemplateMatch",
         "template": "skip_btn.png",
         "threshold": 0.7,
         "action": "Click",
-        "next": ["SkipDialog_ConfirmSkip", "SkipDialog_Main"],
-        "post_delay": 500
+        "next": ["SkipDialog_Main"],
+        "on_error": ["SkipDialog_ConfirmNew"],
+        "post_delay": 200
     },
-    "SkipDialog_ConfirmSkip": {
+    "SkipDialog_ConfirmNew": {
         "recognition": "TemplateMatch",
-        "template": "skip_confirm.png",
+        "template": "skip_quest_confirm_new.png",
+        "threshold": 0.75,
+        "action": "Click",
+        "next": ["SkipDialog_Main"],
+        "on_error": ["SkipDialog_Confirm"],
+        "post_delay": 200
+    },
+    "SkipDialog_Confirm": {
+        "recognition": "TemplateMatch",
+        "template": "skip_quest_confirm.png",
+        "threshold": 0.75,
+        "action": "Click",
+        "next": ["SkipDialog_Main"],
+        "on_error": ["SkipDialog_DialogCheck"],
+        "post_delay": 200
+    },
+    "SkipDialog_DialogCheck": {
+        "recognition": "TemplateMatch",
+        "template": "skip_dialog_check.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["SkipDialog_DialogConfirm"],
+        "on_error": ["SkipDialog_DialogConfirmUnchecked"],
+        "post_delay": 200
+    },
+    "SkipDialog_DialogConfirm": {
+        "recognition": "TemplateMatch",
+        "template": "skip_dialog_confirm.png",
         "threshold": 0.7,
         "action": "Click",
         "next": ["SkipDialog_Main"],
-        "post_delay": 500
+        "on_error": ["SkipDialog_Close"],
+        "post_delay": 200
     },
-    "SkipDialog_CheckAuto": {
+    "SkipDialog_DialogConfirmUnchecked": {
         "recognition": "TemplateMatch",
-        "template": "auto_play.png",
+        "template": "skip_dialog_confirm.png",
         "threshold": 0.7,
         "action": "Click",
         "next": ["SkipDialog_Main"],
-        "post_delay": 300
+        "on_error": ["SkipDialog_Close"],
+        "post_delay": 200
     },
-    "SkipDialog_CheckArrow": {
+    "SkipDialog_Close": {
+        "recognition": "TemplateMatch",
+        "template": "btn_dialog_close.png",
+        "threshold": 0.8,
+        "action": "Click",
+        "next": ["SkipDialog_Main"],
+        "on_error": ["SkipDialog_AutoPlay"],
+        "post_delay": 200
+    },
+    "SkipDialog_AutoPlay": {
+        "recognition": "TemplateMatch",
+        "template": "btn_auto_play_dialog.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["SkipDialog_Main"],
+        "on_error": ["SkipDialog_Arrow"],
+        "post_delay": 200
+    },
+    "SkipDialog_Arrow": {
+        "recognition": "TemplateMatch",
+        "template": "btn_dialog_arrow.png",
+        "threshold": 0.65,
+        "action": "Click",
+        "next": ["SkipDialog_Main"],
+        "on_error": ["SkipDialog_Dots"],
+        "post_delay": 200
+    },
+    "SkipDialog_Dots": {
+        "recognition": "TemplateMatch",
+        "template": "btn_dialog_3dots.png",
+        "threshold": 0.65,
+        "action": "Click",
+        "next": ["SkipDialog_Main"],
+        "on_error": ["SkipDialog_ArrowLegacy"],
+        "post_delay": 200
+    },
+    "SkipDialog_ArrowLegacy": {
         "recognition": "TemplateMatch",
         "template": "dialog_arrow.png",
         "threshold": 0.6,
         "action": "Click",
         "next": ["SkipDialog_Main"],
+        "on_error": ["SkipDialog_DotsLegacy"],
         "post_delay": 200
+    },
+    "SkipDialog_DotsLegacy": {
+        "recognition": "TemplateMatch",
+        "template": "dialog_3_dots.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": ["SkipDialog_Main"],
+        "on_error": ["SkipDialog_MessageDialogClick"],
+        "post_delay": 200
+    },
+    "SkipDialog_MessageDialogClick": {
+        "recognition": "TemplateMatch",
+        "template": "message_dialog.png",
+        "threshold": 0.65,
+        "action": "Custom",
+        "custom_action": "SkipDialogMessageClick",
+        "next": ["SkipDialog_Main"],
+        "on_error": ["SkipDialog_NoTarget"],
+        "post_delay": 200
+    },
+    "SkipDialog_NoTarget": {
+        "next": ["SkipDialog_Main"]
+    },
+    "SkipDialog_MessageDialog": {
+        "recognition": "TemplateMatch",
+        "template": "message_dialog.png",
+        "threshold": 0.65
     }
 }

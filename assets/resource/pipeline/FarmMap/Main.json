@@ -110,17 +110,6 @@
         ],
         "post_delay": 500
     },
-    "FarmMap_Collect": {
-        "action": "Custom",
-        "custom_action": "PickEnhanced",
-        "custom_action_param": {
-            "max_attempts": 5
-        },
-        "next": [
-            "FarmMap_Loop"
-        ],
-        "post_delay": 500
-    },
     "FarmMap_Combat": {
         "recognition": "TemplateMatch",
         "template": "has_target.png",

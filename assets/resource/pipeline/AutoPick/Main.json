@@ -10,6 +10,26 @@
         "next": ["AutoPick_Filter", "AutoPick_Main"],
         "post_delay": 100
     },
+    "AutoPick_FPromptPrimary": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f_hcenter_vcenter.png",
+        "threshold": 0.75
+    },
+    "AutoPick_FPromptFallback": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [300, 200, 680, 480]
+    },
+    "AutoPick_MessageDialog": {
+        "recognition": "TemplateMatch",
+        "template": "message_dialog.png",
+        "threshold": 0.45
+    },
+    "AutoPick_TextOCR": {
+        "recognition": "OCR",
+        "roi": [300, 200, 680, 100]
+    },
     "AutoPick_Filter": {
         "recognition": "Custom",
         "custom_recognition": "PickTextFilter",

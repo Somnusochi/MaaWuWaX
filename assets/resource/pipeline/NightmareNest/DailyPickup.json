@@ -1,0 +1,166 @@
+{
+    "NightmareNest_PickEntryCapture": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.6,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "NightmareNest_PickEntryCapture2"
+        ],
+        "on_error": [
+            "NightmareNest_PickEntryCaptureDone"
+        ],
+        "post_delay": 300
+    },
+    "NightmareNest_PickEntryCapture2": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.6,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "NightmareNest_PickEntryCapture3"
+        ],
+        "on_error": [
+            "NightmareNest_PickEntryCaptureDone"
+        ],
+        "post_delay": 300
+    },
+    "NightmareNest_PickEntryCapture3": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.6,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "NightmareNest_PickEntryCaptureDone"
+        ],
+        "on_error": [
+            "NightmareNest_PickEntryCaptureNoMore"
+        ],
+        "post_delay": 300
+    },
+    "NightmareNest_PickEntryCaptureDone": {
+        "next": [
+            "NightmareNest_FightCapture"
+        ],
+        "post_delay": 1000
+    },
+    "NightmareNest_PickEntryCaptureNoMore": {
+        "next": [
+            "NightmareNest_FightCapture"
+        ],
+        "post_delay": 1000
+    },
+    "NightmareNest_CollectEchoCapture": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "NightmareNest_CollectEchoCapture2"
+        ],
+        "on_error": [
+            "NightmareNest_CollectEchoCaptureDone"
+        ],
+        "post_delay": 300
+    },
+    "NightmareNest_CollectEchoCapture2": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "NightmareNest_CollectEchoCapture3"
+        ],
+        "on_error": [
+            "NightmareNest_CollectEchoCaptureDone"
+        ],
+        "post_delay": 300
+    },
+    "NightmareNest_CollectEchoCapture3": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "NightmareNest_CollectEchoCapture4"
+        ],
+        "on_error": [
+            "NightmareNest_CollectEchoCaptureDone"
+        ],
+        "post_delay": 300
+    },
+    "NightmareNest_CollectEchoCapture4": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "NightmareNest_CollectEchoCaptureDone"
+        ],
+        "on_error": [
+            "NightmareNest_CollectEchoCaptureNoMore"
+        ],
+        "post_delay": 300
+    },
+    "NightmareNest_CollectEchoCaptureDone": {
+        "next": [
+            "NightmareNest_Done"
+        ],
+        "post_delay": 1000
+    },
+    "NightmareNest_CollectEchoCaptureNoMore": {
+        "next": [
+            "NightmareNest_Done"
+        ],
+        "post_delay": 1000
+    }
+}

@@ -102,9 +102,12 @@ func augustaResonanceAvailable(c combatActor) bool {
 // augustaClickResonance mirrors ok-ww Augusta.click_resonance():
 // casts resonance and returns (clicked, duration).
 func augustaClickResonance(c combatActor) (bool, time.Duration) {
+	if !augustaResonanceAvailable(c) {
+		return false, 0
+	}
 	start := time.Now()
 	clicked := false
-	for augustaResonanceAvailable(c) && time.Since(start) < 15*time.Second {
+	for c.resonanceChainAvailable() && time.Since(start) < 15*time.Second {
 		if c.forceSkill() {
 			clicked = true
 		}

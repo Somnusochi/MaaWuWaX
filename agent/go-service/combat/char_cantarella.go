@@ -75,7 +75,7 @@ func cantarellaSkill(c combatActor) bool {
 	}
 	start := time.Now()
 	clicked := false
-	for cantarellaResonanceAvailable(c) && time.Since(start) < 10*time.Second {
+	for c.resonanceChainAvailable() && time.Since(start) < 10*time.Second {
 		if c.forceSkill() {
 			clicked = true
 		}

@@ -367,6 +367,10 @@ func (c combatActor) resonanceAvailable() bool {
 	return c.freezeElapsed(c.state.lastResonance, c.state.lastResonanceFreeze) >= 2*time.Second
 }
 
+func (c combatActor) resonanceChainAvailable() bool {
+	return c.resonanceNoCD()
+}
+
 func (c combatActor) liberationAvailable() bool {
 	return c.param.UseLiberation && c.liberationNoCD() && (screenAnalyzer.Liberation || c.currentLiberation() > 0.05)
 }
@@ -386,9 +390,21 @@ func (c combatActor) flying() bool {
 	return screenAnalyzer.Flying
 }
 
+func (c combatActor) hasLavitator() bool {
+	if c.action == nil {
+		return false
+	}
+	return c.action.hasLavitator
+}
+
 func (c combatActor) forteFull() bool {
-	if c.slot.Name == "xigelika" && screenAnalyzer.XigelikaForte {
-		return true
+	switch c.slot.Name {
+	case "xigelika":
+		if screenAnalyzer.XigelikaForte {
+			return true
+		}
+	case "cantarella":
+		return screenAnalyzer.CantarellaForte
 	}
 	return screenAnalyzer.ForteFull
 }

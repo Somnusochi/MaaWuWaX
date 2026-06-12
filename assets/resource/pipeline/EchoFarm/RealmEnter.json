@@ -1,0 +1,77 @@
+{
+    "EchoFarm_CheckRealmFPrompt": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f_hcenter_vcenter.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f.png",
+                "threshold": 0.65
+            },
+            {
+                "recognition": "OCR",
+                "expected": "挑战"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge"
+            }
+        ],
+        "next": ["EchoFarm_PressRealmF"],
+        "on_error": ["EchoFarm_NextRound"]
+    },
+    "EchoFarm_PressRealmF": {
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["EchoFarm_SelectRealmLevel"],
+        "post_delay": 3000
+    },
+    "EchoFarm_SelectRealmLevel": {
+        "action": "Custom",
+        "custom_action": "EchoFarmSelectRealmLevel",
+        "next": ["EchoFarm_ClickChallengeConfirmLeft"],
+        "on_error": ["EchoFarm_NextRound"]
+    },
+    "EchoFarm_ClickChallengeConfirmLeft": {
+        "action": "Click",
+        "target": [1126, 656, 1, 1],
+        "next": ["EchoFarm_ClickChallengeConfirmRight"],
+        "post_delay": 2000
+    },
+    "EchoFarm_ClickChallengeConfirmRight": {
+        "action": "Click",
+        "target": [1162, 662, 1, 1],
+        "next": ["EchoFarm_AfterRealmEnter"],
+        "post_delay": 2000
+    },
+    "EchoFarm_AfterRealmEnter": {
+        "action": "Custom",
+        "custom_action": "EchoFarmAfterRealmEnter",
+        "next": ["EchoFarm_WaitRealmState"],
+        "on_error": ["EchoFarm_NextRound"]
+    },
+    "EchoFarm_WaitRealmState": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "has_target.png",
+                "threshold": 0.7,
+                "roi": [400, 200, 800, 600]
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "minimap.png",
+                "threshold": 0.7,
+                "roi": [1050, 20, 200, 160]
+            }
+        ],
+        "next": ["EchoFarm_Combat", "EchoFarm_ScanEcho"],
+        "timeout": 30000,
+        "on_error": ["EchoFarm_NextRound"]
+    }
+}

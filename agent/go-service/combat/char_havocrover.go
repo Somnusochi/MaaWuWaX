@@ -166,14 +166,17 @@ func havocRoverPerformWind(c combatActor) {
 	havocRoverWindWaitDown(c, true)
 }
 
-// KNOWN_DIFF: Python's wind_routine_flying checks has_lavitator first,
-// using self.flying() only when lavitator is present; Go has no HasLavitator
-// member so we fall back to the unconditional flying check.
+// wind_routine_flying matches ok-ww:
+// - if has_lavitator: relies on screen flying signal
+// - otherwise: infer flight by resonance bar > 0.15.
 func havocRoverWindFlying(c combatActor) bool {
-	if c.flying() {
+	if c.hasLavitator() {
+		return c.flying()
+	}
+	if c.currentResonance() > 0.15 {
 		return true
 	}
-	return c.currentResonance() > 0.15
+	return false
 }
 
 func havocRoverClickWhileFlying(c combatActor, duration time.Duration) bool {
@@ -188,15 +191,10 @@ func havocRoverClickWhileFlying(c combatActor, duration time.Duration) bool {
 	return true
 }
 
-// KNOWN_DIFF: Python's wind_routine_wait_down checks has_lavitator and
-// either calls self.wait_down() (lavitator) or waits for resonance<0.15
-// (no lavitator). Go uses c.flying() as the lavitator proxy.
 func havocRoverWindWaitDown(c combatActor, checkForte bool) {
-	if c.flying() {
-		// has_lavitator path: wait until not flying
+	if c.hasLavitator() {
 		c.waitDown(2500 * time.Millisecond)
-	} else if c.currentResonance() > 0.15 {
-		// no-lavitator path: wait for resonance to drop below threshold
+	} else {
 		deadline := time.Now().Add(2500 * time.Millisecond)
 		for time.Now().Before(deadline) && c.currentResonance() > 0.15 {
 			c.sleep(100 * time.Millisecond)
@@ -236,7 +234,7 @@ func havocRoverClickResonance(c combatActor) bool {
 	}
 	start := time.Now()
 	clicked := false
-	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+	for c.resonanceChainAvailable() && time.Since(start) < 15*time.Second {
 		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}

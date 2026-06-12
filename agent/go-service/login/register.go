@@ -5,11 +5,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var multiAccountSwitcher = &MultiAccountSwitchAction{}
+var multiAccountSwitcher = &MultiAccountState{}
 
 func Register() {
-	maa.AgentServerRegisterCustomRecognition("LoginScreenDetect", &LoginScreenDetect{})
-	maa.AgentServerRegisterCustomAction("MultiAccountSwitch", multiAccountSwitcher)
+	maa.AgentServerRegisterCustomRecognition("MultiAccountCanSwitch", &MultiAccountCanSwitchRecognition{})
+	maa.AgentServerRegisterCustomAction("MultiAccountMarkCurrent", &MultiAccountMarkCurrentAction{})
+	maa.AgentServerRegisterCustomAction("MultiAccountSelectNext", &MultiAccountSelectNextAction{})
+	maa.AgentServerRegisterCustomRecognition("MultiAccountSelectedMatches", &MultiAccountSelectedMatchesRecognition{})
 	maa.AgentServerRegisterCustomAction("MultiAccountMarkFailed", &MultiAccountMarkFailedAction{})
 	log.Info().Str("component", "login").Msg("registered login components")
 }

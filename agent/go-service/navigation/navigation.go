@@ -2,8 +2,8 @@
 package navigation
 
 import (
-	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/pkg/keycode"
@@ -14,6 +14,10 @@ import (
 )
 
 var lastLoreleiNightChange time.Time
+var bossBookState struct {
+	sync.Mutex
+	param bossTeleportParam
+}
 
 // ---------------------------------------------------------------------------
 // MinimapNavigateRecognition — performs a single forward step (W key).
@@ -103,40 +107,26 @@ type ClickFastTravelAction struct{}
 var _ maa.CustomActionRunner = &ClickFastTravelAction{}
 
 func (a *ClickFastTravelAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	ctrl := ctx.GetTasker().GetController()
-	for _, template := range []string{
-		"fast_travel_custom.png",
-		"gray_teleport.png",
-		"custom_teleport_hcenter_vcenter.png",
+	for _, button := range []struct {
+		node          string
+		confirmCustom bool
+	}{
+		{node: "Navigation_FastTravelCustomButton", confirmCustom: true},
+		{node: "Navigation_FastTravelGrayButton"},
+		{node: "Navigation_FastTravelCenterButton", confirmCustom: true},
 	} {
-		detail, err := ctx.RunRecognition(
-			"__ClickFastTravel_Button",
-			nil,
-			fmt.Sprintf(`{
-				"__ClickFastTravel_Button": {
-					"recognition": "TemplateMatch",
-					"template": %q,
-					"threshold": 0.7
-				}
-			}`, template),
-		)
-		if err != nil || detail == nil || !detail.Hit {
+		if !clickRecognitionCenter(ctx, button.node) {
 			continue
 		}
-
-		ctrl.PostClick(
-			int32(detail.Box[0]+detail.Box[2]/2),
-			int32(detail.Box[1]+detail.Box[3]/2),
-		).Wait()
 		time.Sleep(800 * time.Millisecond)
 
-		if template != "gray_teleport.png" {
+		if button.confirmCustom {
 			a.confirmCustomTeleport(ctx)
 		}
 
 		log.Info().
 			Str("component", "ClickFastTravel").
-			Str("template", template).
+			Str("node", button.node).
 			Msg("clicked fast travel")
 		return true
 	}
@@ -150,31 +140,8 @@ func (a *ClickFastTravelAction) confirmCustomTeleport(ctx *maa.Context) {
 	ctrl.PostClick(627, 396).Wait()
 	time.Sleep(300 * time.Millisecond)
 
-	for _, template := range []string{
-		"confirm_btn_highlight_hcenter_vcenter.png",
-		"confirm_btn_hcenter_vcenter.png",
-	} {
-		detail, err := ctx.RunRecognition(
-			"__ClickFastTravel_Confirm",
-			nil,
-			fmt.Sprintf(`{
-				"__ClickFastTravel_Confirm": {
-					"recognition": "TemplateMatch",
-					"template": %q,
-					"threshold": 0.6
-				}
-			}`, template),
-		)
-		if err != nil || detail == nil || !detail.Hit {
-			continue
-		}
-
-		ctrl.PostClick(
-			int32(detail.Box[0]+detail.Box[2]/2),
-			int32(detail.Box[1]+detail.Box[3]/2),
-		).Wait()
+	if clickRecognitionCenter(ctx, "Navigation_FastTravelConfirmButton") {
 		time.Sleep(500 * time.Millisecond)
-		return
 	}
 }
 
@@ -184,33 +151,27 @@ func (a *ClickFastTravelAction) confirmCustomTeleport(ctx *maa.Context) {
 // ---------------------------------------------------------------------------
 
 type TeleportBossAction struct{}
+type BossBookPrepareProfileAction struct{}
+type BossBookTargetSelectAction struct{}
 
 var _ maa.CustomActionRunner = &TeleportBossAction{}
+var _ maa.CustomActionRunner = &BossBookPrepareProfileAction{}
+var _ maa.CustomActionRunner = &BossBookTargetSelectAction{}
 
 type bossTeleportParam struct {
-	BossType          string `json:"boss_type"`
-	BossName          string `json:"boss_name"`
-	BossProfile       string `json:"boss_profile"`
-	SerialNumber      int    `json:"serial_number"`
-	TotalNumber       int    `json:"total_number"`
-	BossLevel         string `json:"boss_level"`
-	WalkAfterTeleport bool   `json:"walk_after_teleport"`
-	CombatWaitMs      int    `json:"combat_wait_ms"`
+	BossType               string `json:"boss_type"`
+	BossName               string `json:"boss_name"`
+	BossProfile            string `json:"boss_profile"`
+	SerialNumber           int    `json:"serial_number"`
+	TotalNumber            int    `json:"total_number"`
+	BossLevel              string `json:"boss_level"`
+	WalkAfterTeleport      bool   `json:"walk_after_teleport"`
+	WaitWorldAfterTeleport bool   `json:"wait_world_after_teleport"`
+	CombatWaitMs           int    `json:"combat_wait_ms"`
 }
 
 func (a *TeleportBossAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	param := bossTeleportParam{BossType: "boss", SerialNumber: 1, TotalNumber: 20, BossLevel: "80", WalkAfterTeleport: true}
-	if arg.CustomActionParam != "" {
-		if err := sonic.Unmarshal([]byte(arg.CustomActionParam), &param); err != nil {
-			log.Warn().Err(err).Str("component", "TeleportBoss").Msg("failed to parse param")
-		}
-	}
-	if param.SerialNumber < 1 {
-		param.SerialNumber = 1
-	}
-	if param.TotalNumber < param.SerialNumber {
-		param.TotalNumber = param.SerialNumber
-	}
+	param := parseBossTeleportParam(arg, true)
 	tabTemplate := "gray_book_boss.png"
 	if param.BossType == "weekly" {
 		tabTemplate = "book_zhange.png"
@@ -241,17 +202,11 @@ func (a *TeleportBossAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) boo
 	time.Sleep(2000 * time.Millisecond)
 
 	// Step 2: Click boss tab.
-	detail, err := ctx.RunRecognition(
-		"__TeleportBoss_FindTab",
-		nil,
-		fmt.Sprintf(`{
-			"__TeleportBoss_FindTab": {
-				"recognition": "TemplateMatch",
-				"template": %q,
-				"threshold": 0.6
-			}
-		}`, tabTemplate),
-	)
+	tabNode := "Navigation_BossTabBoss"
+	if param.BossType == "weekly" {
+		tabNode = "Navigation_BossTabWeekly"
+	}
+	detail, err := ctx.RunRecognition(tabNode, nil)
 	if err != nil || detail == nil || !detail.Hit {
 		log.Warn().Str("component", "TeleportBoss").Msg("boss tab not found")
 		ctrl.PostClickKey(escCode).Wait()
@@ -268,17 +223,7 @@ func (a *TeleportBossAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) boo
 	}
 
 	// Step 4: Click proceed button.
-	proceedDetail, err := ctx.RunRecognition(
-		"__TeleportBoss_Proceed",
-		nil,
-		`{
-			"__TeleportBoss_Proceed": {
-				"recognition": "TemplateMatch",
-				"template": "boss_proceed.png",
-				"threshold": 0.7
-			}
-		}`,
-	)
+	proceedDetail, err := ctx.RunRecognition("Navigation_BossProceedButton", nil)
 	if err != nil || proceedDetail == nil || !proceedDetail.Hit {
 		log.Warn().Str("component", "TeleportBoss").Msg("proceed button not found")
 		ctrl.PostClickKey(escCode).Wait()
@@ -291,17 +236,7 @@ func (a *TeleportBossAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) boo
 	time.Sleep(1000 * time.Millisecond)
 
 	// Step 5: Click travel button.
-	travelDetail, err := ctx.RunRecognition(
-		"__TeleportBoss_Travel",
-		nil,
-		`{
-			"__TeleportBoss_Travel": {
-				"recognition": "TemplateMatch",
-				"template": "gray_teleport.png",
-				"threshold": 0.7
-			}
-		}`,
-	)
+	travelDetail, err := ctx.RunRecognition("Navigation_BossTravelButton", nil)
 	if err != nil || travelDetail == nil || !travelDetail.Hit {
 		log.Warn().Str("component", "TeleportBoss").Msg("travel button not found")
 		ctrl.PostClickKey(escCode).Wait()
@@ -312,6 +247,10 @@ func (a *TeleportBossAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) boo
 		int32(travelDetail.Box[1]+travelDetail.Box[3]/2),
 	).Wait()
 	time.Sleep(3000 * time.Millisecond)
+
+	if !param.WaitWorldAfterTeleport {
+		return true
+	}
 
 	// Step 6: Wait for world load.
 	for i := 0; i < 15; i++ {
@@ -324,18 +263,7 @@ func (a *TeleportBossAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) boo
 			time.Sleep(2000 * time.Millisecond)
 			continue
 		}
-		worldDetail, err := ctx.RunRecognition(
-			"__TeleportBoss_WaitWorld",
-			img,
-			`{
-				"__TeleportBoss_WaitWorld": {
-					"recognition": "TemplateMatch",
-					"template": "minimap.png",
-					"threshold": 0.7,
-					"roi": [1050, 20, 200, 160]
-				}
-			}`,
-		)
+		worldDetail, err := ctx.RunRecognition("Navigation_WaitInWorld", img)
 		if err == nil && worldDetail != nil && worldDetail.Hit {
 			log.Info().Str("component", "TeleportBoss").Msg("arrived in world")
 			if param.WalkAfterTeleport {
@@ -348,6 +276,70 @@ func (a *TeleportBossAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) boo
 
 	log.Warn().Str("component", "TeleportBoss").Msg("timeout waiting for world load")
 	return false
+}
+
+func (a *BossBookPrepareProfileAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
+	param := parseBossTeleportParam(arg, false)
+	saveBossBookParam(param)
+	(&TeleportBossAction{}).prepareBossProfile(ctx, param)
+	return true
+}
+
+func (a *BossBookTargetSelectAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
+	param := loadBossBookParam()
+	if arg != nil && arg.CustomActionParam != "" {
+		param = parseBossTeleportParam(arg, false)
+		saveBossBookParam(param)
+	}
+	teleport := &TeleportBossAction{}
+	if !teleport.selectBookTargetByName(ctx, param, param.TotalNumber) {
+		teleport.selectBookTarget(ctx, param.SerialNumber, param.TotalNumber)
+	}
+	return true
+}
+
+func parseBossTeleportParam(arg *maa.CustomActionArg, waitWorldDefault bool) bossTeleportParam {
+	param := bossTeleportParam{
+		BossType:               "boss",
+		SerialNumber:           1,
+		TotalNumber:            20,
+		BossLevel:              "80",
+		WalkAfterTeleport:      true,
+		WaitWorldAfterTeleport: waitWorldDefault,
+	}
+	if arg != nil && arg.CustomActionParam != "" {
+		if err := sonic.Unmarshal([]byte(arg.CustomActionParam), &param); err != nil {
+			log.Warn().Err(err).Str("component", "BossBookParam").Msg("failed to parse param")
+		}
+	}
+	if param.SerialNumber < 1 {
+		param.SerialNumber = 1
+	}
+	if param.TotalNumber < param.SerialNumber {
+		param.TotalNumber = param.SerialNumber
+	}
+	if param.BossType == "weekly" && param.TotalNumber < 9 {
+		param.TotalNumber = 9
+	}
+	if param.BossLevel == "" {
+		param.BossLevel = "80"
+	}
+	return param
+}
+
+func saveBossBookParam(param bossTeleportParam) {
+	bossBookState.Lock()
+	bossBookState.param = param
+	bossBookState.Unlock()
+}
+
+func loadBossBookParam() bossTeleportParam {
+	bossBookState.Lock()
+	defer bossBookState.Unlock()
+	if bossBookState.param.SerialNumber == 0 {
+		return parseBossTeleportParam(nil, false)
+	}
+	return bossBookState.param
 }
 
 func (a *TeleportBossAction) prepareBossProfile(ctx *maa.Context, param bossTeleportParam) {
@@ -455,16 +447,7 @@ func (a *TeleportBossAction) selectBookTargetByName(ctx *maa.Context, param boss
 }
 
 func (a *TeleportBossAction) findBookTargetName(ctx *maa.Context, queries []string) (string, maa.Rect, bool) {
-	detail, err := ctx.RunRecognition(
-		"__TeleportBoss_NameOCR",
-		nil,
-		`{
-			"__TeleportBoss_NameOCR": {
-				"recognition": "OCR",
-				"roi": [300, 95, 920, 560]
-			}
-		}`,
-	)
+	detail, err := ctx.RunRecognition("Navigation_BossNameOCR", nil)
 	if err != nil || detail == nil || !detail.Hit || detail.Results == nil {
 		return "", maa.Rect{}, false
 	}
@@ -615,37 +598,12 @@ func (a *TeleportBossAction) waitForBossProfile(param bossTeleportParam) {
 }
 
 func (a *TeleportBossAction) inCombat(ctx *maa.Context) bool {
-	detail, err := ctx.RunRecognition(
-		"__TeleportBoss_Combat",
-		nil,
-		`{
-			"__TeleportBoss_Combat": {
-				"recognition": "TemplateMatch",
-				"template": "has_target.png",
-				"threshold": 0.7,
-				"roi": [400, 200, 800, 600]
-			}
-		}`,
-	)
+	detail, err := ctx.RunRecognition("Navigation_CombatTarget", nil)
 	return err == nil && detail != nil && detail.Hit
 }
 
 func (a *TeleportBossAction) hasFPrompt(ctx *maa.Context) bool {
-	detail, err := ctx.RunRecognition(
-		"__TeleportBoss_FPrompt",
-		nil,
-		`{
-			"__TeleportBoss_FPrompt": {
-				"recognition": "Or",
-				"any_of": [
-					{"recognition": "TemplateMatch", "template": "pick_up_f_hcenter_vcenter.png", "threshold": 0.6},
-					{"recognition": "TemplateMatch", "template": "pick_up_f.png", "threshold": 0.65},
-					{"recognition": "OCR", "expected": "挑战"},
-					{"recognition": "OCR", "expected": "Challenge"}
-				]
-			}
-		}`,
-	)
+	detail, err := ctx.RunRecognition("Navigation_FPrompt", nil)
 	return err == nil && detail != nil && detail.Hit
 }
 
@@ -653,24 +611,19 @@ func (a *TeleportBossAction) selectBossLevel(ctx *maa.Context, level string) {
 	if level == "" {
 		level = "80"
 	}
-	detail, err := ctx.RunRecognition(
-		"__TeleportBoss_Level",
-		nil,
-		fmt.Sprintf(`{
-			"__TeleportBoss_Level": {
-				"recognition": "OCR",
-				"expected": %q,
-				"roi": [38, 81, 376, 394]
-			}
-		}`, level),
-	)
-	if err != nil || detail == nil || !detail.Hit {
+	detail, err := ctx.RunRecognition("Navigation_BossLevelOCR", nil)
+	if err != nil || detail == nil || !detail.Hit || detail.Results == nil {
+		log.Warn().Str("component", "TeleportBoss").Str("boss_level", level).Msg("boss level not found")
+		return
+	}
+	box, ok := findOCRTextBox(detail, level)
+	if !ok {
 		log.Warn().Str("component", "TeleportBoss").Str("boss_level", level).Msg("boss level not found")
 		return
 	}
 	ctx.GetTasker().GetController().PostClick(
-		int32(detail.Box[0]+detail.Box[2]/2),
-		int32(detail.Box[1]+detail.Box[3]/2),
+		int32(box[0]+box[2]/2),
+		int32(box[1]+box[3]/2),
 	).Wait()
 	time.Sleep(1000 * time.Millisecond)
 }
@@ -687,4 +640,34 @@ func pressFor(ctrl *maa.Controller, code int32, duration time.Duration) {
 	ctrl.PostKeyDown(code).Wait()
 	time.Sleep(duration)
 	ctrl.PostKeyUp(code).Wait()
+}
+
+func clickRecognitionCenter(ctx *maa.Context, node string) bool {
+	detail, err := ctx.RunRecognition(node, nil)
+	if err != nil || detail == nil || !detail.Hit {
+		return false
+	}
+	ctx.GetTasker().GetController().PostClick(
+		int32(detail.Box[0]+detail.Box[2]/2),
+		int32(detail.Box[1]+detail.Box[3]/2),
+	).Wait()
+	return true
+}
+
+func findOCRTextBox(detail *maa.RecognitionDetail, expected string) (maa.Rect, bool) {
+	expected = normalizeBossBookText(expected)
+	results := detail.Results.Filtered
+	if len(results) == 0 {
+		results = detail.Results.All
+	}
+	for _, result := range results {
+		ocr, ok := result.AsOCR()
+		if !ok || ocr == nil {
+			continue
+		}
+		if strings.Contains(normalizeBossBookText(ocr.Text), expected) {
+			return ocr.Box, true
+		}
+	}
+	return maa.Rect{}, false
 }

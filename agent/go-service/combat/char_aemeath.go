@@ -74,7 +74,7 @@ func aemeathClickEnhanceE(c combatActor) bool {
 	start := time.Now()
 	startFreeze := screenAnalyzer.FreezeDuration
 	clicked := false
-	for c.resonanceAvailable() && c.freezeElapsed(start, startFreeze) < 1500*time.Millisecond {
+	for c.resonanceChainAvailable() && c.freezeElapsed(start, startFreeze) < 1500*time.Millisecond {
 		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}

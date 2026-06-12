@@ -1,0 +1,174 @@
+{
+    "Forgery_CheckComplete": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "挑战完成"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge Complete"
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "claim_btn.png",
+                "threshold": 0.6
+            }
+        ],
+        "next": [
+            "Forgery_HandleReward"
+        ],
+        "post_delay": 1000
+    },
+    "Forgery_HandleReward": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "gem_add_stamina.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "OCR",
+                "expected": "消耗体力"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Spend Stamina"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "体力不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "结晶波片不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Insufficient"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Not enough"
+            }
+        ],
+        "action": "Click",
+        "next": [
+            "Forgery_NotEnoughStamina",
+            "Forgery_ConfirmStamina",
+            "Forgery_Done"
+        ],
+        "post_delay": 1000
+    },
+    "Forgery_ConfirmStamina": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_yellow_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            }
+        ],
+        "action": "Click",
+        "next": [
+            "Forgery_Fight"
+        ],
+        "post_delay": 2000
+    },
+    "Forgery_Done": {
+        "next": []
+    },
+    "Forgery_DetectDead": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "revive_confirm_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "复活"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Revive"
+            }
+        ],
+        "action": "Click",
+        "next": [
+            "Forgery_RecoverToWorld"
+        ],
+        "post_delay": 2000
+    },
+    "Forgery_RecoverToWorld": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": [
+            "Forgery_ConfirmExit",
+            "Forgery_EnsureWorld"
+        ],
+        "post_delay": 1000
+    },
+    "Forgery_ConfirmExit": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "gray_confirm_exit_button.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_yellow_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            }
+        ],
+        "action": "Click",
+        "next": [
+            "Forgery_WaitLoad"
+        ],
+        "post_delay": 3000
+    },
+    "Forgery_NotEnoughStamina": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "体力不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "结晶波片不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Insufficient"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Not enough"
+            }
+        ],
+        "action": "ClickKey",
+        "key": 53,
+        "next": [
+            "Forgery_Done"
+        ],
+        "post_delay": 1000
+    }
+}

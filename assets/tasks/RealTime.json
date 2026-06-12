@@ -263,6 +263,9 @@
                     "pipeline_override": {
                         "RealTime_Login": {
                             "enabled": true
+                        },
+                        "Login_AfterAction": {
+                            "next": ["RealTime_Main"]
                         }
                     }
                 },

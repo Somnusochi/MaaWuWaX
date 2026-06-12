@@ -1,0 +1,25 @@
+{
+    "FiveToOne_ConfirmOCR": {
+        "recognition": "OCR",
+        "expected": "确认",
+        "roi": [760, 520, 420, 160]
+    },
+    "FiveToOne_ResultOCR": {
+        "recognition": "OCR",
+        "expected": "获得声骸",
+        "roi": [380, 0, 520, 120]
+    },
+    "FiveToOne_BatchFusionOCR": {
+        "recognition": "OCR",
+        "expected": "批量融合",
+        "roi": [900, 600, 380, 120]
+    },
+    "FiveToOne_ClickOCR": {
+        "recognition": "OCR",
+        "roi": [141, 137, 972, 403]
+    },
+    "FiveToOne_StatOCR": {
+        "recognition": "OCR",
+        "roi": [141, 137, 972, 403]
+    }
+}

@@ -22,16 +22,7 @@ var _ maa.CustomRecognitionRunner = &StaminaReader{}
 
 func (r *StaminaReader) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
 	// OCR the stamina text area (e.g., "120/240").
-	detail, err := ctx.RunRecognition(
-		"__StaminaOCR",
-		arg.Img,
-		`{
-			"__StaminaOCR": {
-				"recognition": "OCR",
-				"roi": [500, 60, 200, 40]
-			}
-		}`,
-	)
+	detail, err := ctx.RunRecognition("Stamina_OCR", arg.Img)
 	if err != nil || detail == nil || !detail.Hit {
 		log.Debug().Str("component", "StaminaReader").Msg("stamina OCR failed or no hit")
 		return nil, false
@@ -97,16 +88,7 @@ func (r *StaminaCheckRecognition) Run(ctx *maa.Context, arg *maa.CustomRecogniti
 	}
 
 	// Read stamina via StaminaReader logic.
-	detail, err := ctx.RunRecognition(
-		"__StaminaCheck_OCR",
-		arg.Img,
-		`{
-			"__StaminaCheck_OCR": {
-				"recognition": "OCR",
-				"roi": [500, 60, 200, 40]
-			}
-		}`,
-	)
+	detail, err := ctx.RunRecognition("Stamina_OCR", arg.Img)
 	if err != nil || detail == nil || !detail.Hit {
 		return nil, false
 	}

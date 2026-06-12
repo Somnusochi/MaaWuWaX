@@ -1,0 +1,155 @@
+{
+    "NightmareNest_MainNightmare": {
+        "next": ["NightmareNest_EnsureWorldNightmare"]
+    },
+    "NightmareNest_EnsureWorldNightmare": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": ["NightmareNest_OpenBookNightmare"],
+        "post_delay": 500
+    },
+    "NightmareNest_OpenBookNightmare": {
+        "action": "ClickKey",
+        "key": 120,
+        "next": ["NightmareNest_BookOpenNightmare"],
+        "post_delay": 2000
+    },
+    "NightmareNest_BookOpenNightmare": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_boss.png",
+        "threshold": 0.6,
+        "next": ["NightmareNest_SelectMengyanNightmare"],
+        "post_delay": 500
+    },
+    "NightmareNest_SelectMengyanNightmare": {
+        "recognition": "TemplateMatch",
+        "template": "book_mengyan.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": ["NightmareNest_FindNestNightmare"],
+        "post_delay": 500
+    },
+    "NightmareNest_FindNestNightmare": {
+        "recognition": "Custom",
+        "custom_recognition": "NightmareFindNest",
+        "custom_recognition_param": {
+            "denominators": [24, 36, 48]
+        },
+        "next": ["NightmareNest_ClickNest"],
+        "post_delay": 500,
+        "timeout": 5000,
+        "on_error": ["NightmareNest_ScrollMengyanNightmare"]
+    },
+    "NightmareNest_ScrollMengyanNightmare": {
+        "recognition": "Custom",
+        "custom_recognition": "NestScroll",
+        "custom_recognition_param": {
+            "max_pages": 5
+        },
+        "next": ["NightmareNest_ClickNest"],
+        "post_delay": 500,
+        "timeout": 15000,
+        "on_error": ["NightmareNest_Done"]
+    },
+    "NightmareNest_MainCanxiang": {
+        "next": ["NightmareNest_EnsureWorldCanxiang"]
+    },
+    "NightmareNest_EnsureWorldCanxiang": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": ["NightmareNest_OpenBookCanxiang"],
+        "post_delay": 500
+    },
+    "NightmareNest_OpenBookCanxiang": {
+        "action": "ClickKey",
+        "key": 120,
+        "next": ["NightmareNest_BookOpenCanxiang"],
+        "post_delay": 2000
+    },
+    "NightmareNest_BookOpenCanxiang": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_boss.png",
+        "threshold": 0.6,
+        "next": ["NightmareNest_SelectCanxiang"],
+        "post_delay": 500
+    },
+    "NightmareNest_MainCapture": {
+        "next": ["NightmareNest_EnsureWorldCapture"]
+    },
+    "NightmareNest_EnsureWorldCapture": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": ["NightmareNest_OpenBookCapture"],
+        "post_delay": 500
+    },
+    "NightmareNest_OpenBookCapture": {
+        "action": "ClickKey",
+        "key": 120,
+        "next": ["NightmareNest_BookOpenCapture"],
+        "post_delay": 2000
+    },
+    "NightmareNest_BookOpenCapture": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_boss.png",
+        "threshold": 0.6,
+        "next": ["NightmareNest_SelectMengyanCapture"],
+        "post_delay": 500
+    },
+    "NightmareNest_SelectMengyanCapture": {
+        "recognition": "TemplateMatch",
+        "template": "book_mengyan.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": ["NightmareNest_FindNestCapture"],
+        "post_delay": 500
+    },
+    "NightmareNest_FindNestCapture": {
+        "recognition": "Custom",
+        "custom_recognition": "NightmareFindNest",
+        "custom_recognition_param": {
+            "denominators": [24, 36, 48]
+        },
+        "next": ["NightmareNest_ClickNestCapture"],
+        "post_delay": 500,
+        "timeout": 5000,
+        "on_error": ["NightmareNest_ScrollMengyanCapture"]
+    },
+    "NightmareNest_ScrollMengyanCapture": {
+        "recognition": "Custom",
+        "custom_recognition": "NestScroll",
+        "custom_recognition_param": {
+            "max_pages": 5
+        },
+        "next": ["NightmareNest_ClickNestCapture"],
+        "post_delay": 500,
+        "timeout": 15000,
+        "on_error": ["NightmareNest_SelectCanxiangCapture"]
+    },
+    "NightmareNest_SelectCanxiangCapture": {
+        "recognition": "TemplateMatch",
+        "template": "book_canxiang.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": ["NightmareNest_FindCanxiangNestCapture"],
+        "post_delay": 700,
+        "timeout": 5000,
+        "on_error": ["NightmareNest_Done"]
+    },
+    "NightmareNest_FindCanxiangNestCapture": {
+        "recognition": "Custom",
+        "custom_recognition": "NightmareFindNest",
+        "custom_recognition_param": {
+            "denominators": [24, 36, 48]
+        },
+        "next": ["NightmareNest_ClickNestCapture"],
+        "post_delay": 500,
+        "timeout": 5000,
+        "on_error": ["NightmareNest_Done"]
+    }
+}

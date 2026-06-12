@@ -1,0 +1,75 @@
+{
+    "Login_PrivacyPrompt": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "隐私",
+                "roi": [384, 216, 512, 288]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Privacy",
+                "roi": [384, 216, 512, 288]
+            }
+        ],
+        "next": ["Login_PrivacyAgree"]
+    },
+    "Login_PrivacyAgree": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "同意",
+                "roi": [384, 216, 512, 288]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Agree",
+                "roi": [384, 216, 512, 288]
+            }
+        ],
+        "action": "Click",
+        "next": ["Login_AfterAction"],
+        "post_delay": 1000
+    },
+    "Login_RestartPrompt": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "游戏即将重启",
+                "roi": [0, 0, 1280, 720]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "遊戲即將重啟",
+                "roi": [0, 0, 1280, 720]
+            }
+        ],
+        "next": ["Login_RestartConfirm"]
+    },
+    "Login_RestartConfirm": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "确认",
+                "roi": [0, 0, 1280, 720]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "確認",
+                "roi": [0, 0, 1280, 720]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm",
+                "roi": [0, 0, 1280, 720]
+            }
+        ],
+        "action": "Click",
+        "next": ["Login_AfterAction"],
+        "post_delay": 1000
+    }
+}

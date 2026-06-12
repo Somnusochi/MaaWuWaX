@@ -26,8 +26,9 @@ func performLuhesi(c combatActor) {
 	resCount := 0
 	tryJump := false
 	detectReady := c.echoNoCD()
-	deadline := time.Now().Add(12 * time.Second)
-	for time.Now().Before(deadline) {
+	start := time.Now()
+	startFreeze := screenAnalyzer.FreezeDuration
+	for c.freezeElapsed(start, startFreeze) < 12*time.Second {
 		if luhesiDetectElbowStrike(c, detectReady) {
 			elbowDeadline := time.Now().Add(1500 * time.Millisecond)
 			for time.Now().Before(elbowDeadline) && luhesiDetectElbowStrike(c, detectReady) {
@@ -95,7 +96,7 @@ func luhesiHandleHeavy(c combatActor, resCount int) bool {
 // luhesiLiberate mirrors ok-ww Luhesi.lib():
 // casts liberation when luhesi_lib available, with f_break on success.
 func luhesiLiberate(c combatActor) bool {
-	if !c.luhesiLibReady() {
+	if !c.luhesiLibReady() || !c.liberationNoCD() {
 		return false
 	}
 	start := time.Now()

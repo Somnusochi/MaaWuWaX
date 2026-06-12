@@ -47,7 +47,7 @@ func defaultClickResonance(c combatActor) bool {
 	start := time.Now()
 	clicked := false
 	lastOp := "click"
-	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+	for c.resonanceChainAvailable() && time.Since(start) < 15*time.Second {
 		if lastOp == "resonance" {
 			c.attack()
 			lastOp = "click"

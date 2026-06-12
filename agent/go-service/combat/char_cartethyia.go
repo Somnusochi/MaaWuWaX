@@ -176,7 +176,7 @@ func cartethyiaClickResonanceWithBigLiber(c combatActor) bool {
 	start := time.Now()
 	clicked := false
 	resonanceStarted := time.Time{}
-	for c.resonanceAvailable() && time.Since(start) < 8*time.Second {
+	for c.resonanceChainAvailable() && time.Since(start) < 8*time.Second {
 		if cartethyiaTryBigLiber(c) {
 			return true
 		}
@@ -232,7 +232,7 @@ func cartethyiaClickLiberation(c combatActor) bool {
 func cartethyiaClickResonance(c combatActor, timeout time.Duration) bool {
 	start := time.Now()
 	clicked := false
-	for c.resonanceAvailable() && time.Since(start) < timeout {
+	for c.resonanceChainAvailable() && time.Since(start) < timeout {
 		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 			c.state.cartethyiaResAt = time.Now()

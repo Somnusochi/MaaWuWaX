@@ -1,0 +1,74 @@
+{
+    "Tacet_Loot": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "Tacet_Loot2"
+        ],
+        "on_error": [
+            "Tacet_LootDone"
+        ],
+        "post_delay": 300
+    },
+    "Tacet_Loot2": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "Tacet_Loot3"
+        ],
+        "on_error": [
+            "Tacet_LootDone"
+        ],
+        "post_delay": 300
+    },
+    "Tacet_Loot3": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "Tacet_LootDone"
+        ],
+        "on_error": [
+            "Tacet_LootNoMore"
+        ],
+        "post_delay": 300
+    },
+    "Tacet_LootDone": {
+        "next": [
+            "Tacet_CheckComplete",
+            "Tacet_Fight"
+        ]
+    },
+    "Tacet_LootNoMore": {
+        "next": [
+            "Tacet_CheckComplete",
+            "Tacet_Fight"
+        ]
+    }
+}

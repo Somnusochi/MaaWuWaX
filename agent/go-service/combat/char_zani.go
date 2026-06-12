@@ -211,9 +211,7 @@ func zaniShouldEndLiberation(c combatActor, timeOnly bool) bool {
 	if timeOnly || c.zaniNightfallReady() {
 		return false
 	}
-	if zaniWaitResonanceNotGray(c, true, true, 2500*time.Millisecond) == zaniWaitInterrupted {
-		return true
-	}
+	zaniWaitResonanceNotGray(c, true, false, 2500*time.Millisecond)
 	return !c.forteFull()
 }
 
@@ -246,7 +244,7 @@ func zaniStandardDefenseProtocolCombo(c combatActor) zaniWaitState {
 	}
 	start := time.Now()
 	clicked := false
-	for c.resonanceAvailable() && time.Since(start) < 200*time.Millisecond {
+	for c.resonanceChainAvailable() && time.Since(start) < 200*time.Millisecond {
 		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
@@ -284,7 +282,7 @@ func zaniBasicAttackBreakthrough(c combatActor) zaniWaitState {
 			if result = zaniWaitForteFull(c, sleep, false, false); result != zaniWaitDone {
 				return result
 			}
-			if result = zaniWaitForteFull(c, 600*time.Millisecond, true, false); result != zaniWaitDone {
+			if result = zaniHoldHeavyWaitForteFull(c, 600*time.Millisecond, false); result != zaniWaitDone {
 				return result
 			}
 			waitChair = 1150 * time.Millisecond
@@ -347,6 +345,16 @@ func zaniWaitForteFull(c combatActor, timeout time.Duration, sendAttack, checkFo
 	return zaniWaitDone
 }
 
+func zaniHoldHeavyWaitForteFull(c combatActor, timeout time.Duration, checkForte bool) zaniWaitState {
+	if timeout <= 0 {
+		return zaniWaitDone
+	}
+	ctrl := c.ctx.GetTasker().GetController()
+	ctrl.PostTouchDown(0, 640, 360, 1).Wait()
+	defer ctrl.PostTouchUp(0).Wait()
+	return zaniWaitForteFull(c, timeout, false, checkForte)
+}
+
 func zaniWaitResonanceNotGray(c combatActor, sendClick, liberTimeCheck bool, timeout time.Duration) zaniWaitState {
 	if timeout <= 0 {
 		timeout = 2500 * time.Millisecond
@@ -379,6 +387,11 @@ func zaniCrisisResponseProtocolCombo(c combatActor) bool {
 		result := zaniWaitFailed
 		if result = zaniBasicAttackBreakthrough(c); result == zaniWaitDone {
 			result = zaniWaitForteFull(c, 2200*time.Millisecond, false, true)
+			if result == zaniWaitDone {
+				c.rightClickFor(50 * time.Millisecond)
+				c.state.zaniLastDodge = time.Now()
+				c.state.zaniLastDodgeFreeze = screenAnalyzer.FreezeDuration
+			}
 		}
 		if result != zaniWaitFull && !c.forteFull() {
 			return false

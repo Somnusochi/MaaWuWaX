@@ -6,7 +6,6 @@ import (
 )
 
 func Register() {
-	maa.AgentServerRegisterCustomAction("RogueMain", &RogueMainAction{})
 	maa.AgentServerRegisterCustomAction("RogueBuffSelect", &RogueBuffSelectAction{})
 	maa.AgentServerRegisterCustomAction("RogueTreasureReward", &RogueTreasureRewardAction{})
 	maa.AgentServerRegisterCustomAction("RogueWalkToTarget", &RogueWalkToTargetAction{})

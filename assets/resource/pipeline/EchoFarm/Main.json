@@ -1,11 +1,15 @@
 {
     "EchoFarm_Main": {
-        "next": ["EchoFarm_ResetLoop"]
+        "next": [
+            "EchoFarm_ResetLoop"
+        ]
     },
     "EchoFarm_ResetLoop": {
         "action": "Custom",
         "custom_action": "EchoFarmResetLoop",
-        "next": ["EchoFarm_NextRound"]
+        "next": [
+            "EchoFarm_NextRound"
+        ]
     },
     "EchoFarm_NextRound": {
         "action": "Custom",
@@ -13,25 +17,40 @@
         "custom_action_param": {
             "max_rounds": 10000
         },
-        "next": ["EchoFarm_TeleportBoss"],
-        "on_error": ["EchoFarm_Done"]
+        "next": [
+            "EchoFarm_TeleportBoss"
+        ],
+        "on_error": [
+            "EchoFarm_Done"
+        ]
     },
     "EchoFarm_TeleportBoss": {
         "action": "Custom",
-        "custom_action": "TeleportBoss",
+        "custom_action": "BossBookPrepareProfile",
         "custom_action_param": {
             "boss_type": "boss",
             "serial_number": 1,
             "total_number": 20,
+            "boss_level": "80",
+            "boss_profile": ""
+        },
+        "next": [
+            "EchoFarm_OpenBook"
+        ],
+        "post_delay": 500
+    },
+    "EchoFarm_EnterRealmFromF": {
+        "action": "Custom",
+        "custom_action": "EchoFarmEnterRealmFromF",
+        "custom_action_param": {
             "boss_level": "80"
         },
         "next": [
-            "EchoFarm_DetectDead",
-            "EchoFarm_ScanEcho",
-            "EchoFarm_Combat",
-            "EchoFarm_Navigate"
+            "EchoFarm_CheckRealmFPrompt"
         ],
-        "post_delay": 3000
+        "on_error": [
+            "EchoFarm_NextRound"
+        ]
     },
     "EchoFarm_Navigate": {
         "recognition": "Custom",
@@ -138,19 +157,6 @@
         "on_error": [
             "EchoFarm_NextRound"
         ]
-    },
-    "EchoFarm_Collect": {
-        "action": "Custom",
-        "custom_action": "EchoFarmCollect",
-        "custom_action_param": {
-            "method": "walk",
-            "max_attempts": 4
-        },
-        "next": [
-            "EchoFarm_DetectDead",
-            "EchoFarm_ScanEcho"
-        ],
-        "post_delay": 500
     },
     "EchoFarm_CheckNext": {
         "recognition": "TemplateMatch",

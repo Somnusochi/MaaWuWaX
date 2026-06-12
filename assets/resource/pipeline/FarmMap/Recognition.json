@@ -1,0 +1,17 @@
+{
+    "FarmMap_BigMapDiamond": {
+        "recognition": "TemplateMatch",
+        "template": "big_map_diamond.png",
+        "threshold": 0.7
+    },
+    "FarmMap_BigMapStar": {
+        "recognition": "TemplateMatch",
+        "template": "big_map_star.png",
+        "threshold": 0.7
+    },
+    "FarmMap_MiniMapBox": {
+        "recognition": "TemplateMatch",
+        "template": "box_minimap.png",
+        "threshold": 0.6
+    }
+}

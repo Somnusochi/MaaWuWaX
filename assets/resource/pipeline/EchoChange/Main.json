@@ -1,67 +1,41 @@
 {
     "EchoChange_Main": {
-        "next": [
-            "EchoChange_ResetStats"
-        ],
+        "next": ["EchoChange_ResetStats"],
         "post_delay": 500
     },
     "EchoChange_ResetStats": {
         "action": "Custom",
         "custom_action": "EchoChangeReset",
-        "next": [
-            "EchoChange_LoopStart"
-        ]
+        "next": ["EchoChange_LoopStart"]
     },
     "EchoChange_LoopStart": {
-        "next": [
-            "EchoChange_CheckLevel0"
-        ],
+        "next": ["EchoChange_CheckLevel0"],
         "post_delay": 500
     },
     "EchoChange_CheckLevel0": {
         "recognition": "OCR",
         "expected": "声骸技能",
-        "roi": [
-            845,
-            346,
-            141,
-            58
-        ],
-        "next": [
-            "EchoChange_FindCultivate"
-        ],
-        "on_error": [
-            "EchoChange_Done"
-        ],
+        "roi": [845, 346, 141, 58],
+        "next": ["EchoChange_FindCultivate"],
+        "on_error": ["EchoChange_Done"],
         "post_delay": 300
     },
     "EchoChange_FindCultivate": {
         "recognition": "OCR",
         "expected": "培养",
-        "roi": [
-            1050,
-            620,
-            230,
-            100
-        ],
-        "next": [
-            "EchoChange_ClickCultivate"
-        ],
+        "roi": [1050, 620, 230, 100],
+        "next": ["EchoChange_ClickCultivate"],
         "post_delay": 300
     },
     "EchoChange_ClickCultivate": {
         "action": "Click",
-        "next": [
-            "EchoChange_WaitEnhanceUI"
-        ],
+        "next": ["EchoChange_WaitEnhanceUI"],
         "post_delay": 500
     },
     "EchoChange_WaitEnhanceUI": {
         "recognition": "OCR",
         "expected": "声骸强化",
-        "next": [
-            "EchoChange_CheckCurrentStat"
-        ],
+        "next": ["EchoChange_CheckCurrentStat"],
         "post_delay": 500
     },
     "EchoChange_CheckCurrentStat": {
@@ -70,54 +44,32 @@
         "custom_recognition_param": {
             "target_stat": "攻击"
         },
-        "next": [
-            "EchoChange_ClickMainStat"
-        ],
-        "on_error": [
-            "EchoChange_Done"
-        ],
+        "next": ["EchoChange_ClickMainStat"],
+        "on_error": ["EchoChange_Done"],
         "post_delay": 300
     },
     "EchoChange_ClickMainStat": {
         "action": "Click",
-        "target": [
-            50,
-            300,
-            30,
-            30
-        ],
-        "next": [
-            "EchoChange_WaitMainStatList"
-        ],
+        "target": [50, 300, 30, 30],
+        "next": ["EchoChange_WaitMainStatList"],
         "post_delay": 800
     },
     "EchoChange_WaitMainStatList": {
         "recognition": "OCR",
         "expected": "主音属性",
-        "next": [
-            "EchoChange_ClickDropdown"
-        ],
+        "next": ["EchoChange_ClickDropdown"],
         "post_delay": 500
     },
     "EchoChange_ClickDropdown": {
         "action": "Click",
-        "target": [
-            660,
-            510,
-            100,
-            30
-        ],
-        "next": [
-            "EchoChange_SelectTarget"
-        ],
+        "target": [660, 510, 100, 30],
+        "next": ["EchoChange_SelectTarget"],
         "post_delay": 500
     },
     "EchoChange_SelectTarget": {
         "action": "Custom",
         "custom_action": "EchoChangeSelect",
-        "next": [
-            "EchoChange_Confirm"
-        ],
+        "next": ["EchoChange_Confirm"],
         "post_delay": 500
     },
     "EchoChange_Confirm": {
@@ -133,9 +85,7 @@
             }
         ],
         "action": "Click",
-        "next": [
-            "EchoChange_ClickRestructure"
-        ],
+        "next": ["EchoChange_ClickRestructure"],
         "post_delay": 2000
     },
     "EchoChange_ClickRestructure": {
@@ -151,9 +101,7 @@
             }
         ],
         "action": "Click",
-        "next": [
-            "EchoChange_WaitResult"
-        ],
+        "next": ["EchoChange_WaitResult"],
         "post_delay": 500
     },
     "EchoChange_WaitResult": {
@@ -168,43 +116,28 @@
                 "expected": "Got Echo"
             }
         ],
-        "next": [
-            "EchoChange_RecordSuccess"
-        ],
+        "next": ["EchoChange_RecordSuccess"],
         "post_delay": 500
     },
     "EchoChange_RecordSuccess": {
         "action": "Custom",
         "custom_action": "EchoChangeRecordSuccess",
-        "next": [
-            "EchoChange_Esc"
-        ]
+        "next": ["EchoChange_Esc"]
     },
     "EchoChange_Esc": {
         "action": "ClickKey",
         "key": 53,
-        "next": [
-            "EchoChange_WaitReturn"
-        ],
+        "next": ["EchoChange_WaitReturn"],
         "post_delay": 500
     },
     "EchoChange_WaitReturn": {
         "recognition": "OCR",
         "expected": "培养",
-        "roi": [
-            1050,
-            620,
-            230,
-            100
-        ],
-        "next": [
-            "EchoChange_LoopStart"
-        ],
+        "roi": [1050, 620, 230, 100],
+        "next": ["EchoChange_LoopStart"],
         "timeout": 5000,
         "post_delay": 300,
-        "on_error": [
-            "EchoChange_Esc"
-        ]
+        "on_error": ["EchoChange_Esc"]
     },
     "EchoChange_Done": {
         "action": "Custom",

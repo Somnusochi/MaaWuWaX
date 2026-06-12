@@ -1,0 +1,188 @@
+{
+    "EchoFarm_Collect": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "EchoFarm_Collect2"
+        ],
+        "on_error": [
+            "EchoFarm_CollectMove"
+        ],
+        "post_delay": 300
+    },
+    "EchoFarm_Collect2": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "EchoFarm_Collect3"
+        ],
+        "on_error": [
+            "EchoFarm_CollectMove"
+        ],
+        "post_delay": 300
+    },
+    "EchoFarm_Collect3": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "EchoFarm_Collect4"
+        ],
+        "on_error": [
+            "EchoFarm_CollectMove"
+        ],
+        "post_delay": 300
+    },
+    "EchoFarm_Collect4": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "EchoFarm_CollectMove"
+        ],
+        "on_error": [
+            "EchoFarm_CollectDone"
+        ],
+        "post_delay": 300
+    },
+    "EchoFarm_CollectDone": {
+        "next": [
+            "EchoFarm_CollectMove"
+        ]
+    },
+    "EchoFarm_CollectMove": {
+        "action": "Custom",
+        "custom_action": "EchoFarmCollectMove",
+        "custom_action_param": {
+            "method": "walk"
+        },
+        "next": [
+            "EchoFarm_CollectAfterMove"
+        ],
+        "post_delay": 300
+    },
+    "EchoFarm_CollectAfterMove": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "EchoFarm_CollectAfterMove2"
+        ],
+        "on_error": [
+            "EchoFarm_DetectDead",
+            "EchoFarm_ScanEcho"
+        ],
+        "post_delay": 500
+    },
+    "EchoFarm_CollectAfterMove2": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "EchoFarm_CollectAfterMove3"
+        ],
+        "on_error": [
+            "EchoFarm_DetectDead",
+            "EchoFarm_ScanEcho"
+        ],
+        "post_delay": 300
+    },
+    "EchoFarm_CollectAfterMove3": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "EchoFarm_CollectAfterMove4"
+        ],
+        "on_error": [
+            "EchoFarm_DetectDead",
+            "EchoFarm_ScanEcho"
+        ],
+        "post_delay": 300
+    },
+    "EchoFarm_CollectAfterMove4": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "EchoFarm_DetectDead",
+            "EchoFarm_ScanEcho"
+        ],
+        "on_error": [
+            "EchoFarm_CollectAfterMoveDone"
+        ],
+        "post_delay": 300
+    },
+    "EchoFarm_CollectAfterMoveDone": {
+        "next": [
+            "EchoFarm_DetectDead",
+            "EchoFarm_ScanEcho"
+        ]
+    }
+}

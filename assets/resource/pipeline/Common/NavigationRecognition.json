@@ -1,0 +1,115 @@
+{
+    "Navigation_FastTravelCustomButton": {
+        "recognition": "TemplateMatch",
+        "template": "fast_travel_custom.png",
+        "threshold": 0.7
+    },
+    "Navigation_FastTravelGrayButton": {
+        "recognition": "TemplateMatch",
+        "template": "gray_teleport.png",
+        "threshold": 0.7
+    },
+    "Navigation_FastTravelCenterButton": {
+        "recognition": "TemplateMatch",
+        "template": "custom_teleport_hcenter_vcenter.png",
+        "threshold": 0.7
+    },
+    "Navigation_FastTravelConfirmButton": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "confirm_btn_highlight_hcenter_vcenter.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "confirm_btn_hcenter_vcenter.png",
+                "threshold": 0.6
+            }
+        ]
+    },
+    "Navigation_BossTabBoss": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_boss.png",
+        "threshold": 0.6
+    },
+    "Navigation_BossTabWeekly": {
+        "recognition": "TemplateMatch",
+        "template": "book_zhange.png",
+        "threshold": 0.6
+    },
+    "Navigation_BossProceedButton": {
+        "recognition": "TemplateMatch",
+        "template": "boss_proceed.png",
+        "threshold": 0.7
+    },
+    "Navigation_BossTravelButton": {
+        "recognition": "TemplateMatch",
+        "template": "gray_teleport.png",
+        "threshold": 0.7
+    },
+    "Navigation_WaitInWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ]
+    },
+    "Navigation_BossNameOCR": {
+        "recognition": "OCR",
+        "roi": [
+            300,
+            95,
+            920,
+            560
+        ]
+    },
+    "Navigation_CombatTarget": {
+        "recognition": "TemplateMatch",
+        "template": "has_target.png",
+        "threshold": 0.7,
+        "roi": [
+            400,
+            200,
+            800,
+            600
+        ]
+    },
+    "Navigation_FPrompt": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f_hcenter_vcenter.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f.png",
+                "threshold": 0.65
+            },
+            {
+                "recognition": "OCR",
+                "expected": "挑战"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge"
+            }
+        ]
+    },
+    "Navigation_BossLevelOCR": {
+        "recognition": "OCR",
+        "roi": [
+            38,
+            81,
+            376,
+            394
+        ]
+    }
+}

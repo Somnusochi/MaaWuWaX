@@ -6,11 +6,6 @@ import (
 )
 
 func Register() {
-	maa.AgentServerRegisterCustomAction("SpendStamina", &SpendStaminaAction{})
-	maa.AgentServerRegisterCustomAction("ClaimDailyRewards", &ClaimDailyRewardsAction{})
-	maa.AgentServerRegisterCustomAction("ClaimMail", &ClaimMailAction{})
-	maa.AgentServerRegisterCustomAction("ClaimBattlePass", &ClaimBattlePassAction{})
-	maa.AgentServerRegisterCustomAction("RunNightmareNest", &RunNightmareNestAction{})
 	maa.AgentServerRegisterCustomRecognition("DailyProgress", &DailyProgressReader{})
 	maa.AgentServerRegisterCustomRecognition("DailyNeedsStamina", &DailyNeedsStaminaRecognition{})
 	maa.AgentServerRegisterCustomRecognition("DailyNeedsNightmare", &DailyNeedsNightmareRecognition{})

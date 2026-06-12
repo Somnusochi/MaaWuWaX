@@ -52,11 +52,50 @@
         "post_delay": 500
     },
     "Combat_LootAction": {
-        "action": "Custom",
-        "custom_action": "PickEnhanced",
-        "custom_action_param": {
-            "max_attempts": 4
-        },
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["Combat_LootAction2"],
+        "on_error": ["Combat_Loot"],
+        "post_delay": 300
+    },
+    "Combat_LootAction2": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["Combat_LootAction3"],
+        "on_error": ["Combat_Loot"],
+        "post_delay": 300
+    },
+    "Combat_LootAction3": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["Combat_LootAction4"],
+        "on_error": ["Combat_Loot"],
+        "post_delay": 300
+    },
+    "Combat_LootAction4": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["Combat_Loot"],
+        "on_error": ["Combat_LootActionDone"],
+        "post_delay": 300
+    },
+    "Combat_LootActionDone": {
         "next": ["Combat_Loot"]
     }
 }

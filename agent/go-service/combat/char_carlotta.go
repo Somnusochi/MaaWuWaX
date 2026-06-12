@@ -204,7 +204,7 @@ func carlottaCastLiberation(c combatActor, holdForward bool) bool {
 	}
 	for carlottaLiberationAvailable(c) && time.Since(start) < 400*time.Millisecond {
 		if !autoDodgeStart.IsZero() && time.Since(autoDodgeStart) > 500*time.Millisecond && c.flying() {
-			c.waitDown(1200 * time.Millisecond)
+			shorekeeperAutoDodge(c, func() bool { return c.flying() })
 		}
 		if c.forceLiberation() {
 			clicked = true
@@ -257,10 +257,13 @@ func carlottaCastLiberation(c combatActor, holdForward bool) bool {
 // carlottaClickResonance mirrors ok-ww Carlotta.click_resonance():
 // alternates attack/resonance clicks for up to 10s.
 func carlottaClickResonance(c combatActor) bool {
+	if !carlottaResonanceAvailable(c) {
+		return false
+	}
 	start := time.Now()
 	clicked := false
 	clickAttack := false
-	for carlottaResonanceAvailable(c) && time.Since(start) < 10*time.Second {
+	for c.resonanceChainAvailable() && time.Since(start) < 10*time.Second {
 		if clickAttack {
 			c.attack()
 			clickAttack = false

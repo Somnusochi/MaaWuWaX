@@ -1,30 +1,30 @@
 {
-    "Daily_Mail_Open": {
+    "DailyMail_Open": {
         "action": "ClickKey",
         "key": 53,
         "post_delay": 1000,
-        "next": ["Daily_Mail_FindTab"]
+        "next": ["DailyMail_FindTab"]
     },
-    "Daily_Mail_FindTab": {
+    "DailyMail_FindTab": {
         "recognition": "OCR",
         "expected": "邮件",
         "roi": [0, 0, 400, 720],
         "action": "Click",
-        "next": ["Daily_Mail_ClaimAll"],
+        "next": ["DailyMail_ClaimAll"],
         "post_delay": 1000
     },
-    "Daily_Mail_ClaimAll": {
+    "DailyMail_ClaimAll": {
         "recognition": "TemplateMatch",
         "template": "claim_btn.png",
         "threshold": 0.7,
         "action": "Click",
-        "next": ["Daily_Mail_Close"],
+        "next": ["DailyMail_Close"],
         "post_delay": 1500
     },
-    "Daily_Mail_Close": {
+    "DailyMail_Close": {
         "action": "ClickKey",
         "key": 53,
-        "next": [],
+        "next": ["Daily_BattlePass"],
         "post_delay": 500
     }
 }

@@ -1,36 +1,36 @@
 {
-    "Daily_BP_Open": {
+    "DailyBattlePass_Open": {
         "action": "ClickKey",
         "key": 53,
         "post_delay": 1000,
-        "next": ["Daily_BP_FindTab"]
+        "next": ["DailyBattlePass_FindTab"]
     },
-    "Daily_BP_FindTab": {
+    "DailyBattlePass_FindTab": {
         "recognition": "OCR",
         "expected": "先约电台",
         "roi": [0, 0, 400, 720],
         "action": "Click",
-        "next": ["Daily_BP_Claim"],
+        "next": ["DailyBattlePass_Claim"],
         "post_delay": 1000
     },
-    "Daily_BP_Claim": {
+    "DailyBattlePass_Claim": {
         "recognition": "OCR",
         "expected": "领取",
         "action": "Click",
-        "next": ["Daily_BP_ClaimMore", "Daily_BP_Close"],
+        "next": ["DailyBattlePass_ClaimMore", "DailyBattlePass_Close"],
         "post_delay": 800
     },
-    "Daily_BP_ClaimMore": {
+    "DailyBattlePass_ClaimMore": {
         "recognition": "OCR",
         "expected": "领取",
         "action": "Click",
-        "next": ["Daily_BP_Close"],
+        "next": ["DailyBattlePass_Close"],
         "post_delay": 800
     },
-    "Daily_BP_Close": {
+    "DailyBattlePass_Close": {
         "action": "ClickKey",
         "key": 53,
-        "next": [],
+        "next": ["Daily_Done"],
         "post_delay": 500
     }
 }

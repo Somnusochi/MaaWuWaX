@@ -1,0 +1,59 @@
+{
+    "MultiAccount_LoginButton": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "登录",
+                "roi": [384, 300, 512, 288]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Login",
+                "roi": [384, 300, 512, 288]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "登入",
+                "roi": [384, 300, 512, 288]
+            }
+        ]
+    },
+    "MultiAccount_AccountOCR": {
+        "recognition": "OCR",
+        "roi": [260, 260, 760, 360]
+    },
+    "MultiAccount_EscSetting": {
+        "recognition": "TemplateMatch",
+        "template": "esc_setting.png",
+        "threshold": 0.6
+    },
+    "MultiAccount_AccountDropdown": {
+        "recognition": "TemplateMatch",
+        "template": "account_drop_down.png",
+        "threshold": 0.6
+    },
+    "MultiAccount_Confirm": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_yellow_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "confirm_btn_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            }
+        ]
+    }
+}

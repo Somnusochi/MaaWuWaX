@@ -16,6 +16,7 @@
   "Combat_RingLibReadyWind": {"recognition": "TemplateMatch", "template": "lib_ready_wind.png", "threshold": 0.7},
   "Combat_ZaniNotLiber": {"recognition": "TemplateMatch", "template": "box_target_enemy_inner.png", "threshold": 0.75, "roi": [954, 637, 49, 48]},
   "Combat_ZaniLiber": {"recognition": "TemplateMatch", "template": "box_target_enemy_inner.png", "threshold": 0.75, "roi": [889, 636, 52, 49]},
+  "Combat_AnalyzerHasLavitator": {"recognition": "TemplateMatch", "template": "edge_levitator.png", "threshold": 0.65},
   "Combat_MouseForte": {"recognition": "TemplateMatch", "template": "mouse_forte.png", "threshold": 0.6, "roi": [360, 300, 80, 80]},
   "Combat_EForte": {"recognition": "TemplateMatch", "template": "e_forte.png", "threshold": 0.6, "roi": [730, 650, 60, 40]},
   "Combat_LongAction1": {"recognition": "TemplateMatch", "template": "box_target_enemy_long.png", "threshold": 0.6, "roi": [860, 615, 80, 50]},

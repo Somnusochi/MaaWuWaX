@@ -1,49 +1,153 @@
 {
     "MultiAccountDaily_Switch": {
-        "action": "Custom",
-        "custom_action": "MultiAccountSwitch",
-        "custom_action_param": {
+        "recognition": "Custom",
+        "custom_recognition": "MultiAccountCanSwitch",
+        "custom_recognition_param": {
             "max_accounts": 2
         },
-        "next": [
-            "MultiAccountDaily_Login"
+        "next": ["MultiAccountDaily_OpenEsc"],
+        "on_error": ["MultiAccountDaily_Done"]
+    },
+    "MultiAccountDaily_OpenEsc": {
+        "action": "ClickKey",
+        "key": 53,
+        "post_delay": 1500,
+        "next": ["MultiAccountDaily_CheckEscSetting"]
+    },
+    "MultiAccountDaily_CheckEscSetting": {
+        "recognition": "TemplateMatch",
+        "template": "esc_setting.png",
+        "threshold": 0.6,
+        "next": ["MultiAccountDaily_ClickLogout"],
+        "timeout": 1000,
+        "on_error": ["MultiAccountDaily_OpenEscRetry"]
+    },
+    "MultiAccountDaily_OpenEscRetry": {
+        "action": "ClickKey",
+        "key": 53,
+        "post_delay": 1000,
+        "next": ["MultiAccountDaily_ClickLogout"]
+    },
+    "MultiAccountDaily_ClickLogout": {
+        "action": "Click",
+        "target": [51, 691, 1, 1],
+        "post_delay": 1000,
+        "next": ["MultiAccountDaily_ConfirmLogout"]
+    },
+    "MultiAccountDaily_ConfirmLogout": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_yellow_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "confirm_btn_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            }
         ],
-        "post_delay": 2000,
-        "on_error": [
-            "MultiAccountDaily_Done"
-        ]
+        "action": "Click",
+        "post_delay": 3000,
+        "next": ["MultiAccountDaily_MarkCurrent"],
+        "on_error": ["MultiAccountDaily_OpenDropdown"]
+    },
+    "MultiAccountDaily_MarkCurrent": {
+        "action": "Custom",
+        "custom_action": "MultiAccountMarkCurrent",
+        "next": ["MultiAccountDaily_OpenDropdown"]
+    },
+    "MultiAccountDaily_OpenDropdown": {
+        "recognition": "TemplateMatch",
+        "template": "account_drop_down.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "post_delay": 1000,
+        "next": ["MultiAccountDaily_SelectNextAccountAfterDropdown"],
+        "timeout": 5000,
+        "on_error": ["MultiAccountDaily_SelectNextAccount"]
+    },
+    "MultiAccountDaily_SelectNextAccountAfterDropdown": {
+        "next": ["MultiAccountDaily_SelectNextAccount"]
+    },
+    "MultiAccountDaily_SelectNextAccount": {
+        "action": "Custom",
+        "custom_action": "MultiAccountSelectNext",
+        "next": ["MultiAccountDaily_VerifySelected"],
+        "on_error": ["MultiAccountDaily_Done"]
+    },
+    "MultiAccountDaily_VerifySelected": {
+        "recognition": "Custom",
+        "custom_recognition": "MultiAccountSelectedMatches",
+        "next": ["MultiAccountDaily_ClickLogin"],
+        "timeout": 5000,
+        "on_error": ["MultiAccountDaily_OpenDropdownRetry"]
+    },
+    "MultiAccountDaily_OpenDropdownRetry": {
+        "recognition": "TemplateMatch",
+        "template": "account_drop_down.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "post_delay": 1000,
+        "next": ["MultiAccountDaily_SelectNextAccount"],
+        "timeout": 5000,
+        "on_error": ["MultiAccountDaily_SkipFailed"]
+    },
+    "MultiAccountDaily_ClickLogin": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "登录",
+                "roi": [384, 300, 512, 288]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Login",
+                "roi": [384, 300, 512, 288]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "登入",
+                "roi": [384, 300, 512, 288]
+            }
+        ],
+        "action": "Click",
+        "post_delay": 3000,
+        "next": ["MultiAccountDaily_Login"],
+        "timeout": 5000,
+        "on_error": ["MultiAccountDaily_LoginFallback"]
+    },
+    "MultiAccountDaily_LoginFallback": {
+        "action": "Click",
+        "target": [640, 409, 1, 1],
+        "post_delay": 3000,
+        "next": ["MultiAccountDaily_Login"]
     },
     "MultiAccountDaily_Login": {
-        "recognition": "Custom",
-        "custom_recognition": "LoginScreenDetect",
-        "next": [
-            "MultiAccountDaily_WaitWorld",
-            "MultiAccountDaily_Login"
-        ],
+        "next": ["MultiAccountDaily_WaitWorld", "Login_HandleScreen"],
         "post_delay": 2000,
         "timeout": 180000,
-        "on_error": [
-            "MultiAccountDaily_SkipFailed"
-        ]
+        "on_error": ["MultiAccountDaily_SkipFailed"]
     },
     "MultiAccountDaily_WaitWorld": {
         "recognition": "TemplateMatch",
         "template": "minimap.png",
         "threshold": 0.7,
-        "roi": [
-            1050,
-            20,
-            200,
-            160
-        ],
-        "next": [
-            "Daily_Main"
-        ],
+        "roi": [1050, 20, 200, 160],
+        "next": ["Daily_Main"],
         "post_delay": 2000,
         "timeout": 180000,
-        "on_error": [
-            "MultiAccountDaily_SkipFailed"
-        ]
+        "on_error": ["MultiAccountDaily_SkipFailed"]
     },
     "MultiAccountDaily_SkipFailed": {
         "action": "Custom",
@@ -51,12 +155,8 @@
         "custom_action_param": {
             "max_accounts": 2
         },
-        "next": [
-            "MultiAccountDaily_Switch"
-        ],
-        "on_error": [
-            "MultiAccountDaily_Done"
-        ],
+        "next": ["MultiAccountDaily_Switch"],
+        "on_error": ["MultiAccountDaily_Done"],
         "post_delay": 1000
     },
     "MultiAccountDaily_Done": {

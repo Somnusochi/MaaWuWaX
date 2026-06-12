@@ -1,0 +1,169 @@
+{
+    "NightmareNest_ClickNestCapture": {
+        "action": "Click",
+        "next": [
+            "NightmareNest_ClickTravelCapture"
+        ],
+        "post_delay": 1000
+    },
+    "NightmareNest_ClickTravelCapture": {
+        "recognition": "TemplateMatch",
+        "template": "gray_teleport.png",
+        "threshold": 0.7,
+        "action": "Custom",
+        "custom_action": "ClickFastTravel",
+        "next": [
+            "NightmareNest_WaitLoadCapture"
+        ],
+        "post_delay": 3000
+    },
+    "NightmareNest_WaitLoadCapture": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "NightmareNest_ApproachCapture"
+        ],
+        "timeout": 30000,
+        "post_delay": 1000,
+        "on_error": [
+            "NightmareNest_OpenBookCapture"
+        ]
+    },
+    "NightmareNest_ApproachCapture": {
+        "action": "Custom",
+        "custom_action": "NightmareApproachNest",
+        "next": [
+            "NightmareNest_EnterFightCapture"
+        ],
+        "post_delay": 500
+    },
+    "NightmareNest_EnterFightCapture": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "revive_confirm_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "has_target.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f.png",
+                "threshold": 0.6
+            }
+        ],
+        "next": [
+            "NightmareNest_ReviveCapture",
+            "NightmareNest_FightCapture",
+            "NightmareNest_PickEntryCapture"
+        ],
+        "post_delay": 500
+    },
+    "NightmareNest_ReviveCapture": {
+        "recognition": "TemplateMatch",
+        "template": "revive_confirm_hcenter_vcenter.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": [
+            "NightmareNest_OpenBookCapture"
+        ],
+        "post_delay": 3000
+    },
+    "NightmareNest_FightCapture": {
+        "action": "Custom",
+        "custom_action": "CombatMain",
+        "next": [
+            "NightmareNest_ReviveCapture",
+            "NightmareNest_EchoNotificationCapture",
+            "NightmareNest_ScanEchoCapture"
+        ],
+        "post_delay": 2000,
+        "timeout": 120000,
+        "on_error": [
+            "NightmareNest_OpenBookCapture"
+        ]
+    },
+    "NightmareNest_EchoNotificationCapture": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "char_1_text.png",
+                "threshold": 0.7,
+                "roi": [
+                    80,
+                    330,
+                    90,
+                    90
+                ]
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "char_3_text.png",
+                "threshold": 0.7,
+                "roi": [
+                    80,
+                    330,
+                    90,
+                    90
+                ]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "获得声骸"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Echo"
+            }
+        ],
+        "next": [
+            "NightmareNest_ScanEchoCapture"
+        ],
+        "post_delay": 500
+    },
+    "NightmareNest_ScanEchoCapture": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "echo_orb.png",
+                "threshold": 0.5
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "absorb_zh_CN.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "absorb_en_US.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f_hcenter_vcenter.png",
+                "threshold": 0.6
+            }
+        ],
+        "next": [
+            "NightmareNest_CollectEchoCapture"
+        ],
+        "post_delay": 1000,
+        "timeout": 15000,
+        "on_error": [
+            "NightmareNest_Done"
+        ]
+    }
+}

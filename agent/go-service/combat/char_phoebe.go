@@ -58,7 +58,7 @@ func performPhoebe(c combatActor) {
 	}
 
 	waitUI := 350*time.Millisecond - time.Since(turnStart)
-	if waitUI > 0 && c.phoebeStarAvailable() && !phoebeHasForte(c) {
+	if waitUI > 0 && c.phoebeStarAvailable() && !phoebeHasForte(c, preferredSupport) {
 		c.attackFor(waitUI)
 	}
 
@@ -66,7 +66,7 @@ func performPhoebe(c combatActor) {
 	if (!attributeMismatch || statusEntered == phoebeActionSuccess) && c.phoebeStarAvailable() && phoebeClickLiberation(c, true) {
 		c.state.phoebeLiberationCount++
 	}
-	if statusEntered == phoebeActionSuccess || phoebeHasForte(c) {
+	if statusEntered == phoebeActionSuccess || phoebeHasForte(c, preferredSupport) {
 		phoebeStarflashCombo(c, preferredSupport)
 	}
 	if phoebeResonanceAvailable(c) {
@@ -96,7 +96,7 @@ func phoebePrepareSwitch(c combatActor, support bool) {
 func phoebeRecordPreSwitchState(c combatActor, support bool) {
 	if c.phoebeStarVisible() {
 		c.state.phoebeStarLatched = true
-	} else if phoebeForteEmpty(c) && !c.phoebeConfessionReady() {
+	} else if phoebeForteEmpty(c, support) && !c.phoebeConfessionReady() {
 		c.state.phoebeStarLatched = false
 	}
 
@@ -126,7 +126,7 @@ func phoebeCastRemainingSkills(c combatActor, support bool, liber bool) time.Tim
 				c.state.phoebeLiberationCount++
 			}
 		}
-		if phoebeHasForte(c) {
+		if phoebeHasForte(c, support) {
 			phoebeStarflashCombo(c, support)
 			start = time.Now()
 		}
@@ -134,16 +134,16 @@ func phoebeCastRemainingSkills(c combatActor, support bool, liber bool) time.Tim
 	return start
 }
 
-func phoebeHasForte(c combatActor) bool {
-	return phoebeForteTier(c) > 0 || c.forteFull()
+func phoebeHasForte(c combatActor, support bool) bool {
+	return phoebeForteTier(c, support) > 0 || c.forteFull()
 }
 
-func phoebeForteEmpty(c combatActor) bool {
-	return phoebeForteTier(c) == 0 && c.currentForte() <= 0.01
+func phoebeForteEmpty(c combatActor, support bool) bool {
+	return phoebeForteTier(c, support) == 0 && c.currentForte() <= 0.01
 }
 
-func phoebeForteTier(c combatActor) int {
-	if c.phoebePreferredSupport() {
+func phoebeForteTier(c combatActor, support bool) int {
+	if support {
 		return screenAnalyzer.PhoebeBlueForte
 	}
 	return screenAnalyzer.PhoebeLightForte
@@ -236,14 +236,14 @@ func phoebeStarflashCombo(c combatActor, support bool) {
 	if !condition() && !phoebeForteFull(c, support) {
 		for !phoebeForteFull(c, support) {
 			if c.flying() {
-				c.waitDown(2 * time.Second)
+				shorekeeperAutoDodge(c, func() bool { return c.flying() })
 			}
 			c.attack()
 			if time.Since(start) > 5*time.Second {
 				return
 			}
 			if time.Since(checkpoint) > 1*time.Second {
-				if condition() || phoebeForteEmpty(c) {
+				if condition() || phoebeForteEmpty(c, support) {
 					return
 				}
 				checkpoint = time.Now()
@@ -289,8 +289,11 @@ func phoebePerformHeavyAttack(c combatActor, support bool) bool {
 }
 
 func phoebeClickResonanceOnce(c combatActor) bool {
+	if !phoebeResonanceAvailable(c) {
+		return false
+	}
 	start := time.Now()
-	for phoebeResonanceAvailable(c) {
+	for c.resonanceChainAvailable() {
 		if time.Since(start) > 500*time.Millisecond {
 			return true
 		}
@@ -301,10 +304,13 @@ func phoebeClickResonanceOnce(c combatActor) bool {
 }
 
 func phoebeClickResonance(c combatActor, sendClick bool) bool {
+	if !phoebeResonanceAvailable(c) {
+		return false
+	}
 	start := time.Now()
 	clicked := false
 	lastOp := "click"
-	for phoebeResonanceAvailable(c) && time.Since(start) < 15*time.Second {
+	for c.resonanceChainAvailable() && time.Since(start) < 15*time.Second {
 		if sendClick && lastOp == "resonance" {
 			c.attack()
 			lastOp = "click"
@@ -388,10 +394,13 @@ func phoebeZaniLinkage(c combatActor, support bool) bool {
 	if zaniState == nil {
 		return false
 	}
+	zaniActor := combatActor{action: c.action, state: zaniState}
+	zaniResetExpiredWindow(zaniActor)
+	zaniActive := zaniState.zaniInLiberation && zaniLiberationTimeLeft(zaniActor) > 0
 
 	if screenAnalyzer.ZaniBlazesPct >= 0.9 {
 		if !phoebeResonanceAvailable(c) {
-			if !zaniState.zaniInLiberation || zaniLiberationTimeLeft(combatActor{action: c.action, state: zaniState}) > 3*time.Second {
+			if !zaniActive || zaniLiberationTimeLeft(zaniActor) > 3*time.Second {
 				c.attackFor(1 * time.Second)
 			}
 		} else {
@@ -400,7 +409,7 @@ func phoebeZaniLinkage(c combatActor, support bool) bool {
 		return true
 	}
 
-	if zaniState.zaniInLiberation {
+	if zaniActive {
 		phoebeCastRemainingSkills(c, support, true)
 		return true
 	}

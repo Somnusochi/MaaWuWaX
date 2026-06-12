@@ -1,0 +1,42 @@
+{
+    "EchoFarm_PostTeleportWalk": {
+        "next": ["EchoFarm_PostTeleportCheckCombat"],
+        "timeout": 20000,
+        "on_error": ["EchoFarm_NextRound"]
+    },
+    "EchoFarm_PostTeleportCheckCombat": {
+        "recognition": "TemplateMatch",
+        "template": "has_target.png",
+        "threshold": 0.7,
+        "next": ["EchoFarm_Fight"],
+        "on_error": ["EchoFarm_PostTeleportCheckF"]
+    },
+    "EchoFarm_PostTeleportCheckF": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f_hcenter_vcenter.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f.png",
+                "threshold": 0.65
+            }
+        ],
+        "next": ["EchoFarm_EnterRealmFromF"],
+        "on_error": ["EchoFarm_PostTeleportWalkStep"]
+    },
+    "EchoFarm_PostTeleportWalkStep": {
+        "action": "Custom",
+        "custom_action": "EchoFarmPostTeleportWalkStep",
+        "custom_action_param": {
+            "direction": "w",
+            "step_ms": 500,
+            "focus": true
+        },
+        "next": ["EchoFarm_PostTeleportCheckCombat"],
+        "post_delay": 100
+    }
+}

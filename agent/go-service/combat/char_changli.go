@@ -204,7 +204,7 @@ func changliFlickResonance(c combatActor, timeout time.Duration, sendClick bool)
 		return false
 	}
 	clicked := false
-	for c.resonanceAvailable() && c.currentResonance() > 0.05 && time.Since(start) < timeout {
+	for c.resonanceChainAvailable() && c.currentResonance() > 0.05 && time.Since(start) < timeout {
 		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}

@@ -1,7 +1,6 @@
 package login
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -11,13 +10,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type MultiAccountSwitchAction struct {
+type MultiAccountState struct {
 	switchCount int
 	done        map[string]bool
 	failed      int
+	pending     string
 }
-
-var _ maa.CustomActionRunner = &MultiAccountSwitchAction{}
 
 type multiAccountParam struct {
 	MaxAccounts int `json:"max_accounts"`
@@ -31,110 +29,122 @@ type accountChoice struct {
 
 var maskedAccountRe = regexp.MustCompile(`\*{4,}`)
 
+type MultiAccountCanSwitchRecognition struct{}
+type MultiAccountMarkCurrentAction struct{}
+type MultiAccountSelectNextAction struct{}
+type MultiAccountSelectedMatchesRecognition struct{}
 type MultiAccountMarkFailedAction struct{}
 
+var _ maa.CustomRecognitionRunner = &MultiAccountCanSwitchRecognition{}
+var _ maa.CustomActionRunner = &MultiAccountMarkCurrentAction{}
+var _ maa.CustomActionRunner = &MultiAccountSelectNextAction{}
+var _ maa.CustomRecognitionRunner = &MultiAccountSelectedMatchesRecognition{}
 var _ maa.CustomActionRunner = &MultiAccountMarkFailedAction{}
 
-func (a *MultiAccountSwitchAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
+func (r *MultiAccountCanSwitchRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
 	param := multiAccountParam{MaxAccounts: 2}
-	if arg.CustomActionParam != "" {
-		if err := sonic.Unmarshal([]byte(arg.CustomActionParam), &param); err != nil {
-			log.Warn().Err(err).Str("component", "MultiAccountSwitch").Msg("failed to parse param")
+	if arg != nil && arg.CustomRecognitionParam != "" {
+		if err := sonic.Unmarshal([]byte(arg.CustomRecognitionParam), &param); err != nil {
+			log.Warn().Err(err).Str("component", "MultiAccountCanSwitch").Msg("failed to parse param")
 		}
 	}
 	if param.MaxAccounts < 1 {
 		param.MaxAccounts = 1
 	}
-	if a.done == nil {
-		a.done = map[string]bool{}
-	}
 	if param.MaxFailures <= 0 {
 		param.MaxFailures = param.MaxAccounts
 	}
-	if a.failed >= param.MaxFailures {
+
+	switcher := multiAccountSwitcher
+	if switcher.done == nil {
+		switcher.done = map[string]bool{}
+	}
+	if switcher.failed >= param.MaxFailures {
 		log.Warn().
-			Str("component", "MultiAccountSwitch").
-			Int("failed", a.failed).
+			Str("component", "MultiAccountCanSwitch").
+			Int("failed", switcher.failed).
 			Int("max_failures", param.MaxFailures).
 			Msg("failure limit reached")
-		return false
+		return nil, false
 	}
-	if a.switchCount >= param.MaxAccounts-1 {
-		log.Info().Str("component", "MultiAccountSwitch").Int("max_accounts", param.MaxAccounts).Msg("all accounts attempted")
-		return false
-	}
-
-	ctrl := ctx.GetTasker().GetController()
-	ctrl.PostClickKey(53).Wait()
-	time.Sleep(1500 * time.Millisecond)
-	if !a.hasTemplate(ctx, "esc_setting.png", 0.6) {
-		ctrl.PostClickKey(53).Wait()
-		time.Sleep(1000 * time.Millisecond)
+	if switcher.switchCount >= param.MaxAccounts-1 {
+		log.Info().Str("component", "MultiAccountCanSwitch").Int("max_accounts", param.MaxAccounts).Msg("all accounts attempted")
+		return nil, false
 	}
 
-	ctrl.PostClick(51, 691).Wait()
-	time.Sleep(1000 * time.Millisecond)
-	a.clickConfirm(ctx)
-	time.Sleep(3000 * time.Millisecond)
+	return &maa.CustomRecognitionResult{
+		Box:    maa.Rect{0, 0, 1, 1},
+		Detail: `{"can_switch":true}`,
+	}, true
+}
 
-	if current := a.detectCurrentAccount(ctx); current != "" {
-		a.done[current] = true
-		log.Info().Str("component", "MultiAccountSwitch").Str("account", current).Msg("marked current account done")
+func (a *MultiAccountMarkCurrentAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
+	switcher := multiAccountSwitcher
+	if switcher.done == nil {
+		switcher.done = map[string]bool{}
+	}
+	if current := switcher.detectCurrentAccount(ctx); current != "" {
+		switcher.done[current] = true
+		log.Info().Str("component", "MultiAccountMarkCurrent").Str("account", current).Msg("marked current account done")
+	}
+	return true
+}
+
+func (a *MultiAccountSelectNextAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
+	switcher := multiAccountSwitcher
+	if switcher.done == nil {
+		switcher.done = map[string]bool{}
 	}
 
-	if !a.openAccountDropdown(ctx) {
-		log.Warn().Str("component", "MultiAccountSwitch").Msg("failed to open account dropdown")
-		return false
-	}
-	choice, ok := a.selectNextAccount(ctx)
+	choice, ok := switcher.selectNextAccount(ctx)
 	if !ok {
-		log.Info().Str("component", "MultiAccountSwitch").Msg("no unfinished account found")
+		log.Info().Str("component", "MultiAccountSelectNext").Msg("no unfinished account found")
 		return false
 	}
-	ctrl.PostClick(int32(choice.Box[0]+choice.Box[2]/2), int32(choice.Box[1]+choice.Box[3]/2)).Wait()
+	ctx.GetTasker().GetController().PostClick(int32(choice.Box[0]+choice.Box[2]/2), int32(choice.Box[1]+choice.Box[3]/2)).Wait()
 	time.Sleep(2000 * time.Millisecond)
-
-	// ok-ww parity: verify selected account matches displayed account with retry.
-	confirmed := false
-	for retry := 0; retry < 3; retry++ {
-		displayed := a.detectCurrentAccount(ctx)
-		if displayed == choice.Name {
-			log.Info().Str("component", "MultiAccountSwitch").Str("account", choice.Name).Msg("account selection confirmed")
-			confirmed = true
-			break
-		}
-		log.Warn().Str("component", "MultiAccountSwitch").
-			Str("expected", choice.Name).Str("displayed", displayed).
-			Int("retry", retry+1).Msg("account mismatch, retrying")
-		time.Sleep(1000 * time.Millisecond)
-		// Re-expand dropdown and re-click
-		a.openAccountDropdown(ctx)
-		choices := a.detectAccounts(ctx)
-		for _, c := range choices {
-			if c.Name == choice.Name {
-				ctrl.PostClick(int32(c.Box[0]+c.Box[2]/2), int32(c.Box[1]+c.Box[3]/2)).Wait()
-				time.Sleep(2000 * time.Millisecond)
-				break
-			}
-		}
-	}
-	if !confirmed {
-		log.Warn().Str("component", "MultiAccountSwitch").Str("account", choice.Name).Msg("account confirmation failed, proceeding anyway")
-	}
-
-	a.done[choice.Name] = true
-	a.switchCount++
-
-	// Click login button after account selection (ok-ww parity).
-	a.clickLoginButton(ctx)
+	switcher.pending = choice.Name
 
 	log.Info().
-		Str("component", "MultiAccountSwitch").
+		Str("component", "MultiAccountSelectNext").
 		Str("account", choice.Name).
-		Int("switch_count", a.switchCount).
-		Int("max_accounts", param.MaxAccounts).
-		Msg("selected next account")
+		Msg("selected candidate account")
 	return true
+}
+
+func (r *MultiAccountSelectedMatchesRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
+	switcher := multiAccountSwitcher
+	if switcher.pending == "" {
+		log.Warn().Str("component", "MultiAccountSelectedMatches").Msg("no pending account")
+		return nil, false
+	}
+
+	displayed := switcher.detectCurrentAccount(ctx)
+	if displayed != switcher.pending {
+		log.Warn().
+			Str("component", "MultiAccountSelectedMatches").
+			Str("expected", switcher.pending).
+			Str("displayed", displayed).
+			Msg("account mismatch")
+		return nil, false
+	}
+
+	if switcher.done == nil {
+		switcher.done = map[string]bool{}
+	}
+	switcher.done[switcher.pending] = true
+	switcher.switchCount++
+	log.Info().
+		Str("component", "MultiAccountSelectedMatches").
+		Str("account", switcher.pending).
+		Int("switch_count", switcher.switchCount).
+		Msg("account selection confirmed")
+	switcher.pending = ""
+
+	return &maa.CustomRecognitionResult{
+		Box:    maa.Rect{0, 0, 1, 1},
+		Detail: `{"selected_matches":true}`,
+	}, true
 }
 
 func (a *MultiAccountMarkFailedAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
@@ -162,62 +172,14 @@ func (a *MultiAccountMarkFailedAction) Run(ctx *maa.Context, arg *maa.CustomActi
 	return switcher.failed < param.MaxFailures
 }
 
-// clickLoginButton finds and clicks the login/start button after account selection.
-func (a *MultiAccountSwitchAction) clickLoginButton(ctx *maa.Context) {
-	for _, text := range []string{"登录", "Login", "登入"} {
-		detail, err := ctx.RunRecognition(
-			"__MultiAccount_LoginBtn",
-			nil,
-			fmt.Sprintf(`{
-				"__MultiAccount_LoginBtn": {
-					"recognition": "OCR",
-					"expected": %q,
-					"roi": [384, 300, 512, 288]
-				}
-			}`, text),
-		)
-		if err == nil && detail != nil && detail.Hit {
-			box := detail.Box
-			ctx.GetTasker().GetController().PostClick(
-				int32(box[0]+box[2]/2),
-				int32(box[1]+box[3]/2),
-			).Wait()
-			time.Sleep(3000 * time.Millisecond)
-			log.Info().Str("component", "MultiAccountSwitch").Str("text", text).Msg("login button clicked")
-			return
-		}
-	}
-	// Fallback: click center-bottom area where login button usually is.
-	ctx.GetTasker().GetController().PostClick(640, 409).Wait()
-	time.Sleep(3000 * time.Millisecond)
-	log.Info().Str("component", "MultiAccountSwitch").Msg("login button fallback clicked")
-}
-
-func (a *MultiAccountSwitchAction) openAccountDropdown(ctx *maa.Context) bool {
-	for attempt := 0; attempt < 5; attempt++ {
-		if a.clickTemplate(ctx, "account_drop_down.png", 0.6) {
-			time.Sleep(1000 * time.Millisecond)
-		} else if current := a.detectCurrentAccount(ctx); current != "" {
-			boxes := a.detectAccounts(ctx)
-			for _, choice := range boxes {
-				if choice.Name == current {
-					ctx.GetTasker().GetController().PostClick(
-						int32(choice.Box[0]+choice.Box[2]/2),
-						int32(choice.Box[1]+choice.Box[3]/2),
-					).Wait()
-					time.Sleep(1000 * time.Millisecond)
-					break
-				}
+func (a *MultiAccountState) selectNextAccount(ctx *maa.Context) (accountChoice, bool) {
+	if a.pending != "" {
+		for _, choice := range a.detectAccounts(ctx) {
+			if choice.Name == a.pending {
+				return choice, true
 			}
 		}
-		if len(a.detectAccounts(ctx)) > 1 {
-			return true
-		}
 	}
-	return false
-}
-
-func (a *MultiAccountSwitchAction) selectNextAccount(ctx *maa.Context) (accountChoice, bool) {
 	choices := a.detectAccounts(ctx)
 	for _, choice := range choices {
 		if !a.done[choice.Name] {
@@ -227,7 +189,7 @@ func (a *MultiAccountSwitchAction) selectNextAccount(ctx *maa.Context) (accountC
 	return accountChoice{}, false
 }
 
-func (a *MultiAccountSwitchAction) detectCurrentAccount(ctx *maa.Context) string {
+func (a *MultiAccountState) detectCurrentAccount(ctx *maa.Context) string {
 	choices := a.detectAccounts(ctx)
 	if len(choices) == 1 {
 		return choices[0].Name
@@ -235,17 +197,8 @@ func (a *MultiAccountSwitchAction) detectCurrentAccount(ctx *maa.Context) string
 	return ""
 }
 
-func (a *MultiAccountSwitchAction) detectAccounts(ctx *maa.Context) []accountChoice {
-	detail, err := ctx.RunRecognition(
-		"__MultiAccount_AccountOCR",
-		nil,
-		`{
-			"__MultiAccount_AccountOCR": {
-				"recognition": "OCR",
-				"roi": [260, 260, 760, 360]
-			}
-		}`,
-	)
+func (a *MultiAccountState) detectAccounts(ctx *maa.Context) []accountChoice {
+	detail, err := ctx.RunRecognition("MultiAccount_AccountOCR", nil)
 	if err != nil || detail == nil || !detail.Hit || detail.Results == nil {
 		return nil
 	}
@@ -267,65 +220,4 @@ func (a *MultiAccountSwitchAction) detectAccounts(ctx *maa.Context) []accountCho
 		choices = append(choices, accountChoice{Name: name, Box: ocr.Box})
 	}
 	return choices
-}
-
-func (a *MultiAccountSwitchAction) hasTemplate(ctx *maa.Context, template string, threshold float64) bool {
-	detail, err := ctx.RunRecognition(
-		"__MultiAccount_Template",
-		nil,
-		formatTemplateRecognition("__MultiAccount_Template", template, threshold),
-	)
-	return err == nil && detail != nil && detail.Hit
-}
-
-func (a *MultiAccountSwitchAction) clickTemplate(ctx *maa.Context, template string, threshold float64) bool {
-	detail, err := ctx.RunRecognition(
-		"__MultiAccount_ClickTemplate",
-		nil,
-		formatTemplateRecognition("__MultiAccount_ClickTemplate", template, threshold),
-	)
-	if err != nil || detail == nil || !detail.Hit {
-		return false
-	}
-	ctx.GetTasker().GetController().PostClick(
-		int32(detail.Box[0]+detail.Box[2]/2),
-		int32(detail.Box[1]+detail.Box[3]/2),
-	).Wait()
-	return true
-}
-
-func (a *MultiAccountSwitchAction) clickConfirm(ctx *maa.Context) bool {
-	detail, err := ctx.RunRecognition(
-		"__MultiAccount_Confirm",
-		nil,
-		`{
-			"__MultiAccount_Confirm": {
-				"recognition": "Or",
-				"any_of": [
-					{"recognition": "TemplateMatch", "template": "btn_yellow_confirm.png", "threshold": 0.7},
-					{"recognition": "TemplateMatch", "template": "confirm_btn_hcenter_vcenter.png", "threshold": 0.7},
-					{"recognition": "OCR", "expected": "确认"},
-					{"recognition": "OCR", "expected": "Confirm"}
-				]
-			}
-		}`,
-	)
-	if err != nil || detail == nil || !detail.Hit {
-		return false
-	}
-	ctx.GetTasker().GetController().PostClick(
-		int32(detail.Box[0]+detail.Box[2]/2),
-		int32(detail.Box[1]+detail.Box[3]/2),
-	).Wait()
-	return true
-}
-
-func formatTemplateRecognition(name string, template string, threshold float64) string {
-	return fmt.Sprintf(`{
-		%q: {
-			"recognition": "TemplateMatch",
-			"template": %q,
-			"threshold": %.2f
-		}
-	}`, name, template, threshold)
 }

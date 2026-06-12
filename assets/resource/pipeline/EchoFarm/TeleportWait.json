@@ -1,0 +1,12 @@
+{
+    "EchoFarm_WaitAfterTeleportWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": ["EchoFarm_PostTeleportWalk"],
+        "timeout": 30000,
+        "post_delay": 1000,
+        "on_error": ["EchoFarm_NextRound"]
+    }
+}

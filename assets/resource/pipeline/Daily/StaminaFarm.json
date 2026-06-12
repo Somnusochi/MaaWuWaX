@@ -10,9 +10,7 @@
         "post_delay": 500
     },
     "Daily_Stamina_Has": {
-        "action": "Custom",
-        "custom_action": "SpendStamina",
-        "next": ["Daily_ClaimRewards"]
+        "next": ["Tacet_Main"]
     },
     "Daily_Stamina_Low": {
         "next": ["Daily_ClaimRewards"]

@@ -24,65 +24,11 @@ func (a *SnapshotAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
 		return true
 	}
 
-	combatDetail, _ := ctx.RunRecognition(
-		"__Diagnosis_Combat",
-		img,
-		`{
-			"__Diagnosis_Combat": {
-				"recognition": "Or",
-				"any_of": [
-					{"recognition": "TemplateMatch", "template": "has_target.png", "threshold": 0.6},
-					{"recognition": "TemplateMatch", "template": "has_target_cloud.png", "threshold": 0.6}
-				]
-			}
-		}`,
-	)
-	worldDetail, _ := ctx.RunRecognition(
-		"__Diagnosis_World",
-		img,
-		`{
-			"__Diagnosis_World": {
-				"recognition": "TemplateMatch",
-				"template": "minimap.png",
-				"threshold": 0.7,
-				"roi": [1050, 20, 200, 160]
-			}
-		}`,
-	)
-	charDetail, _ := ctx.RunRecognition(
-		"__Diagnosis_Char",
-		img,
-		`{
-			"__Diagnosis_Char": {
-				"recognition": "Or",
-				"any_of": [
-					{"recognition": "TemplateMatch", "template": "char_1_text.png", "threshold": 0.7},
-					{"recognition": "TemplateMatch", "template": "char_2_text.png", "threshold": 0.7},
-					{"recognition": "TemplateMatch", "template": "char_3_text.png", "threshold": 0.7}
-				]
-			}
-		}`,
-	)
-	charDetectDetail, _ := ctx.RunRecognition(
-		"__Diagnosis_CharacterDetect",
-		img,
-		`{
-			"__Diagnosis_CharacterDetect": {
-				"recognition": "Custom",
-				"custom_recognition": "CharacterDetect"
-			}
-		}`,
-	)
-	staminaDetail, _ := ctx.RunRecognition(
-		"__Diagnosis_StaminaReader",
-		img,
-		`{
-			"__Diagnosis_StaminaReader": {
-				"recognition": "Custom",
-				"custom_recognition": "StaminaReader"
-			}
-		}`,
-	)
+	combatDetail, _ := ctx.RunRecognition("Diagnosis_Combat", img)
+	worldDetail, _ := ctx.RunRecognition("Diagnosis_World", img)
+	charDetail, _ := ctx.RunRecognition("Diagnosis_Char", img)
+	charDetectDetail, _ := ctx.RunRecognition("Diagnosis_CharacterDetect", img)
+	staminaDetail, _ := ctx.RunRecognition("Diagnosis_StaminaReader", img)
 
 	log.Info().
 		Str("component", "Diagnosis").

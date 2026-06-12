@@ -90,9 +90,10 @@
                             }
                         },
                         "Daily_RunNightmare": {
-                            "custom_action_param": {
-                                "nightmare_mode": "capture"
-                            }
+                            "next": ["NightmareNest_MainCapture"]
+                        },
+                        "NightmareNest_Done": {
+                            "next": ["Daily_SpendStamina"]
                         }
                     }
                 },
@@ -107,9 +108,10 @@
                             }
                         },
                         "Daily_RunNightmare": {
-                            "custom_action_param": {
-                                "nightmare_mode": "nightmare"
-                            }
+                            "next": ["NightmareNest_MainNightmare"]
+                        },
+                        "NightmareNest_Done": {
+                            "next": ["Daily_SpendStamina"]
                         }
                     }
                 },
@@ -124,9 +126,10 @@
                             }
                         },
                         "Daily_RunNightmare": {
-                            "custom_action_param": {
-                                "nightmare_mode": "canxiang"
-                            }
+                            "next": ["NightmareNest_MainCanxiang"]
+                        },
+                        "NightmareNest_Done": {
+                            "next": ["Daily_SpendStamina"]
                         }
                     }
                 },
@@ -141,9 +144,10 @@
                             }
                         },
                         "Daily_RunNightmare": {
-                            "custom_action_param": {
-                                "nightmare_mode": "all"
-                            }
+                            "next": ["NightmareNest_Main"]
+                        },
+                        "NightmareNest_Done": {
+                            "next": ["Daily_SpendStamina"]
                         }
                     }
                 }
@@ -171,9 +175,10 @@
                             }
                         },
                         "Daily_Stamina_Has": {
-                            "custom_action_param": {
-                                "stamina_type": "tacet"
-                            }
+                            "next": ["Tacet_Main"]
+                        },
+                        "Tacet_Done": {
+                            "next": ["Daily_ClaimRewards"]
                         }
                     },
                     "label": "$task.DailyRoutine.option.StaminaType.cases.tacet.label"
@@ -195,9 +200,10 @@
                             }
                         },
                         "Daily_Stamina_Has": {
-                            "custom_action_param": {
-                                "stamina_type": "forgery"
-                            }
+                            "next": ["Forgery_Main"]
+                        },
+                        "Forgery_Done": {
+                            "next": ["Daily_ClaimRewards"]
                         }
                     },
                     "label": "$task.DailyRoutine.option.StaminaType.cases.forgery.label"
@@ -219,9 +225,10 @@
                             }
                         },
                         "Daily_Stamina_Has": {
-                            "custom_action_param": {
-                                "stamina_type": "simulation"
-                            }
+                            "next": ["Simulation_Main"]
+                        },
+                        "Simulation_Done": {
+                            "next": ["Daily_ClaimRewards"]
                         }
                     },
                     "label": "$task.DailyRoutine.option.StaminaType.cases.simulation.label"

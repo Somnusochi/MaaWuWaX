@@ -57,6 +57,7 @@ type CombatMainAction struct {
 	switchIdx       int
 	charStates      map[string]*combatCharState
 	param           combatMainParam
+	hasLavitator    bool
 	currentTaskName string
 }
 
@@ -110,7 +111,11 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 
 	// ── Out of combat ──
 	if !screenAnalyzer.InCombat() {
+		if !a.combatStart.IsZero() {
+			a.runCombatEndHook(ctx, roi)
+		}
 		a.combatStart = time.Time{}
+		a.hasLavitator = false
 		screenAnalyzer.FreezeDuration = 0
 		screenAnalyzer.LastFrameTime = 0
 		if param.SwitchHealer && time.Since(a.lastSwitch) > 2*time.Second {
@@ -143,6 +148,7 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 
 	if a.combatStart.IsZero() {
 		a.combatStart = now
+		a.hasLavitator = screenAnalyzer.HasLavitator
 	}
 
 	// ── Health-based switch: if current char is low HP, switch to healer ──
@@ -191,6 +197,103 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 	}
 
 	return true
+}
+
+func (a *CombatMainAction) runCombatEndHook(ctx *maa.Context, roi maa.Rect) {
+	if a.charStates == nil {
+		a.charStates = map[string]*combatCharState{}
+	}
+	slot := a.currentSlot()
+	if slot.Name == "" || slot.Name == "unknown" {
+		return
+	}
+	state := a.charStates[slot.Name]
+	if state == nil {
+		state = &combatCharState{}
+		a.charStates[slot.Name] = state
+	}
+	actor := combatActor{
+		action: a,
+		ctx:    ctx,
+		param:  a.param,
+		state:  state,
+		slot:   slot,
+		roi:    roi,
+	}
+	switch slot.Name {
+	case "cartethyia":
+		onCombatEndCartethyia(actor)
+	case "cantarella", "augusta":
+		a.switchNextAfterCombat(ctx, slot, state)
+	case "aemeath", "iuno", "linnai", "mornye", "mornye_new", "moning", "moning_new", "camellya":
+		a.switchOtherAfterCombat(ctx, slot, state)
+	}
+}
+
+func onCombatEndCartethyia(c combatActor) {
+	if !(c.state.transformed || !c.cartethyiaIsSmall()) {
+		return
+	}
+	deadline := time.Now().Add(6 * time.Second)
+	for time.Now().Before(deadline) {
+		if !c.isCurrentChar() {
+			break
+		}
+		if !c.action.switchNextAfterCombat(c.ctx, c.slot, c.state) {
+			break
+		}
+		c.ctx.GetTasker().GetController().PostScreencap().Wait()
+		if img, err := c.ctx.GetTasker().GetController().CacheImage(); err == nil && img != nil {
+			screenAnalyzer.Update(c.ctx, img)
+		}
+		c.sleep(200 * time.Millisecond)
+	}
+}
+
+func (a *CombatMainAction) switchOtherAfterCombat(ctx *maa.Context, slot charSlot, state *combatCharState) bool {
+	target := a.chooseSwitchTarget(time.Now(), false)
+	if target < 0 || target == slot.Index {
+		target = a.nextAliveIndex(slot.Index)
+	}
+	return a.switchAfterCombat(ctx, slot, state, target)
+}
+
+func (a *CombatMainAction) switchNextAfterCombat(ctx *maa.Context, slot charSlot, state *combatCharState) bool {
+	return a.switchAfterCombat(ctx, slot, state, a.nextAliveIndex(slot.Index))
+}
+
+func (a *CombatMainAction) switchAfterCombat(ctx *maa.Context, slot charSlot, state *combatCharState, target int) bool {
+	if target < 0 || target >= len(screenAnalyzer.CharSlots) || target == slot.Index {
+		return false
+	}
+	ctx.RunAction(switchActionName(target), maa.Rect{0, 0, 1, 1}, "", nil)
+	now := time.Now()
+	if state != nil {
+		state.lastSwitchOut = now
+	}
+	a.lastSwitchFrom[target] = slot
+	a.lastSwitchIn[target] = now
+	a.lastSwitch = now
+	log.Debug().
+		Str("component", "Combat").
+		Str("char", slot.Name).
+		Int("target", target+1).
+		Msg("combat-end switch")
+	time.Sleep(300 * time.Millisecond)
+	return true
+}
+
+func (a *CombatMainAction) nextAliveIndex(current int) int {
+	if current < 0 || current >= len(screenAnalyzer.CharSlots) {
+		current = screenAnalyzer.CurrentIdx
+	}
+	for step := 1; step <= len(screenAnalyzer.CharSlots); step++ {
+		idx := (current + step) % len(screenAnalyzer.CharSlots)
+		if idx != current && screenAnalyzer.CharAlive[idx] && screenAnalyzer.CharSlots[idx].Alive {
+			return idx
+		}
+	}
+	return -1
 }
 
 // ── CharacterDetectRecognition ────────────────────────────────────────

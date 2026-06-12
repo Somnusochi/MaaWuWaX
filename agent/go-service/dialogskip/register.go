@@ -6,7 +6,7 @@ import (
 )
 
 func Register() {
-	maa.AgentServerRegisterCustomRecognition("IsMailEnabled", &IsMailEnabledRecognition{})
 	maa.AgentServerRegisterCustomAction("SkipDialogAdvanced", &SkipDialogAdvancedAction{})
-	log.Info().Str("component", "dialogskip").Msg("registered IsMailEnabled, SkipDialogAdvanced")
+	maa.AgentServerRegisterCustomAction("SkipDialogMessageClick", &SkipDialogMessageClickAction{})
+	log.Info().Str("component", "dialogskip").Msg("registered dialog skip components")
 }

@@ -39,6 +39,47 @@
         ],
         "post_delay": 300
     },
+    "Diagnosis_Combat": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "has_target.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "has_target_cloud.png",
+                "threshold": 0.6
+            }
+        ]
+    },
+    "Diagnosis_World": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160]
+    },
+    "Diagnosis_Char": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "char_1_text.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "char_2_text.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "char_3_text.png",
+                "threshold": 0.7
+            }
+        ]
+    },
     "Diagnosis_CharacterDetect": {
         "recognition": "Custom",
         "custom_recognition": "CharacterDetect",
@@ -54,6 +95,10 @@
             "Diagnosis_Snapshot"
         ],
         "post_delay": 100
+    },
+    "Diagnosis_StaminaReader": {
+        "recognition": "Custom",
+        "custom_recognition": "StaminaReader"
     },
     "Diagnosis_Snapshot": {
         "action": "Custom",

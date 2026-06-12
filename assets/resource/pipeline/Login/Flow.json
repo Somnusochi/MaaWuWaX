@@ -1,0 +1,127 @@
+{
+    "Login_MonthlyCardClick1": {
+        "recognition": "TemplateMatch",
+        "template": "monthly_card.png",
+        "threshold": 0.65,
+        "action": "Click",
+        "target": [640, 641, 1, 1],
+        "next": ["Login_MonthlyCardClick2"],
+        "post_delay": 1500
+    },
+    "Login_MonthlyCardClick2": {
+        "action": "Click",
+        "target": [640, 641, 1, 1],
+        "next": ["Login_AfterAction"]
+    },
+    "Login_CloseClick": {
+        "recognition": "TemplateMatch",
+        "template": "login_close.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["Login_AfterAction"],
+        "post_delay": 800
+    },
+    "Login_PhoneLoginGuard": {
+        "recognition": "OCR",
+        "expected": "\\+86",
+        "roi": [384, 216, 512, 288],
+        "next": ["Login_AfterAction"],
+        "post_delay": 1000
+    },
+    "Login_ClickLogin": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "登录",
+                "roi": [384, 216, 512, 288]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Login",
+                "roi": [384, 216, 512, 288]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "登入",
+                "roi": [384, 216, 512, 288]
+            }
+        ],
+        "action": "Click",
+        "next": ["Login_AfterAction"],
+        "post_delay": 1000
+    },
+    "Login_BottomRightLoginGuard": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "登录",
+                "roi": [760, 430, 500, 260]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Login",
+                "roi": [760, 430, 500, 260]
+            }
+        ],
+        "next": ["Login_AfterAction"],
+        "post_delay": 1000
+    },
+    "Login_ClickStart": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "开始游戏",
+                "roi": [760, 430, 500, 260]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "进入游戏",
+                "roi": [760, 430, 500, 260]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Tap to Start",
+                "roi": [760, 430, 500, 260]
+            }
+        ],
+        "action": "Click",
+        "next": ["Login_AfterAction"],
+        "post_delay": 1000
+    },
+    "Login_SwitchAccountPrompt": {
+        "recognition": "TemplateMatch",
+        "template": "switch_account.png",
+        "threshold": 0.7,
+        "next": ["Login_SwitchAccountLoginOCR"]
+    },
+    "Login_SwitchAccountLoginOCR": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "登录",
+                "roi": [474, 454, 332, 266]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Login",
+                "roi": [474, 454, 332, 266]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "登入",
+                "roi": [474, 454, 332, 266]
+            }
+        ],
+        "action": "Click",
+        "target": [644, 667, 1, 1],
+        "next": ["Login_AfterAction"],
+        "post_delay": 3000
+    },
+    "Login_AfterAction": {
+        "next": ["Login_Main"]
+    }
+}

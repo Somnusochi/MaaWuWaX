@@ -77,7 +77,7 @@ func rocciaClickResonance(c combatActor) bool {
 	}
 	start := time.Now()
 	clicked := false
-	for rocciaResonanceAvailable(c) && time.Since(start) < 15*time.Second {
+	for c.resonanceChainAvailable() && time.Since(start) < 15*time.Second {
 		if c.forceSkill() {
 			clicked = true
 		}

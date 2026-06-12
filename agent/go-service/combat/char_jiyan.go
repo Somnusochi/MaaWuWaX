@@ -75,7 +75,7 @@ func jiyanClickResonance(c combatActor, timeout time.Duration) bool {
 	}
 	start := time.Now()
 	clicked := false
-	for c.resonanceAvailable() && time.Since(start) < timeout {
+	for c.resonanceChainAvailable() && time.Since(start) < timeout {
 		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}

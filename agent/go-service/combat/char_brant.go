@@ -88,7 +88,7 @@ func brantClickLiberation(c combatActor) bool {
 // spams resonance key while forte_full and resonance available (up to 1s).
 func brantResonanceForteFull(c combatActor) {
 	start := time.Now()
-	for c.resonanceAvailable() && c.currentResonance() > 0.05 && c.forteFull() && time.Since(start) < 1*time.Second {
+	for c.resonanceChainAvailable() && c.currentResonance() > 0.05 && c.forteFull() && time.Since(start) < 1*time.Second {
 		if c.currentResonance() > 0 {
 			c.forceSkill()
 		}
@@ -111,7 +111,7 @@ func brantFlickResonance(c combatActor) bool {
 	// Step 2: spam resonance key until exhausted (timeout 200ms)
 	if c.currentResonance() > 0.001 {
 		start = time.Now()
-		for c.resonanceAvailable() && c.currentResonance() > 0.05 && time.Since(start) < 200*time.Millisecond {
+		for c.resonanceChainAvailable() && c.currentResonance() > 0.05 && time.Since(start) < 200*time.Millisecond {
 			if c.currentResonance() > 0 {
 				c.forceSkill()
 			}
@@ -127,9 +127,10 @@ func brantFlickResonance(c combatActor) bool {
 func brantJumpWithClick(c combatActor, delay time.Duration) {
 	click := false
 	if !c.flying() {
-		brantFlickResonance(c)
-		c.sleep(200 * time.Millisecond)
-		click = true
+		if brantFlickResonance(c) {
+			c.sleep(200 * time.Millisecond)
+			click = true
+		}
 	}
 	start := time.Now()
 	for time.Since(start) < delay {
@@ -168,8 +169,11 @@ func brantPerformInOutro(c combatActor) bool {
 			timeout = 10 * time.Second
 		}
 		if !c.flying() {
-			brantFlickResonance(c)
-			c.sleep(200 * time.Millisecond)
+			if brantFlickResonance(c) {
+				c.sleep(200 * time.Millisecond)
+			} else {
+				c.jump()
+			}
 		}
 		c.attack()
 		c.sleep(100 * time.Millisecond)

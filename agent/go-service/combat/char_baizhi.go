@@ -49,7 +49,7 @@ func baizhiClickLiberation(c combatActor) bool {
 func baizhiClickResonance(c combatActor) bool {
 	start := time.Now()
 	clicked := false
-	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+	for c.resonanceChainAvailable() && time.Since(start) < 15*time.Second {
 		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}

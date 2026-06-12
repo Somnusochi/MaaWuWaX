@@ -2,7 +2,6 @@
 package rogue
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -11,182 +10,6 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/rs/zerolog/log"
 )
-
-// ---------------------------------------------------------------------------
-// RogueMainAction — orchestrates the rogue loop: fight → explore → buff select.
-// ---------------------------------------------------------------------------
-
-type RogueMainAction struct{}
-
-var _ maa.CustomActionRunner = &RogueMainAction{}
-
-func (a *RogueMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	log.Info().Str("component", "RogueMain").Msg("rogue loop started")
-
-	for {
-		if ctx.GetTasker().Stopping() {
-			return true
-		}
-
-		// Check for challenge end.
-		detail, err := ctx.RunRecognition(
-			"__Rogue_ChallengeEnd",
-			nil,
-			`{
-				"__Rogue_ChallengeEnd": {
-					"recognition": "Or",
-					"any_of": [
-						{"recognition": "OCR", "expected": "挑战结束"},
-						{"recognition": "OCR", "expected": "Challenge End"}
-					]
-				}
-			}`,
-		)
-		if err == nil && detail != nil && detail.Hit {
-			log.Info().Str("component", "RogueMain").Msg("challenge ended")
-			return true
-		}
-
-		// Check for in-realm state — not in team means we're in UI.
-		inTeamDetail, err := ctx.RunRecognition(
-			"__Rogue_InTeam",
-			nil,
-			`{
-				"__Rogue_InTeam": {
-					"recognition": "TemplateMatch",
-					"template": "minimap.png",
-					"threshold": 0.7,
-					"roi": [1050, 20, 200, 160]
-				}
-			}`,
-		)
-		if err != nil || inTeamDetail == nil || !inTeamDetail.Hit {
-			// Not in team — handle UI states.
-			a.handleRogueUI(ctx)
-			time.Sleep(500 * time.Millisecond)
-			continue
-		}
-
-		// In team — try combat.
-		combatDetail, err := ctx.RunRecognition(
-			"__Rogue_HasTarget",
-			nil,
-			`{
-				"__Rogue_HasTarget": {
-					"recognition": "TemplateMatch",
-					"template": "has_target.png",
-					"threshold": 0.6
-				}
-			}`,
-		)
-		if err == nil && combatDetail != nil && combatDetail.Hit {
-			log.Debug().Str("component", "RogueMain").Msg("engaging combat")
-			ctx.RunAction("Rogue_Fight", maa.Rect{0, 0, 1, 1}, "", nil)
-			continue
-		}
-
-		// No target — press F or walk forward.
-		fDetail, err := ctx.RunRecognition(
-			"__Rogue_PressF",
-			nil,
-			`{
-				"__Rogue_PressF": {
-					"recognition": "TemplateMatch",
-					"template": "pick_up_f.png",
-					"threshold": 0.6
-				}
-			}`,
-		)
-		if err == nil && fDetail != nil && fDetail.Hit {
-			ctrl := ctx.GetTasker().GetController()
-			ctrl.PostClickKey(3).Wait()
-			time.Sleep(1000 * time.Millisecond)
-			continue
-		}
-
-		// Walk forward briefly.
-		ctrl := ctx.GetTasker().GetController()
-		wCode := int32(13) // W key
-		ctrl.PostKeyDown(wCode).Wait()
-		time.Sleep(800 * time.Millisecond)
-		ctrl.PostKeyUp(wCode).Wait()
-		time.Sleep(200 * time.Millisecond)
-	}
-}
-
-func (a *RogueMainAction) handleRogueUI(ctx *maa.Context) {
-	// Trade UI — skip.
-	tradeDetail, _ := ctx.RunRecognition(
-		"__Rogue_Trade",
-		nil,
-		`{
-			"__Rogue_Trade": {
-				"recognition": "OCR",
-				"expected": "交易",
-				"roi": [10, 20, 180, 80]
-			}
-		}`,
-	)
-	if tradeDetail != nil && tradeDetail.Hit {
-		ctrl := ctx.GetTasker().GetController()
-		ctrl.PostClickKey(53).Wait() // ESC
-		time.Sleep(2000 * time.Millisecond)
-		return
-	}
-
-	// Buff select.
-	buffDetail, _ := ctx.RunRecognition(
-		"__Rogue_BuffSelect",
-		nil,
-		`{
-			"__Rogue_BuffSelect": {
-				"recognition": "OCR",
-				"expected": "隐喻获得"
-			}
-		}`,
-	)
-	if buffDetail != nil && buffDetail.Hit {
-		ctx.RunAction("Rogue_BuffSelect", maa.Rect{0, 0, 1, 1}, "", nil)
-		return
-	}
-
-	// Gain echo — dismiss.
-	gainDetail, _ := ctx.RunRecognition(
-		"__Rogue_GainEcho",
-		nil,
-		`{
-			"__Rogue_GainEcho": {
-				"recognition": "OCR",
-				"expected": "获得",
-				"roi": [550, 130, 180, 80]
-			}
-		}`,
-	)
-	if gainDetail != nil && gainDetail.Hit {
-		ctrl := ctx.GetTasker().GetController()
-		ctrl.PostClick(640, 580).Wait()
-		time.Sleep(2000 * time.Millisecond)
-		return
-	}
-
-	// Continue explore.
-	contDetail, _ := ctx.RunRecognition(
-		"__Rogue_Continue",
-		nil,
-		`{
-			"__Rogue_Continue": {
-				"recognition": "OCR",
-				"expected": "退出确认"
-			}
-		}`,
-	)
-	if contDetail != nil && contDetail.Hit {
-		ctrl := ctx.GetTasker().GetController()
-		ctrl.PostClick(860, 440).Wait()
-		time.Sleep(2000 * time.Millisecond)
-		return
-	}
-}
 
 // ---------------------------------------------------------------------------
 // RogueBuffSelectAction — OCRs buff names and selects based on whitelist/blacklist.
@@ -276,16 +99,7 @@ func (a *RogueBuffSelectAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) 
 	ctrl := ctx.GetTasker().GetController()
 
 	// OCR the buff area (3 buff choices in a row).
-	detail, err := ctx.RunRecognition(
-		"__RogueBuff_OCR",
-		nil,
-		`{
-			"__RogueBuff_OCR": {
-				"recognition": "OCR",
-				"roi": [240, 395, 800, 60]
-			}
-		}`,
-	)
+	detail, err := ctx.RunRecognition("RogueBuff_OCR", nil)
 	if err != nil || detail == nil || !detail.Hit {
 		// Fallback: click middle buff.
 		log.Warn().Str("component", "RogueBuffSelect").Msg("OCR failed, clicking middle")
@@ -536,19 +350,7 @@ func (a *RogueTreasureRewardAction) Run(ctx *maa.Context, arg *maa.CustomActionA
 }
 
 func (a *RogueTreasureRewardAction) hasStaminaRefill(ctx *maa.Context) bool {
-	detail, err := ctx.RunRecognition(
-		"__RogueTreasure_StaminaRefill",
-		nil,
-		`{
-			"__RogueTreasure_StaminaRefill": {
-				"recognition": "Or",
-				"any_of": [
-					{"recognition": "OCR", "expected": "补充结晶"},
-					{"recognition": "OCR", "expected": "Refill"}
-				]
-			}
-		}`,
-	)
+	detail, err := ctx.RunRecognition("Rogue_StaminaNotEnough", nil)
 	return err == nil && detail != nil && detail.Hit
 }
 
@@ -573,18 +375,7 @@ func (a *RogueWalkToTargetAction) Run(ctx *maa.Context, arg *maa.CustomActionArg
 		}
 	}
 
-	detail, err := ctx.RunRecognition(
-		"__RogueWalk_Target",
-		nil,
-		fmt.Sprintf(`{
-			"__RogueWalk_Target": {
-				"recognition": "TemplateMatch",
-				"template": %q,
-				"threshold": 0.6,
-				"roi": [230, 72, 820, 510]
-			}
-		}`, param.Template),
-	)
+	detail, err := ctx.RunRecognition(rogueWalkTargetNode(param.Template), nil)
 	ctrl := ctx.GetTasker().GetController()
 	if err != nil || detail == nil || !detail.Hit {
 		pressFor(ctrl, keycode.MustCode("D"), 250*time.Millisecond)
@@ -612,6 +403,17 @@ func (a *RogueWalkToTargetAction) Run(ctx *maa.Context, arg *maa.CustomActionArg
 		Int("center_x", centerX).
 		Msg("walked toward target")
 	return true
+}
+
+func rogueWalkTargetNode(template string) string {
+	switch template {
+	case "treasure_icon.png":
+		return "RogueWalk_TargetTreasure"
+	case "purple_target_distance_icon.png":
+		return "RogueWalk_TargetPurple"
+	default:
+		return "RogueWalk_TargetPurple"
+	}
 }
 
 func (a *RogueWalkGateAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
@@ -654,16 +456,7 @@ func (a *RogueWalkGateAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bo
 }
 
 func findRogueGate(ctx *maa.Context) (maa.Rect, bool) {
-	detail, err := ctx.RunRecognition(
-		"__RogueGate_OCR",
-		nil,
-		`{
-			"__RogueGate_OCR": {
-				"recognition": "OCR",
-				"roi": [0, 0, 1280, 720]
-			}
-		}`,
-	)
+	detail, err := ctx.RunRecognition("RogueGate_OCR", nil)
 	if err != nil || detail == nil || !detail.Hit || detail.Results == nil {
 		return maa.Rect{}, false
 	}
@@ -697,19 +490,7 @@ func normalizeRogueGateText(text string) string {
 }
 
 func hasRogueFPrompt(ctx *maa.Context) bool {
-	detail, err := ctx.RunRecognition(
-		"__RogueGate_F",
-		nil,
-		`{
-			"__RogueGate_F": {
-				"recognition": "Or",
-				"any_of": [
-					{"recognition": "TemplateMatch", "template": "pick_up_f.png", "threshold": 0.6},
-					{"recognition": "TemplateMatch", "template": "pick_up_f_hcenter_vcenter.png", "threshold": 0.6}
-				]
-			}
-		}`,
-	)
+	detail, err := ctx.RunRecognition("RogueGate_FPrompt", nil)
 	return err == nil && detail != nil && detail.Hit
 }
 

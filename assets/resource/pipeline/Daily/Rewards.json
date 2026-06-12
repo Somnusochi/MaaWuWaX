@@ -1,0 +1,66 @@
+{
+    "Daily_RewardClaimButtonClick": {
+        "recognition": "TemplateMatch",
+        "template": "claim_btn.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["Daily_RewardOpenFallbackAfterClick"],
+        "post_delay": 1500,
+        "timeout": 1000,
+        "on_error": ["Daily_RewardOpenFallback"]
+    },
+    "Daily_RewardOpenFallbackAfterClick": {
+        "next": ["Daily_RewardOpenFallback"]
+    },
+    "Daily_RewardOpenFallback": {
+        "action": "Click",
+        "target": [1128, 171, 1, 1],
+        "next": ["Daily_RewardBoxFallback"],
+        "post_delay": 1200
+    },
+    "Daily_RewardBoxFallback": {
+        "action": "Click",
+        "target": [1190, 634, 1, 1],
+        "next": ["Daily_RewardClaimButtonRetry1"],
+        "post_delay": 1000
+    },
+    "Daily_RewardClaimButtonRetry1": {
+        "recognition": "TemplateMatch",
+        "template": "claim_btn.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["Daily_RewardClaimButtonRetry2"],
+        "post_delay": 800,
+        "timeout": 1000,
+        "on_error": ["Daily_CloseBook"]
+    },
+    "Daily_RewardClaimButtonRetry2": {
+        "recognition": "TemplateMatch",
+        "template": "claim_btn.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["Daily_RewardClaimButtonRetry3"],
+        "post_delay": 800,
+        "timeout": 1000,
+        "on_error": ["Daily_CloseBook"]
+    },
+    "Daily_RewardClaimButtonRetry3": {
+        "recognition": "TemplateMatch",
+        "template": "claim_btn.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["Daily_CloseBookAfterReward"],
+        "post_delay": 800,
+        "timeout": 1000,
+        "on_error": ["Daily_CloseBook"]
+    },
+    "Daily_CloseBookAfterReward": {
+        "next": ["Daily_CloseBook"]
+    },
+    "Daily_CloseBook": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": ["Daily_ClaimMail"],
+        "post_delay": 800
+    }
+}

@@ -1,0 +1,103 @@
+{
+    "Rogue_InTeam": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160]
+    },
+    "Rogue_HasTarget": {
+        "recognition": "TemplateMatch",
+        "template": "has_target.png",
+        "threshold": 0.6
+    },
+    "Rogue_InCombat": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "has_target.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "has_target_cloud.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "revive_confirm_hcenter_vcenter.png",
+                "threshold": 0.7
+            }
+        ],
+        "next": ["Rogue_Revive", "Rogue_Fight"],
+        "post_delay": 500
+    },
+    "Rogue_Revive": {
+        "recognition": "TemplateMatch",
+        "template": "revive_confirm_hcenter_vcenter.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["Rogue_Main"],
+        "post_delay": 3000
+    },
+    "Rogue_Fight": {
+        "action": "Custom",
+        "custom_action": "CombatMain",
+        "next": ["Rogue_PostFight"],
+        "timeout": 120000,
+        "on_error": ["Rogue_Main"]
+    },
+    "Rogue_PostFight": {
+        "next": [
+            "Rogue_PressF",
+            "Rogue_FindGate",
+            "Rogue_WalkTreasure",
+            "Rogue_WalkPurple",
+            "Rogue_TreasureReward",
+            "Rogue_StaminaNotEnough",
+            "Rogue_Main"
+        ],
+        "post_delay": 500
+    },
+    "Rogue_PressF": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.6,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["Rogue_PressF2"],
+        "on_error": ["Rogue_PressFDone"],
+        "post_delay": 300
+    },
+    "Rogue_PressF2": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.6,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["Rogue_PressF3"],
+        "on_error": ["Rogue_PressFDone"],
+        "post_delay": 300
+    },
+    "Rogue_PressF3": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.6,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["Rogue_PressFDone"],
+        "on_error": ["Rogue_PressFNoMore"],
+        "post_delay": 300
+    },
+    "Rogue_PressFDone": {
+        "next": ["Rogue_Main"],
+        "post_delay": 1000
+    },
+    "Rogue_PressFNoMore": {
+        "next": ["Rogue_Main"],
+        "post_delay": 1000
+    }
+}

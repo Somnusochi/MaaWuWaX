@@ -447,15 +447,12 @@ func markDone() {
 }
 
 func findBestTemplate(ctx *maa.Context, img image.Image, template string, threshold float64) (pointBox, bool) {
-	detail, err := ctx.RunRecognitionDirect(
-		maa.RecognitionTypeTemplateMatch,
-		&maa.TemplateMatchParam{
-			Template:  []string{template},
-			Threshold: []float64{threshold},
-			OrderBy:   maa.TemplateMatchOrderByScore,
-		},
-		img,
-	)
+	node, ok := farmMapTemplateNode(template)
+	if !ok {
+		log.Warn().Str("template", template).Msg("unknown FarmMap template node")
+		return pointBox{}, false
+	}
+	detail, err := ctx.RunRecognition(node, img)
 	if err != nil || detail == nil || !detail.Hit {
 		return pointBox{}, false
 	}
@@ -463,15 +460,12 @@ func findBestTemplate(ctx *maa.Context, img image.Image, template string, thresh
 }
 
 func findAllTemplate(ctx *maa.Context, img image.Image, template string, threshold float64) []pointBox {
-	detail, err := ctx.RunRecognitionDirect(
-		maa.RecognitionTypeTemplateMatch,
-		&maa.TemplateMatchParam{
-			Template:  []string{template},
-			Threshold: []float64{threshold},
-			OrderBy:   maa.TemplateMatchOrderByHorizontal,
-		},
-		img,
-	)
+	node, ok := farmMapTemplateNode(template)
+	if !ok {
+		log.Warn().Str("template", template).Msg("unknown FarmMap template node")
+		return nil
+	}
+	detail, err := ctx.RunRecognition(node, img)
 	if err != nil || detail == nil || !detail.Hit || detail.Results == nil {
 		return nil
 	}
@@ -486,6 +480,19 @@ func findAllTemplate(ctx *maa.Context, img image.Image, template string, thresho
 		}
 	}
 	return boxes
+}
+
+func farmMapTemplateNode(template string) (string, bool) {
+	switch template {
+	case "big_map_diamond.png":
+		return "FarmMap_BigMapDiamond", true
+	case "big_map_star.png":
+		return "FarmMap_BigMapStar", true
+	case "box_minimap.png":
+		return "FarmMap_MiniMapBox", true
+	default:
+		return "", false
+	}
 }
 
 func detectMiniMap(ctx *maa.Context, img image.Image) pointBox {

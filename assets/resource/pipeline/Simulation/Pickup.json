@@ -1,0 +1,74 @@
+{
+    "Simulation_Loot": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "Simulation_Loot2"
+        ],
+        "on_error": [
+            "Simulation_LootDone"
+        ],
+        "post_delay": 300
+    },
+    "Simulation_Loot2": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "Simulation_Loot3"
+        ],
+        "on_error": [
+            "Simulation_LootDone"
+        ],
+        "post_delay": 300
+    },
+    "Simulation_Loot3": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "Simulation_LootDone"
+        ],
+        "on_error": [
+            "Simulation_LootNoMore"
+        ],
+        "post_delay": 300
+    },
+    "Simulation_LootDone": {
+        "next": [
+            "Simulation_CheckComplete",
+            "Simulation_Fight"
+        ]
+    },
+    "Simulation_LootNoMore": {
+        "next": [
+            "Simulation_CheckComplete",
+            "Simulation_Fight"
+        ]
+    }
+}

@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"image"
 	"strings"
-	"time"
 
-	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/pkg/keycode"
 	maa "github.com/MaaXYZ/maa-framework-go/v4"
 	"github.com/bytedance/sonic"
 	"github.com/rs/zerolog/log"
@@ -58,30 +56,9 @@ func (r *PickTextFilterRecognition) Run(ctx *maa.Context, arg *maa.CustomRecogni
 	whitelist, blacklist := parsePickFilterParam(arg.CustomRecognitionParam)
 
 	// 1. Find F-key prompt (primary template, high threshold like ok-ww 0.8)
-	fDetail, err := ctx.RunRecognition(
-		"__PickTextFilter_FindF",
-		arg.Img,
-		`{
-			"__PickTextFilter_FindF": {
-				"recognition": "TemplateMatch",
-				"template": "pick_up_f_hcenter_vcenter.png",
-				"threshold": 0.75
-			}
-		}`,
-	)
+	fDetail, err := ctx.RunRecognition("AutoPick_FPromptPrimary", arg.Img)
 	if err != nil || fDetail == nil || !fDetail.Hit {
-		fDetail, err = ctx.RunRecognition(
-			"__PickTextFilter_FindF_Fallback",
-			arg.Img,
-			`{
-				"__PickTextFilter_FindF_Fallback": {
-					"recognition": "TemplateMatch",
-					"template": "pick_up_f.png",
-					"threshold": 0.65,
-					"roi": [300, 200, 680, 480]
-				}
-			}`,
-		)
+		fDetail, err = ctx.RunRecognition("AutoPick_FPromptFallback", arg.Img)
 		if err != nil || fDetail == nil || !fDetail.Hit {
 			return nil, false
 		}
@@ -95,30 +72,11 @@ func (r *PickTextFilterRecognition) Run(ctx *maa.Context, arg *maa.CustomRecogni
 	}
 
 	// 3. Detect dialog_3_dots to determine if this is a dialog interaction (ok-ww pattern)
-	hasDialog, _ := ctx.RunRecognition(
-		"__PickTextFilter_3Dots",
-		arg.Img,
-		`{
-			"__PickTextFilter_3Dots": {
-				"recognition": "TemplateMatch",
-				"template": "message_dialog.png",
-				"threshold": 0.45
-			}
-		}`,
-	)
+	hasDialog, _ := ctx.RunRecognition("AutoPick_MessageDialog", arg.Img)
 	isDialog := hasDialog != nil && hasDialog.Hit
 
 	// 4. OCR the interaction text
-	ocrDetail, err := ctx.RunRecognition(
-		"PickTextFilter_OCR",
-		arg.Img,
-		`{
-			"PickTextFilter_OCR": {
-				"recognition": "OCR",
-				"roi": [300, 200, 680, 100]
-			}
-		}`,
-	)
+	ocrDetail, err := ctx.RunRecognition("AutoPick_TextOCR", arg.Img)
 	text := ""
 	if err == nil && ocrDetail != nil && ocrDetail.Hit {
 		text = ocrDetail.DetailJson
@@ -219,64 +177,4 @@ func checkFIconWhitePct(img image.Image, box maa.Rect) float64 {
 		return 1.0
 	}
 	return float64(white) / float64(total)
-}
-
-// ---------------------------------------------------------------------------
-// PickEnhancedAction — enhanced pickup: press F multiple times with whitelist check.
-// ---------------------------------------------------------------------------
-
-type PickEnhancedAction struct{}
-
-var _ maa.CustomActionRunner = &PickEnhancedAction{}
-
-type pickEnhancedParam struct {
-	MaxAttempts int `json:"max_attempts"`
-}
-
-func (a *PickEnhancedAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	param := pickEnhancedParam{MaxAttempts: 5}
-	if arg.CustomActionParam != "" {
-		if err := sonic.Unmarshal([]byte(arg.CustomActionParam), &param); err != nil {
-			log.Warn().Err(err).Str("component", "PickEnhanced").Msg("failed to parse param")
-		}
-	}
-
-	ctrl := ctx.GetTasker().GetController()
-	fCode := keycode.MustCode("F")
-	picked := 0
-
-	for i := 0; i < param.MaxAttempts; i++ {
-		if ctx.GetTasker().Stopping() {
-			break
-		}
-
-		// Check if F icon is still visible.
-		detail, err := ctx.RunRecognition(
-			fmt.Sprintf("__PickEnhanced_Check_%d", i),
-			nil,
-			`{
-				"__PickEnhanced_Check": {
-					"recognition": "TemplateMatch",
-					"template": "pick_up_f.png",
-					"threshold": 0.65,
-					"roi": [300, 200, 680, 480]
-				}
-			}`,
-		)
-		if err != nil || detail == nil || !detail.Hit {
-			log.Debug().Str("component", "PickEnhanced").Msg("no more F icons")
-			break
-		}
-
-		ctrl.PostClickKey(fCode).Wait()
-		time.Sleep(300 * time.Millisecond)
-		picked++
-	}
-
-	log.Info().
-		Str("component", "PickEnhanced").
-		Int("picked", picked).
-		Msg("enhanced pickup done")
-
-	return true
 }

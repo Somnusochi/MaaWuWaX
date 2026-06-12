@@ -1,0 +1,55 @@
+{
+    "NightmareNest_CountOCR": {
+        "recognition": "OCR",
+        "roi": [
+            460,
+            95,
+            780,
+            560
+        ]
+    },
+    "NightmareNest_ScrollOCR": {
+        "recognition": "OCR",
+        "roi": [
+            460,
+            95,
+            780,
+            560
+        ]
+    },
+    "NightmareNest_ScrollEndOCR": {
+        "recognition": "OCR",
+        "roi": [
+            460,
+            95,
+            780,
+            560
+        ]
+    },
+    "NightmareNest_ApproachCombat": {
+        "recognition": "TemplateMatch",
+        "template": "has_target.png",
+        "threshold": 0.6,
+        "roi": [
+            400,
+            200,
+            800,
+            600
+        ]
+    },
+    "NightmareNest_ApproachFPrompt": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f_hcenter_vcenter.png",
+                "threshold": 0.6
+            }
+        ]
+    }
+}

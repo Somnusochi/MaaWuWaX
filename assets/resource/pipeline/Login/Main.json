@@ -40,9 +40,17 @@
         "next": []
     },
     "Login_HandleScreen": {
-        "recognition": "Custom",
-        "custom_recognition": "LoginScreenDetect",
-        "next": ["Login_Main"],
+        "next": [
+            "Login_MonthlyCardClick1",
+            "Login_CloseClick",
+            "Login_PhoneLoginGuard",
+            "Login_ClickLogin",
+            "Login_PrivacyPrompt",
+            "Login_RestartPrompt",
+            "Login_BottomRightLoginGuard",
+            "Login_ClickStart",
+            "Login_SwitchAccountPrompt"
+        ],
         "post_delay": 2000
     }
 }

@@ -1,0 +1,11 @@
+{
+    "EchoEnhance_StatsOCR": {
+        "recognition": "OCR",
+        "roi": [
+            100,
+            200,
+            400,
+            350
+        ]
+    }
+}

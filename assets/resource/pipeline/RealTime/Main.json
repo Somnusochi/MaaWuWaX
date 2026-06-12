@@ -22,8 +22,61 @@
         "next": ["RealTime_PickAction"]
     },
     "RealTime_PickAction": {
-        "action": "Custom",
-        "custom_action": "PickEnhanced",
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["RealTime_PickAction2"],
+        "on_error": ["RealTime_Main"],
+        "post_delay": 300
+    },
+    "RealTime_PickAction2": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["RealTime_PickAction3"],
+        "on_error": ["RealTime_Main"],
+        "post_delay": 300
+    },
+    "RealTime_PickAction3": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["RealTime_PickAction4"],
+        "on_error": ["RealTime_Main"],
+        "post_delay": 300
+    },
+    "RealTime_PickAction4": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["RealTime_PickAction5"],
+        "on_error": ["RealTime_Main"],
+        "post_delay": 300
+    },
+    "RealTime_PickAction5": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["RealTime_Main"],
+        "on_error": ["RealTime_PickActionDone"],
+        "post_delay": 300
+    },
+    "RealTime_PickActionDone": {
         "next": ["RealTime_Main"]
     },
     "RealTime_Skip": {
@@ -72,10 +125,8 @@
         "next": ["RealTime_Main"]
     },
     "RealTime_Login": {
-        "recognition": "Custom",
-        "custom_recognition": "LoginScreenDetect",
         "enabled": true,
-        "next": ["RealTime_Main"]
+        "next": ["Login_HandleScreen", "RealTime_Main"]
     },
     "RealTime_Mouse": {
         "action": "KeyDown",

@@ -40,6 +40,9 @@
                                 "boss_type": "weekly",
                                 "total_number": 9
                             }
+                        },
+                        "EchoFarm_BookOpen": {
+                            "next": ["EchoFarm_SelectWeeklyTab"]
                         }
                     },
                     "option": [
@@ -56,6 +59,9 @@
                                 "boss_type": "boss",
                                 "total_number": 20
                             }
+                        },
+                        "EchoFarm_BookOpen": {
+                            "next": ["EchoFarm_SelectBossTab"]
                         }
                     },
                     "option": [
@@ -116,6 +122,11 @@
                             "custom_action_param": {
                                 "boss_level": "50"
                             }
+                        },
+                        "EchoFarm_EnterRealmFromF": {
+                            "custom_action_param": {
+                                "boss_level": "50"
+                            }
                         }
                     }
                 },
@@ -124,6 +135,11 @@
                     "label": "60 级",
                     "pipeline_override": {
                         "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_level": "60"
+                            }
+                        },
+                        "EchoFarm_EnterRealmFromF": {
                             "custom_action_param": {
                                 "boss_level": "60"
                             }
@@ -138,6 +154,11 @@
                             "custom_action_param": {
                                 "boss_level": "70"
                             }
+                        },
+                        "EchoFarm_EnterRealmFromF": {
+                            "custom_action_param": {
+                                "boss_level": "70"
+                            }
                         }
                     }
                 },
@@ -149,6 +170,11 @@
                             "custom_action_param": {
                                 "boss_level": "80"
                             }
+                        },
+                        "EchoFarm_EnterRealmFromF": {
+                            "custom_action_param": {
+                                "boss_level": "80"
+                            }
                         }
                     }
                 },
@@ -157,6 +183,11 @@
                     "label": "90 级",
                     "pipeline_override": {
                         "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_level": "90"
+                            }
+                        },
+                        "EchoFarm_EnterRealmFromF": {
                             "custom_action_param": {
                                 "boss_level": "90"
                             }
@@ -182,6 +213,11 @@
                             "custom_action_param": {
                                 "boss_profile": "hyvatia"
                             }
+                        },
+                        "EchoFarm_EnterRealmFromF": {
+                            "custom_action_param": {
+                                "boss_profile": "hyvatia"
+                            }
                         }
                     }
                 },
@@ -190,6 +226,11 @@
                     "label": "无归的谬误",
                     "pipeline_override": {
                         "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "fallacy"
+                            }
+                        },
+                        "EchoFarm_EnterRealmFromF": {
                             "custom_action_param": {
                                 "boss_profile": "fallacy"
                             }
@@ -204,6 +245,11 @@
                             "custom_action_param": {
                                 "boss_profile": "sentry_construct"
                             }
+                        },
+                        "EchoFarm_EnterRealmFromF": {
+                            "custom_action_param": {
+                                "boss_profile": "sentry_construct"
+                            }
                         }
                     }
                 },
@@ -212,6 +258,11 @@
                     "label": "罗蕾莱",
                     "pipeline_override": {
                         "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "lorelei"
+                            }
+                        },
+                        "EchoFarm_EnterRealmFromF": {
                             "custom_action_param": {
                                 "boss_profile": "lorelei"
                             }
@@ -226,6 +277,11 @@
                             "custom_action_param": {
                                 "boss_profile": "lioness_of_glory"
                             }
+                        },
+                        "EchoFarm_EnterRealmFromF": {
+                            "custom_action_param": {
+                                "boss_profile": "lioness_of_glory"
+                            }
                         }
                     }
                 },
@@ -234,6 +290,11 @@
                     "label": "芬莱克",
                     "pipeline_override": {
                         "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "fenrico"
+                            }
+                        },
+                        "EchoFarm_EnterRealmFromF": {
                             "custom_action_param": {
                                 "boss_profile": "fenrico"
                             }
@@ -248,6 +309,11 @@
                             "custom_action_param": {
                                 "boss_profile": "nameless_explorer"
                             }
+                        },
+                        "EchoFarm_EnterRealmFromF": {
+                            "custom_action_param": {
+                                "boss_profile": "nameless_explorer"
+                            }
                         }
                     }
                 },
@@ -256,6 +322,11 @@
                     "label": "梦魇·赫卡忒",
                     "pipeline_override": {
                         "EchoFarm_TeleportBoss": {
+                            "custom_action_param": {
+                                "boss_profile": "nightmare_hecate"
+                            }
+                        },
+                        "EchoFarm_EnterRealmFromF": {
                             "custom_action_param": {
                                 "boss_profile": "nightmare_hecate"
                             }
@@ -296,6 +367,11 @@
             ],
             "pipeline_override": {
                 "EchoFarm_TeleportBoss": {
+                    "custom_action_param": {
+                        "combat_wait_ms": "{value}"
+                    }
+                },
+                "EchoFarm_EnterRealmFromF": {
                     "custom_action_param": {
                         "combat_wait_ms": "{value}"
                     }

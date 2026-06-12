@@ -1,0 +1,113 @@
+{
+    "FarmMap_Collect": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "FarmMap_Collect2"
+        ],
+        "on_error": [
+            "FarmMap_CollectDone"
+        ],
+        "post_delay": 300
+    },
+    "FarmMap_Collect2": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "FarmMap_Collect3"
+        ],
+        "on_error": [
+            "FarmMap_CollectDone"
+        ],
+        "post_delay": 300
+    },
+    "FarmMap_Collect3": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "FarmMap_Collect4"
+        ],
+        "on_error": [
+            "FarmMap_CollectDone"
+        ],
+        "post_delay": 300
+    },
+    "FarmMap_Collect4": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "FarmMap_Collect5"
+        ],
+        "on_error": [
+            "FarmMap_CollectDone"
+        ],
+        "post_delay": 300
+    },
+    "FarmMap_Collect5": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [
+            300,
+            200,
+            680,
+            480
+        ],
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "FarmMap_CollectDone"
+        ],
+        "on_error": [
+            "FarmMap_CollectNoMore"
+        ],
+        "post_delay": 300
+    },
+    "FarmMap_CollectDone": {
+        "next": [
+            "FarmMap_Loop"
+        ]
+    },
+    "FarmMap_CollectNoMore": {
+        "next": [
+            "FarmMap_Loop"
+        ],
+        "post_delay": 500
+    }
+}

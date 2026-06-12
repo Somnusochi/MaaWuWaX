@@ -22,6 +22,14 @@
         "threshold": 0.6,
         "action": "Click",
         "next": [
+            "EchoFarm_SelectBossTarget"
+        ],
+        "post_delay": 500
+    },
+    "EchoFarm_SelectBossTarget": {
+        "action": "Custom",
+        "custom_action": "BossBookTargetSelect",
+        "next": [
             "EchoFarm_ClickProceed"
         ],
         "post_delay": 500
@@ -42,24 +50,9 @@
         "threshold": 0.7,
         "action": "Click",
         "next": [
-            "EchoFarm_WaitWorldLoad"
+            "EchoFarm_WaitAfterTeleportWorld"
         ],
         "post_delay": 3000
-    },
-    "EchoFarm_WaitWorldLoad": {
-        "recognition": "TemplateMatch",
-        "template": "minimap.png",
-        "threshold": 0.7,
-        "roi": [
-            1050,
-            20,
-            200,
-            160
-        ],
-        "next": [],
-        "timeout": 30000,
-        "post_delay": 1000,
-        "on_error": []
     },
     "EchoFarm_WeeklyBossTab": {
         "action": "ClickKey",
@@ -84,7 +77,7 @@
         "threshold": 0.6,
         "action": "Click",
         "next": [
-            "EchoFarm_ClickProceed"
+            "EchoFarm_SelectBossTarget"
         ],
         "post_delay": 500
     }

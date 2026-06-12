@@ -19,6 +19,11 @@
                     "next": [
                         "MultiAccountDaily_Switch"
                     ]
+                },
+                "Login_AfterAction": {
+                    "next": [
+                        "MultiAccountDaily_Login"
+                    ]
                 }
             }
         }
@@ -34,7 +39,7 @@
                     "label": "2 个账号",
                     "pipeline_override": {
                         "MultiAccountDaily_Switch": {
-                            "custom_action_param": {
+                            "custom_recognition_param": {
                                 "max_accounts": 2
                             }
                         },
@@ -50,7 +55,7 @@
                     "label": "3 个账号",
                     "pipeline_override": {
                         "MultiAccountDaily_Switch": {
-                            "custom_action_param": {
+                            "custom_recognition_param": {
                                 "max_accounts": 3
                             }
                         },
@@ -66,7 +71,7 @@
                     "label": "4 个账号",
                     "pipeline_override": {
                         "MultiAccountDaily_Switch": {
-                            "custom_action_param": {
+                            "custom_recognition_param": {
                                 "max_accounts": 4
                             }
                         },

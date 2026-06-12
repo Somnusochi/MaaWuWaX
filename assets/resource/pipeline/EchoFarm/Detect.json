@@ -1,0 +1,47 @@
+{
+    "EchoFarm_EchoOrbDetect": {
+        "recognition": "TemplateMatch",
+        "template": "echo_orb.png",
+        "threshold": 0.5
+    },
+    "EchoFarm_TeleportWalkCombat": {
+        "recognition": "TemplateMatch",
+        "template": "has_target.png",
+        "threshold": 0.7,
+        "roi": [400, 200, 800, 600]
+    },
+    "EchoFarm_TeleportWalkFPrompt": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f_hcenter_vcenter.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f.png",
+                "threshold": 0.65
+            },
+            {
+                "recognition": "OCR",
+                "expected": "挑战"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge"
+            }
+        ]
+    },
+    "EchoFarm_RealmLevelOCR": {
+        "recognition": "OCR",
+        "expected": "80",
+        "roi": [38, 81, 376, 394]
+    },
+    "EchoFarm_RealmWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160]
+    }
+}

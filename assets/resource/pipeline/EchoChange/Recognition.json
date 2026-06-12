@@ -1,0 +1,20 @@
+{
+    "EchoChange_CurrentMainOCR": {
+        "recognition": "OCR",
+        "roi": [
+            115,
+            144,
+            80,
+            44
+        ]
+    },
+    "EchoChange_StatListOCR": {
+        "recognition": "OCR",
+        "roi": [
+            100,
+            300,
+            800,
+            400
+        ]
+    }
+}

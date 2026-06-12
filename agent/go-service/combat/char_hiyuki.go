@@ -154,7 +154,7 @@ func performHiyukiLiberationWindow(c combatActor) {
 func hiyukiClickResonance(c combatActor) bool {
 	start := time.Now()
 	clicked := false
-	for c.resonanceAvailable() && time.Since(start) < 15*time.Second {
+	for c.resonanceChainAvailable() && time.Since(start) < 15*time.Second {
 		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
@@ -216,29 +216,23 @@ func hiyukiHoldLiberation(c combatActor) bool {
 	}
 	start := time.Now()
 	ctrl := c.ctx.GetTasker().GetController()
-	ctrl.PostKeyDown(keycode.MustCode("R")).Wait()
-	defer ctrl.PostKeyUp(keycode.MustCode("R")).Wait()
 	clicked := false
+	nextKeyDown := time.Duration(0)
 	for time.Since(start) < 8*time.Second && c.isCurrentChar() && hiyukiLiberationAvailable(c) {
+		if time.Since(start) >= nextKeyDown {
+			ctrl.PostKeyDown(keycode.MustCode("R")).Wait()
+			nextKeyDown += 500 * time.Millisecond
+		}
 		clicked = true
 		c.sleep(50 * time.Millisecond)
 	}
+	ctrl.PostKeyUp(keycode.MustCode("R")).Wait()
 	if !clicked {
-		return false
-	}
-	leaveDeadline := time.Now().Add(400 * time.Millisecond)
-	for time.Now().Before(leaveDeadline) && c.isCurrentChar() {
-		c.sleep(50 * time.Millisecond)
-	}
-	if c.isCurrentChar() || hiyukiLiberationAvailable(c) {
 		return false
 	}
 	backDeadline := time.Now().Add(3 * time.Second)
 	for time.Now().Before(backDeadline) && !c.isCurrentChar() {
 		c.sleep(50 * time.Millisecond)
-	}
-	if !c.isCurrentChar() {
-		return false
 	}
 	c.addFreezeDuration(time.Since(start))
 	return true

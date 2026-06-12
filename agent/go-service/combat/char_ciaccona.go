@@ -91,7 +91,7 @@ func ciacconaClickLiberation(c combatActor) bool {
 func ciacconaClickResonance(c combatActor) bool {
 	start := time.Now()
 	clicked := false
-	for c.resonanceAvailable() && time.Since(start) < 10*time.Second {
+	for c.resonanceChainAvailable() && time.Since(start) < 10*time.Second {
 		if c.currentResonance() > 0 && c.forceSkill() {
 			clicked = true
 		}
