@@ -31,10 +31,13 @@
         "post_delay": 3000
     },
     "EchoFarm_SelectRealmLevel": {
-        "action": "Custom",
-        "custom_action": "EchoFarmSelectRealmLevel",
+        "recognition": "OCR",
+        "expected": "80",
+        "roi": [38, 81, 376, 394],
+        "action": "Click",
         "next": ["EchoFarm_ClickChallengeConfirmLeft"],
-        "on_error": ["EchoFarm_NextRound"]
+        "on_error": ["EchoFarm_NextRound"],
+        "post_delay": 1000
     },
     "EchoFarm_ClickChallengeConfirmLeft": {
         "action": "Click",

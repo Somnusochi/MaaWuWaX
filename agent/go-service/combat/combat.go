@@ -8,6 +8,35 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var pendingAction string
+var pendingSwitchTarget int = -1
+
+type CombatCheckPendingRecognition struct{}
+
+var _ maa.CustomRecognitionRunner = &CombatCheckPendingRecognition{}
+
+type combatCheckPendingParam struct {
+	Action string `json:"action"`
+	Target int    `json:"target"`
+}
+
+func (r *CombatCheckPendingRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
+	param := combatCheckPendingParam{Target: -1}
+	if arg != nil && arg.CustomRecognitionParam != "" {
+		_ = sonic.Unmarshal([]byte(arg.CustomRecognitionParam), &param)
+	}
+	if param.Action == "" || pendingAction != param.Action {
+		return nil, false
+	}
+	if param.Action == "switch" && param.Target >= 0 && pendingSwitchTarget != param.Target {
+		return nil, false
+	}
+	// Consumed!
+	pendingAction = ""
+	pendingSwitchTarget = -1
+	return &maa.CustomRecognitionResult{Box: maa.Rect{0, 0, 1, 1}}, true
+}
+
 // ── CombatStateRecognition — ok-ww CombatCheck port ───────────────────
 
 type CombatStateRecognition struct{}
@@ -16,31 +45,9 @@ var _ maa.CustomRecognitionRunner = &CombatStateRecognition{}
 
 func (r *CombatStateRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
 	screenAnalyzer.Update(ctx, arg.Img)
-
-	state := "fighting"
-	if screenAnalyzer.HasDodge {
-		state = "dodge"
-	} else if !screenAnalyzer.InCombat() {
-		if screenAnalyzer.PickupF {
-			state = "loot"
-		} else {
-			state = "idle"
-		}
-	} else if screenAnalyzer.ConcertoPct >= 1.0 {
-		state = "switch"
-	}
-
-	detail, _ := sonic.Marshal(map[string]any{
-		"state":    state,
-		"target":   screenAnalyzer.HasTarget,
-		"hp":       screenAnalyzer.HasHPBar,
-		"concerto": screenAnalyzer.ConcertoPct,
-	})
-
-	return &maa.CustomRecognitionResult{
-		Box:    maa.Rect{0, 0, 1280, 720},
-		Detail: string(detail),
-	}, true
+	// We no longer need to check CombatState for Dodge or Loot, since CombatMain handles it and sets pendingAction!
+	// But we still return true so the pipeline can check the CheckPending nodes.
+	return &maa.CustomRecognitionResult{Box: maa.Rect{0, 0, 1, 1}}, true
 }
 
 // ── CombatMainAction — state machine driven action ────────────────────
@@ -103,9 +110,8 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 
 	// ── Dodge ──
 	if screenAnalyzer.HasDodge && time.Since(a.lastDodge) > 500*time.Millisecond {
-		ctx.RunAction("Combat_Dodge", roi, "", nil)
+		pendingAction = "dodge"
 		a.lastDodge = now
-		time.Sleep(120 * time.Millisecond)
 		return true
 	}
 
@@ -123,18 +129,17 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 			if a.effectiveRole(current) != roleHealer {
 				for i, slot := range screenAnalyzer.CharSlots {
 					if a.effectiveRole(slot) == roleHealer && slot.Alive && i != screenAnalyzer.CurrentIdx {
-						ctx.RunAction(switchActionName(i), roi, "", nil)
+						pendingAction = "switch"
+						pendingSwitchTarget = i
 						a.lastSwitchIn[i] = now
 						a.lastSwitch = now
-						time.Sleep(300 * time.Millisecond)
 						return true
 					}
 				}
 			}
 		}
 		if screenAnalyzer.PickupF {
-			ctx.RunAction("Combat_LootAction", roi, "", nil)
-			time.Sleep(250 * time.Millisecond)
+			pendingAction = "loot"
 			return true
 		}
 		if param.AutoTarget && !screenAnalyzer.HasTarget {
@@ -142,7 +147,6 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 			ctrl.PostClick(640, 360).Wait()
 			time.Sleep(200 * time.Millisecond)
 		}
-		time.Sleep(120 * time.Millisecond)
 		return true
 	}
 
@@ -157,7 +161,8 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 			if a.effectiveRole(slot) == roleHealer && slot.Alive && i != screenAnalyzer.CurrentIdx {
 				a.performCharacterStrategy(ctx, param) // quick perform then switch
 				a.lastSwitch = now
-				time.Sleep(120 * time.Millisecond)
+				pendingAction = "switch"
+				pendingSwitchTarget = i
 				return true
 			}
 		}
@@ -167,7 +172,8 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 	if time.Since(a.lastSwitch) > 8*time.Second && screenAnalyzer.ConcertoPct >= 1.0 {
 		target := a.chooseSwitchTarget(now, true)
 		if target >= 0 {
-			ctx.RunAction(switchActionName(target), roi, "", nil)
+			pendingAction = "switch"
+			pendingSwitchTarget = target
 			a.lastSwitchFrom[target] = a.currentSlot()
 			a.lastSwitchIn[target] = now
 			if targetName := screenAnalyzer.CharSlots[target].Name; targetName != "" {
@@ -178,7 +184,6 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 			a.switchIdx++
 			a.lastSwitch = now
 			a.rotationIdx = 0
-			time.Sleep(300 * time.Millisecond)
 			return true
 		}
 	}
@@ -192,8 +197,7 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 	a.lastAction = now
 
 	if screenAnalyzer.PickupF {
-		ctx.RunAction("Combat_LootAction", roi, "", nil)
-		time.Sleep(250 * time.Millisecond)
+		pendingAction = "loot"
 	}
 
 	return true
@@ -222,31 +226,13 @@ func (a *CombatMainAction) runCombatEndHook(ctx *maa.Context, roi maa.Rect) {
 	}
 	switch slot.Name {
 	case "cartethyia":
-		onCombatEndCartethyia(actor)
+		if state.transformed || !actor.cartethyiaIsSmall() {
+			a.switchNextAfterCombat(ctx, slot, state)
+		}
 	case "cantarella", "augusta":
 		a.switchNextAfterCombat(ctx, slot, state)
 	case "aemeath", "iuno", "linnai", "mornye", "mornye_new", "moning", "moning_new", "camellya":
 		a.switchOtherAfterCombat(ctx, slot, state)
-	}
-}
-
-func onCombatEndCartethyia(c combatActor) {
-	if !(c.state.transformed || !c.cartethyiaIsSmall()) {
-		return
-	}
-	deadline := time.Now().Add(6 * time.Second)
-	for time.Now().Before(deadline) {
-		if !c.isCurrentChar() {
-			break
-		}
-		if !c.action.switchNextAfterCombat(c.ctx, c.slot, c.state) {
-			break
-		}
-		c.ctx.GetTasker().GetController().PostScreencap().Wait()
-		if img, err := c.ctx.GetTasker().GetController().CacheImage(); err == nil && img != nil {
-			screenAnalyzer.Update(c.ctx, img)
-		}
-		c.sleep(200 * time.Millisecond)
 	}
 }
 
@@ -266,7 +252,8 @@ func (a *CombatMainAction) switchAfterCombat(ctx *maa.Context, slot charSlot, st
 	if target < 0 || target >= len(screenAnalyzer.CharSlots) || target == slot.Index {
 		return false
 	}
-	ctx.RunAction(switchActionName(target), maa.Rect{0, 0, 1, 1}, "", nil)
+	pendingAction = "switch"
+	pendingSwitchTarget = target
 	now := time.Now()
 	if state != nil {
 		state.lastSwitchOut = now
@@ -278,8 +265,7 @@ func (a *CombatMainAction) switchAfterCombat(ctx *maa.Context, slot charSlot, st
 		Str("component", "Combat").
 		Str("char", slot.Name).
 		Int("target", target+1).
-		Msg("combat-end switch")
-	time.Sleep(300 * time.Millisecond)
+		Msg("combat-end switch pending")
 	return true
 }
 

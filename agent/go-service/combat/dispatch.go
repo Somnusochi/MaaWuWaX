@@ -19,12 +19,16 @@ func dispatchCharStrategy(c combatActor) {
 		performTaoqi(c)
 	case "denia":
 		performDenia(c)
+	case "youhu":
+		performYouhu(c)
 	case "mornye", "mornye_new", "moning", "moning_new":
 		performMornye(c)
 
 	// ── SubDPS ───────────────────────────────────────────────────────
 	case "sanhua", "sanhua2":
 		performSanhua(c)
+	case "chixia":
+		performChixia(c)
 	case "yinlin":
 		performYinlin(c)
 	case "mortefi":

@@ -15,6 +15,7 @@ import (
 	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/pkg/minicv"
 	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/pkg/resource"
 	maa "github.com/MaaXYZ/maa-framework-go/v4"
+	"github.com/bytedance/sonic"
 	"github.com/rs/zerolog/log"
 )
 
@@ -174,35 +175,34 @@ func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
 	}
 
 	// 6.5. Shared UI percentages/state used by many ok-ww character strategies.
-	sa.ResonancePct = sampleNearWhitePct(img, maa.Rect{1062, 626, 45, 38})
-	sa.EchoPct = sampleNearWhitePct(img, maa.Rect{1124, 626, 45, 39})
-	sa.LiberationPct = sampleNearWhitePct(img, maa.Rect{1190, 626, 42, 38})
+	sa.ResonancePct = sa.metricFloat(ctx, img, "Combat_MetricResonancePct")
+	sa.EchoPct = sa.metricFloat(ctx, img, "Combat_MetricEchoPct")
+	sa.LiberationPct = sa.metricFloat(ctx, img, "Combat_MetricLiberationPct")
 	sa.refreshCooldowns(ctx, img)
-	sa.FortePct = sampleNearWhitePct(img, maa.Rect{750, 664, 20, 8})
-	sa.Flying = sampleNearWhitePct(img, maa.Rect{1005, 629, 27, 27}) < 0.1
-	sa.ZhezhiBluePct = sampleColorPct(img, maa.Rect{560, 666, 15, 7}, 160, 180, 240, 255, 245, 255)
-	sa.PhoebeStarLight = sampleColorPct(img, maa.Rect{630, 670, 8, 7}, 240, 255, 240, 255, 180, 220)
-	sa.PhoebeStarBlue = sampleColorPct(img, maa.Rect{630, 670, 8, 7}, 140, 200, 210, 255, 240, 255)
-	sa.PhoebeRingBlue = sampleColorPct(img, maa.Rect{1055, 618, 54, 54}, 140, 200, 210, 255, 240, 255)
-	sa.CamellyaRedPct = sampleColorPct(img, maa.Rect{1055, 618, 54, 54}, 180, 255, 20, 120, 20, 120)
-	sa.ChangliFortePct = sampleStripeFillPct(img, maa.Rect{544, 668, 176, 4}, 240, 255, 85, 105, 95, 115)
-	sa.ZhezhiForteTier = sampleForteNumByFFT(img, scaledRect(5120, 2880, 2164, 2675, 2900, 2685), 736.0/3.0, colorRange{185, 215, 240, 255, 235, 255}, 3, 12, 14, 100, true)
-	sa.CiacconaForte = sampleForteNumByFFT(img, scaledRect(3840, 2160, 1612, 1987, 2188, 2008), 576.0/3.0, colorRange{70, 100, 240, 255, 180, 210}, 3, 12, 14, 100, true)
-	sa.LupaForte = sampleForteNumByFFT(img, scaledRect(3840, 2160, 1633, 2004, 2160, 2016), 527.0/2.0, colorRange{235, 255, 75, 105, 75, 105}, 2, 19, 21, 400, true)
-	phoebeForteBox := scaledRect(3840, 2160, 1633, 2004, 2160, 2014)
-	sa.PhoebeLightForte = sampleForteNumByFFT(img, phoebeForteBox, 527.0/4.0, colorRange{240, 255, 240, 255, 165, 195}, 4, 9, 11, 25, false)
-	sa.PhoebeBlueForte = sampleForteNumByFFT(img, phoebeForteBox, 527.0/2.0, colorRange{225, 255, 225, 255, 190, 225}, 2, 18, 20, 50, false)
-	sa.PhoebeFullLight = sampleForteFullByWhiteContrast(img, scaledRect(3840, 2160, 2286, 1992, 2306, 2018), 0.08)
-	sa.PhoebeFullBlue = sampleForteFullByWhiteContrast(img, scaledRect(3840, 2160, 2256, 1992, 2276, 2018), 0.08)
-	sa.CarlottaForte = sampleForteNumByFFT(img, scaledRect(5120, 2880, 2164, 2670, 2900, 2680), 736.0/4.0, colorRange{70, 100, 195, 225, 235, 255}, 4, 9, 11, 100, true)
-	sa.XigelikaForte = sampleNearWhitePct(img, scaledRect(5120, 2880, 3032, 2654, 3076, 2700)) > 0.1
-	sa.CantarellaForte = sampleNearWhitePct(img, scaledRect(5120, 2880, 3034, 2640, 3090, 2700)) > 0.06
-	sa.CamellyaFortePct = sampleStripeFillPct(img, maa.Rect{543, 667, 182, 2}, 193, 255, 46, 93, 127, 163)
-	sa.CamellyaBudPct = sampleStripeFillPct(img, maa.Rect{543, 667, 182, 2}, 220, 255, 161, 213, 168, 225)
-	sa.ZaniFortePct = sampleColorPct(img, maa.Rect{543, 665, 185, 3}, 239, 255, 222, 255, 156, 196)
-	sa.ZaniNightfallPct = sampleColorPct(img, maa.Rect{926, 616, 55, 56}, 210, 255, 215, 255, 180, 255)
-	sa.ZaniBlazesPct = sampleColorPct(img, maa.Rect{543, 671, 183, 3}, 240, 255, 210, 255, 150, 220)
-	sa.LinnaiColorPct = sampleNearWhitePct(img, maa.Rect{711, 650, 11, 22})
+	sa.FortePct = sa.metricFloat(ctx, img, "Combat_MetricFortePct")
+	sa.Flying = sa.metricBool(ctx, img, "Combat_MetricFlying")
+	sa.ZhezhiBluePct = sa.metricFloat(ctx, img, "Combat_MetricZhezhiBluePct")
+	sa.PhoebeStarLight = sa.metricFloat(ctx, img, "Combat_MetricPhoebeStarLight")
+	sa.PhoebeStarBlue = sa.metricFloat(ctx, img, "Combat_MetricPhoebeStarBlue")
+	sa.PhoebeRingBlue = sa.metricFloat(ctx, img, "Combat_MetricPhoebeRingBlue")
+	sa.CamellyaRedPct = sa.metricFloat(ctx, img, "Combat_MetricCamellyaRedPct")
+	sa.ChangliFortePct = sa.metricFloat(ctx, img, "Combat_MetricChangliFortePct")
+	sa.ZhezhiForteTier = sa.metricInt(ctx, img, "Combat_MetricZhezhiForteTier")
+	sa.CiacconaForte = sa.metricInt(ctx, img, "Combat_MetricCiacconaForte")
+	sa.LupaForte = sa.metricInt(ctx, img, "Combat_MetricLupaForte")
+	sa.PhoebeLightForte = sa.metricInt(ctx, img, "Combat_MetricPhoebeLightForte")
+	sa.PhoebeBlueForte = sa.metricInt(ctx, img, "Combat_MetricPhoebeBlueForte")
+	sa.PhoebeFullLight = sa.metricBool(ctx, img, "Combat_MetricPhoebeFullLight")
+	sa.PhoebeFullBlue = sa.metricBool(ctx, img, "Combat_MetricPhoebeFullBlue")
+	sa.CarlottaForte = sa.metricInt(ctx, img, "Combat_MetricCarlottaForte")
+	sa.XigelikaForte = sa.metricBool(ctx, img, "Combat_MetricXigelikaForte")
+	sa.CantarellaForte = sa.metricBool(ctx, img, "Combat_MetricCantarellaForte")
+	sa.CamellyaFortePct = sa.metricFloat(ctx, img, "Combat_MetricCamellyaFortePct")
+	sa.CamellyaBudPct = sa.metricFloat(ctx, img, "Combat_MetricCamellyaBudPct")
+	sa.ZaniFortePct = sa.metricFloat(ctx, img, "Combat_MetricZaniFortePct")
+	sa.ZaniNightfallPct = sa.metricFloat(ctx, img, "Combat_MetricZaniNightfallPct")
+	sa.ZaniBlazesPct = sa.metricFloat(ctx, img, "Combat_MetricZaniBlazesPct")
+	sa.LinnaiColorPct = sa.metricFloat(ctx, img, "Combat_MetricLinnaiColorPct")
 
 	detail, err = ctx.RunRecognition("Combat_ZaniNotLiber", img)
 	sa.ZaniNotLiberBox = err == nil && detail != nil && detail.Hit
@@ -264,13 +264,7 @@ func (sa *ScreenAnalyzer) Update(ctx *maa.Context, img image.Image) bool {
 		sa.CartethyiaSmall = true
 	}
 
-	cartethyiaMidAirBox := maa.Rect{766, 665, 21, 9}
-	if sampleNearWhitePct(img, cartethyiaMidAirBox) > 0.15 {
-		mean, std := sampleGrayMeanStd(img, cartethyiaMidAirBox)
-		sa.CartethyiaMidAir = mean > 190 && std < 45
-	} else {
-		sa.CartethyiaMidAir = false
-	}
+	sa.CartethyiaMidAir = sa.metricBool(ctx, img, "Combat_MetricCartethyiaMidAir")
 
 	detail, err = ctx.RunRecognition("Combat_LuhesiKickReady", img)
 	sa.LuhesiKickReady = err == nil && detail != nil && detail.Hit
@@ -521,18 +515,40 @@ func (sa *ScreenAnalyzer) anyPipelineHit(ctx *maa.Context, img image.Image, node
 	return false
 }
 
+func (sa *ScreenAnalyzer) metricFloat(ctx *maa.Context, img image.Image, node string) float64 {
+	detail := sa.metricDetail(ctx, img, node)
+	return detail.Value
+}
+
+func (sa *ScreenAnalyzer) metricInt(ctx *maa.Context, img image.Image, node string) int {
+	detail := sa.metricDetail(ctx, img, node)
+	if detail.Int != 0 || detail.Value == 0 {
+		return detail.Int
+	}
+	return int(math.Round(detail.Value))
+}
+
+func (sa *ScreenAnalyzer) metricBool(ctx *maa.Context, img image.Image, node string) bool {
+	return sa.metricDetail(ctx, img, node).Bool
+}
+
+func (sa *ScreenAnalyzer) metricDetail(ctx *maa.Context, img image.Image, node string) analyzerMetricDetail {
+	detail, err := ctx.RunRecognition(node, img)
+	if err != nil || detail == nil || detail.DetailJson == "" {
+		return analyzerMetricDetail{}
+	}
+	var payload analyzerMetricDetail
+	if err := sonic.Unmarshal([]byte(detail.DetailJson), &payload); err != nil {
+		log.Debug().Err(err).Str("component", "ScreenAnalyzer").Str("node", node).Msg("failed to parse analyzer metric detail")
+		return analyzerMetricDetail{}
+	}
+	return payload
+}
+
 type colorRange struct {
 	rMin, rMax uint32
 	gMin, gMax uint32
 	bMin, bMax uint32
-}
-
-func scaledRect(srcW, srcH, x1, y1, x2, y2 int) maa.Rect {
-	left := int(math.Round(float64(x1) * 1280 / float64(srcW)))
-	top := int(math.Round(float64(y1) * 720 / float64(srcH)))
-	right := int(math.Round(float64(x2) * 1280 / float64(srcW)))
-	bottom := int(math.Round(float64(y2) * 720 / float64(srcH)))
-	return maa.Rect{left, top, maxInt(1, right-left), maxInt(1, bottom-top)}
 }
 
 func sampleNearWhitePct(img image.Image, box maa.Rect) float64 {

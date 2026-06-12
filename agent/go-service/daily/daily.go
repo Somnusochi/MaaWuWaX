@@ -2,42 +2,30 @@
 package daily
 
 import (
-	"fmt"
-	"image"
-	"regexp"
-	"strconv"
-	"strings"
-
 	maa "github.com/MaaXYZ/maa-framework-go/v4"
 	"github.com/bytedance/sonic"
 	"github.com/rs/zerolog/log"
 )
 
-var dailyProgressRe = regexp.MustCompile(`(\d{1,3})\s*/\s*180`)
-var dailyPointsRe = regexp.MustCompile(`\d+`)
-var lastDailyProgress = -1
-var lastDailyRewardReady = false
-
-// DailyNeedsStaminaRecognition gates stamina routing after daily progress has
-// been read from the activity book.
+// DailyNeedsStaminaRecognition gates stamina routing based on task parameters.
 type DailyNeedsStaminaRecognition struct{}
 
 var _ maa.CustomRecognitionRunner = &DailyNeedsStaminaRecognition{}
 
 func (r *DailyNeedsStaminaRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
-	if lastDailyProgress >= 180 || lastDailyRewardReady {
-		log.Info().
-			Str("component", "DailyNeedsStamina").
-			Int("daily_progress", lastDailyProgress).
-			Bool("daily_reward_ready", lastDailyRewardReady).
-			Msg("skip stamina routing")
+	// The OCR check for progress < 180 and reward points < 100 has already passed in Pipeline JSON.
+	// We only need to verify if the task actually wants to spend stamina.
+	type staminaParam struct {
+		StaminaType string `json:"stamina_type"`
+	}
+	param := staminaParam{StaminaType: "none"}
+	if arg != nil && arg.CustomRecognitionParam != "" {
+		_ = sonic.Unmarshal([]byte(arg.CustomRecognitionParam), &param)
+	}
+	if param.StaminaType == "" || param.StaminaType == "none" {
 		return nil, false
 	}
-
-	return &maa.CustomRecognitionResult{
-		Box:    maa.Rect{0, 0, 1, 1},
-		Detail: fmt.Sprintf(`{"daily_progress":%d,"reward_ready":%t,"needs_stamina":true}`, lastDailyProgress, lastDailyRewardReady),
-	}, true
+	return &maa.CustomRecognitionResult{Box: maa.Rect{0, 0, 1, 1}}, true
 }
 
 type nightmareModeParam struct {
@@ -45,7 +33,7 @@ type nightmareModeParam struct {
 	StaminaType   string `json:"stamina_type"`
 }
 
-// DailyNeedsNightmareRecognition gates optional NightmareNest routing.
+// DailyNeedsNightmareRecognition gates optional NightmareNest routing based on params.
 type DailyNeedsNightmareRecognition struct{}
 
 var _ maa.CustomRecognitionRunner = &DailyNeedsNightmareRecognition{}
@@ -68,85 +56,6 @@ func (r *DailyNeedsNightmareRecognition) Run(ctx *maa.Context, arg *maa.CustomRe
 			Msg("skip capture-mode nightmare because tacet route already covers daily echo")
 		return nil, false
 	}
-	if lastDailyProgress >= 180 || lastDailyRewardReady {
-		log.Info().
-			Str("component", "DailyNeedsNightmare").
-			Str("mode", param.NightmareMode).
-			Str("stamina_type", param.StaminaType).
-			Int("daily_progress", lastDailyProgress).
-			Bool("daily_reward_ready", lastDailyRewardReady).
-			Msg("skip nightmare routing")
-		return nil, false
-	}
 
-	return &maa.CustomRecognitionResult{
-		Box:    maa.Rect{0, 0, 1, 1},
-		Detail: fmt.Sprintf(`{"nightmare_mode":%q,"stamina_type":%q,"needs_nightmare":true}`, param.NightmareMode, param.StaminaType),
-	}, true
-}
-
-// ---------------------------------------------------------------------------
-// DailyProgressReader — OCR recognition for daily progress "/180".
-// ---------------------------------------------------------------------------
-
-type DailyProgressReader struct{}
-
-var _ maa.CustomRecognitionRunner = &DailyProgressReader{}
-
-func (r *DailyProgressReader) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
-	detail, err := ctx.RunRecognition("Daily_ProgressOCR", arg.Img)
-	if err != nil || detail == nil || !detail.Hit {
-		log.Debug().Str("component", "DailyProgress").Msg("progress not found")
-		return nil, false
-	}
-
-	progress := parseDailyProgress(detail.DetailJson)
-	if progress < 0 {
-		log.Debug().
-			Str("component", "DailyProgress").
-			Str("text", detail.DetailJson).
-			Msg("failed to parse daily progress")
-		return nil, false
-	}
-
-	lastDailyProgress = progress
-	lastDailyRewardReady = readDailyRewardReady(ctx, arg.Img)
-	log.Info().
-		Str("component", "DailyProgress").
-		Int("progress", lastDailyProgress).
-		Bool("reward_ready", lastDailyRewardReady).
-		Msg("daily progress read")
-	return &maa.CustomRecognitionResult{
-		Box:    detail.Box,
-		Detail: fmt.Sprintf(`{"progress":%d,"reward_ready":%t}`, lastDailyProgress, lastDailyRewardReady),
-	}, true
-}
-
-func parseDailyProgress(text string) int {
-	text = strings.Trim(text, `"`)
-	match := dailyProgressRe.FindStringSubmatch(text)
-	if len(match) < 2 {
-		return -1
-	}
-	progress, err := strconv.Atoi(match[1])
-	if err != nil {
-		return -1
-	}
-	return progress
-}
-
-func readDailyRewardReady(ctx *maa.Context, img image.Image) bool {
-	detail, err := ctx.RunRecognition("Daily_RewardPointsOCR", img)
-	if err != nil || detail == nil || !detail.Hit {
-		return false
-	}
-	match := dailyPointsRe.FindString(detail.DetailJson)
-	if match == "" {
-		return false
-	}
-	points, err := strconv.Atoi(match)
-	if err != nil {
-		return false
-	}
-	return points >= 100
+	return &maa.CustomRecognitionResult{Box: maa.Rect{0, 0, 1, 1}}, true
 }

@@ -6,7 +6,6 @@ import (
 )
 
 func Register() {
-	maa.AgentServerRegisterCustomRecognition("DailyProgress", &DailyProgressReader{})
 	maa.AgentServerRegisterCustomRecognition("DailyNeedsStamina", &DailyNeedsStaminaRecognition{})
 	maa.AgentServerRegisterCustomRecognition("DailyNeedsNightmare", &DailyNeedsNightmareRecognition{})
 	log.Info().Str("component", "daily").Msg("registered daily components")

@@ -208,11 +208,9 @@ type echoFarmEnterRealmParam struct {
 }
 
 type EchoFarmEnterRealmFromFAction struct{}
-type EchoFarmSelectRealmLevelAction struct{}
 type EchoFarmAfterRealmEnterAction struct{}
 
 var _ maa.CustomActionRunner = &EchoFarmEnterRealmFromFAction{}
-var _ maa.CustomActionRunner = &EchoFarmSelectRealmLevelAction{}
 var _ maa.CustomActionRunner = &EchoFarmAfterRealmEnterAction{}
 
 func (a *EchoFarmEnterRealmFromFAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
@@ -225,15 +223,6 @@ func (a *EchoFarmEnterRealmFromFAction) Run(ctx *maa.Context, arg *maa.CustomAct
 		Int("combat_wait_ms", param.CombatWaitMs).
 		Msg("prepared realm entry parameters")
 	return true
-}
-
-func (a *EchoFarmSelectRealmLevelAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	param := loadEchoFarmEnterRealmParam()
-	if arg != nil && arg.CustomActionParam != "" {
-		param = parseEchoFarmEnterRealmParam(arg)
-		saveEchoFarmEnterRealmParam(param)
-	}
-	return echoFarmSelectBossLevel(ctx, param.BossLevel)
 }
 
 func (a *EchoFarmAfterRealmEnterAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
@@ -282,31 +271,6 @@ func echoFarmInCombat(ctx *maa.Context) bool {
 func echoFarmHasFPrompt(ctx *maa.Context) bool {
 	detail, err := ctx.RunRecognition("EchoFarm_TeleportWalkFPrompt", nil)
 	return err == nil && detail != nil && detail.Hit
-}
-
-func echoFarmSelectBossLevel(ctx *maa.Context, level string) bool {
-	if level == "" {
-		level = "80"
-	}
-	detail, err := ctx.RunRecognition("EchoFarm_RealmLevelOCR", nil)
-	if err != nil || detail == nil || !detail.Hit {
-		log.Warn().Str("component", "EchoFarmEnterRealmFromF").Str("boss_level", level).Msg("boss level not found")
-		return false
-	}
-	if !strings.Contains(detail.DetailJson, level) {
-		log.Warn().
-			Str("component", "EchoFarmEnterRealmFromF").
-			Str("boss_level", level).
-			Str("detail", detail.DetailJson).
-			Msg("boss level OCR did not match")
-		return false
-	}
-	ctx.GetTasker().GetController().PostClick(
-		int32(detail.Box[0]+detail.Box[2]/2),
-		int32(detail.Box[1]+detail.Box[3]/2),
-	).Wait()
-	time.Sleep(1000 * time.Millisecond)
-	return true
 }
 
 func echoFarmAfterRealmEnter(ctx *maa.Context, param echoFarmEnterRealmParam) {

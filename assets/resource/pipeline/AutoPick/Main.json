@@ -1,43 +1,45 @@
 {
     "AutoPick_Main": {
-        "next": ["AutoPick_Detect"]
+        "next": ["AutoPick_DetectPrimary", "AutoPick_DetectFallback"]
     },
-    "AutoPick_Detect": {
+    "AutoPick_DetectPrimary": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f_hcenter_vcenter.png",
+        "threshold": 0.75,
+        "next": ["AutoPick_CheckWhite", "AutoPick_Main"],
+        "post_delay": 100
+    },
+    "AutoPick_DetectFallback": {
         "recognition": "TemplateMatch",
         "template": "pick_up_f.png",
         "threshold": 0.65,
         "roi": [300, 200, 680, 480],
-        "next": ["AutoPick_Filter", "AutoPick_Main"],
+        "next": ["AutoPick_CheckWhite", "AutoPick_Main"],
         "post_delay": 100
     },
-    "AutoPick_FPromptPrimary": {
-        "recognition": "TemplateMatch",
-        "template": "pick_up_f_hcenter_vcenter.png",
-        "threshold": 0.75
+    "AutoPick_CheckWhite": {
+        "recognition": "Custom",
+        "custom_recognition": "CheckWhitePct",
+        "next": ["AutoPick_CheckDialog"]
     },
-    "AutoPick_FPromptFallback": {
-        "recognition": "TemplateMatch",
-        "template": "pick_up_f.png",
-        "threshold": 0.65,
-        "roi": [300, 200, 680, 480]
-    },
-    "AutoPick_MessageDialog": {
+    "AutoPick_CheckDialog": {
         "recognition": "TemplateMatch",
         "template": "message_dialog.png",
-        "threshold": 0.45
+        "threshold": 0.45,
+        "next": ["AutoPick_OCR_Whitelist", "AutoPick_OCR_Blacklist"]
     },
-    "AutoPick_TextOCR": {
+    "AutoPick_OCR_Whitelist": {
         "recognition": "OCR",
-        "roi": [300, 200, 680, 100]
+        "expected": "吸收|Absorb",
+        "roi": [300, 200, 680, 100],
+        "next": ["AutoPick_Execute"]
     },
-    "AutoPick_Filter": {
-        "recognition": "Custom",
-        "custom_recognition": "PickTextFilter",
-        "custom_recognition_param": {
-            "whitelist": "吸收,Absorb",
-            "blacklist": "开始合成,领取奖励,Claim,合成台"
-        },
-        "next": ["AutoPick_Execute", "AutoPick_Main"]
+    "AutoPick_OCR_Blacklist": {
+        "recognition": "OCR",
+        "expected": "开始合成|领取奖励|Claim|合成台",
+        "roi": [300, 200, 680, 100],
+        "next": ["AutoPick_Main"],
+        "on_error": ["AutoPick_Execute"]
     },
     "AutoPick_Execute": {
         "action": "ClickKey",

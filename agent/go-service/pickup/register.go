@@ -6,6 +6,6 @@ import (
 )
 
 func Register() {
-	maa.AgentServerRegisterCustomRecognition("PickTextFilter", &PickTextFilterRecognition{})
-	log.Info().Str("component", "pickup").Msg("registered PickTextFilter")
+	maa.AgentServerRegisterCustomRecognition("CheckWhitePct", &CheckWhitePctRecognition{})
+	log.Info().Str("component", "pickup").Msg("registered CheckWhitePct")
 }

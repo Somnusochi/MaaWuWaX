@@ -76,10 +76,14 @@
         "timeout": 5000
     },
     "Daily_CheckProgress": {
-        "recognition": "Custom",
-        "custom_recognition": "DailyProgress",
-        "next": ["Daily_CheckNightmare", "Daily_SpendStamina", "Daily_ClaimRewards"],
-        "on_error": ["Daily_CheckProgressFallback"],
+        "next": ["Daily_CheckProgressOCR"]
+    },
+    "Daily_CheckProgressOCR": {
+        "recognition": "OCR",
+        "roi": [150, 100, 500, 440],
+        "expected": "^(?:[0-9]|[1-9][0-9]|1[0-7][0-9])\\s*/",
+        "next": ["Daily_CheckRewardPointsOCR"],
+        "on_error": ["Daily_ClaimRewards"],
         "timeout": 8000
     },
     "Daily_CheckProgressFallback": {
@@ -89,29 +93,27 @@
         "post_delay": 500
     },
     "Daily_CheckProgressRetry": {
-        "recognition": "Custom",
-        "custom_recognition": "DailyProgress",
-        "next": ["Daily_CheckNightmare", "Daily_SpendStamina", "Daily_ClaimRewards"],
+        "recognition": "OCR",
+        "roi": [150, 100, 500, 440],
+        "expected": "^(?:[0-9]|[1-9][0-9]|1[0-7][0-9])\\s*/",
+        "next": ["Daily_CheckRewardPointsOCR"],
         "on_error": ["Daily_ClaimMail"],
         "timeout": 8000
     },
-    "Daily_ProgressOCR": {
+    "Daily_CheckRewardPointsOCR": {
         "recognition": "OCR",
-        "roi": [150, 100, 500, 440],
-        "expected": "/180"
+        "roi": [243, 576, 141, 94],
+        "expected": "^(?:[0-9]|[1-9][0-9])$",
+        "next": ["Daily_CheckNightmareParam", "Daily_SpendStamina", "Daily_ClaimRewards"],
+        "on_error": ["Daily_ClaimRewards"]
     },
-    "Daily_RewardPointsOCR": {
-        "recognition": "OCR",
-        "roi": [243, 576, 141, 94]
-    },
-    "Daily_CheckNightmare": {
+    "Daily_CheckNightmareParam": {
         "recognition": "Custom",
         "custom_recognition": "DailyNeedsNightmare",
         "custom_recognition_param": {
             "nightmare_mode": "none"
         },
-        "next": ["Daily_RunNightmare"],
-        "on_error": ["Daily_SpendStamina"]
+        "next": ["Daily_RunNightmare"]
     },
     "Daily_RunNightmare": {
         "next": ["NightmareNest_MainCapture"]
