@@ -79,7 +79,30 @@
         "recognition": "Custom",
         "custom_recognition": "DailyProgress",
         "next": ["Daily_CheckNightmare", "Daily_SpendStamina", "Daily_ClaimRewards"],
+        "on_error": ["Daily_CheckProgressFallback"],
         "timeout": 8000
+    },
+    "Daily_CheckProgressFallback": {
+        "action": "Click",
+        "target": [1247, 432, 1, 1],
+        "next": ["Daily_CheckProgressRetry"],
+        "post_delay": 500
+    },
+    "Daily_CheckProgressRetry": {
+        "recognition": "Custom",
+        "custom_recognition": "DailyProgress",
+        "next": ["Daily_CheckNightmare", "Daily_SpendStamina", "Daily_ClaimRewards"],
+        "on_error": ["Daily_SpendStamina"],
+        "timeout": 8000
+    },
+    "Daily_ProgressOCR": {
+        "recognition": "OCR",
+        "roi": [150, 100, 500, 440],
+        "expected": "/180"
+    },
+    "Daily_RewardPointsOCR": {
+        "recognition": "OCR",
+        "roi": [243, 576, 141, 94]
     },
     "Daily_CheckNightmare": {
         "recognition": "Custom",
@@ -91,12 +114,7 @@
         "on_error": ["Daily_SpendStamina"]
     },
     "Daily_RunNightmare": {
-        "action": "Custom",
-        "custom_action": "RunNightmareNest",
-        "custom_action_param": {
-            "nightmare_mode": "capture"
-        },
-        "next": ["Daily_SpendStamina"]
+        "next": ["NightmareNest_MainCapture"]
     },
     "Daily_SpendStamina": {
         "recognition": "Custom",
@@ -108,28 +126,24 @@
         "on_error": ["Daily_ClaimRewards"]
     },
     "Daily_ClaimRewards": {
-        "action": "Custom",
-        "custom_action": "ClaimDailyRewards",
-        "next": ["Daily_ClaimMail"],
+        "next": ["Daily_RewardClaimButtonClick"],
         "post_delay": 1000
     },
     "Daily_ClaimMail": {
-        "recognition": "Custom",
-        "custom_recognition": "IsMailEnabled",
+        "recognition": "TemplateMatch",
+        "template": "red_dot.png",
+        "threshold": 0.6,
+        "roi": [810, 640, 30, 30],
         "action": "ClickKey",
         "key": 53,
         "post_delay": 1500,
         "next": ["Daily_MailClick", "Daily_BattlePass"]
     },
     "Daily_MailClick": {
-        "action": "Custom",
-        "custom_action": "ClaimMail",
-        "next": ["Daily_BattlePass"]
+        "next": ["DailyMail_Open"]
     },
     "Daily_BattlePass": {
-        "action": "Custom",
-        "custom_action": "ClaimBattlePass",
-        "next": ["Daily_Done"]
+        "next": ["DailyBattlePass_Open"]
     },
     "Daily_Done": {
         "next": []
