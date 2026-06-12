@@ -105,7 +105,10 @@
         "roi": [243, 576, 141, 94],
         "expected": "^(?:[0-9]|[1-9][0-9])$",
         "next": ["Daily_CheckNightmareParam", "Daily_SpendStamina", "Daily_ClaimRewards"],
-        "on_error": ["Daily_ClaimRewards"]
+        "on_error": ["Daily_ClaimRewardsOnError"]
+    },
+    "Daily_ClaimRewardsOnError": {
+        "next": ["Daily_ClaimRewards"]
     },
     "Daily_CheckNightmareParam": {
         "recognition": "Custom",

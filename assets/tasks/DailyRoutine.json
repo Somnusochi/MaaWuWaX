@@ -83,7 +83,7 @@
                     "name": "capture",
                     "label": "刷 1 个日常声骸",
                     "pipeline_override": {
-                        "Daily_CheckNightmare": {
+                        "Daily_CheckNightmareParam": {
                             "custom_recognition_param": {
                                 "nightmare_mode": "capture",
                                 "stamina_type": "tacet"
@@ -101,7 +101,7 @@
                     "name": "nightmare",
                     "label": "仅刷梦魇拔除",
                     "pipeline_override": {
-                        "Daily_CheckNightmare": {
+                        "Daily_CheckNightmareParam": {
                             "custom_recognition_param": {
                                 "nightmare_mode": "nightmare",
                                 "stamina_type": "tacet"
@@ -119,7 +119,7 @@
                     "name": "canxiang",
                     "label": "仅刷残像聚落",
                     "pipeline_override": {
-                        "Daily_CheckNightmare": {
+                        "Daily_CheckNightmareParam": {
                             "custom_recognition_param": {
                                 "nightmare_mode": "canxiang",
                                 "stamina_type": "tacet"
@@ -137,7 +137,7 @@
                     "name": "all",
                     "label": "全部梦魇巢穴",
                     "pipeline_override": {
-                        "Daily_CheckNightmare": {
+                        "Daily_CheckNightmareParam": {
                             "custom_recognition_param": {
                                 "nightmare_mode": "all",
                                 "stamina_type": "tacet"
@@ -169,7 +169,7 @@
                                 "stamina_type": "tacet"
                             }
                         },
-                        "Daily_CheckNightmare": {
+                        "Daily_CheckNightmareParam": {
                             "custom_recognition_param": {
                                 "stamina_type": "tacet"
                             }
@@ -194,7 +194,7 @@
                                 "stamina_type": "forgery"
                             }
                         },
-                        "Daily_CheckNightmare": {
+                        "Daily_CheckNightmareParam": {
                             "custom_recognition_param": {
                                 "stamina_type": "forgery"
                             }
@@ -219,7 +219,7 @@
                                 "stamina_type": "simulation"
                             }
                         },
-                        "Daily_CheckNightmare": {
+                        "Daily_CheckNightmareParam": {
                             "custom_recognition_param": {
                                 "stamina_type": "simulation"
                             }

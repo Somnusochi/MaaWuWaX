@@ -35,11 +35,11 @@
                 }
             ],
             "pipeline_override": {
-                "AutoPick_Filter": {
-                    "custom_recognition_param": {
-                        "whitelist": "{Whitelist}",
-                        "blacklist": "{Blacklist}"
-                    }
+                "AutoPick_OCR_Whitelist": {
+                    "expected": "{Whitelist}"
+                },
+                "AutoPick_OCR_Blacklist": {
+                    "expected": "{Blacklist}"
                 }
             }
         }
