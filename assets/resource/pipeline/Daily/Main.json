@@ -92,7 +92,7 @@
         "recognition": "Custom",
         "custom_recognition": "DailyProgress",
         "next": ["Daily_CheckNightmare", "Daily_SpendStamina", "Daily_ClaimRewards"],
-        "on_error": ["Daily_SpendStamina"],
+        "on_error": ["Daily_ClaimMail"],
         "timeout": 8000
     },
     "Daily_ProgressOCR": {
