@@ -1,0 +1,94 @@
+{
+    "Tacet_EnsureWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "Tacet_OpenBook"
+        ],
+        "post_delay": 500,
+        "on_error": [
+            "Tacet_RecoverToWorld"
+        ]
+    },
+    "Tacet_OpenBook": {
+        "action": "ClickKey",
+        "key": 120,
+        "next": [
+            "Tacet_BookOpen"
+        ],
+        "post_delay": 2000
+    },
+    "Tacet_BookOpen": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_boss.png",
+        "threshold": 0.6,
+        "next": [
+            "Tacet_SelectTab"
+        ],
+        "post_delay": 500
+    },
+    "Tacet_SelectTab": {
+        "recognition": "TemplateMatch",
+        "template": "book_wuyin.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": [
+            "Tacet_SelectTarget"
+        ],
+        "post_delay": 500
+    },
+    "Tacet_SelectTarget": {
+        "action": "DoNothing",
+        "next": [
+            "Tacet_ClickTargetTop"
+        ],
+        "post_delay": 0
+    },
+    "Tacet_ClickTargetTop": {
+        "action": "Click",
+        "target": [1195, 174, 1, 1],
+        "next": [
+            "Tacet_ClickTravel"
+        ],
+        "post_delay": 1000
+    },
+    "Tacet_ClickTargetMiddleTop": {
+        "action": "Click",
+        "target": [1195, 292, 1, 1],
+        "next": [
+            "Tacet_ClickTravel"
+        ],
+        "post_delay": 1000
+    },
+    "Tacet_ClickTargetMiddleBottom": {
+        "action": "Click",
+        "target": [1195, 410, 1, 1],
+        "next": [
+            "Tacet_ClickTravel"
+        ],
+        "post_delay": 1000
+    },
+    "Tacet_ClickTargetBottom": {
+        "action": "Click",
+        "target": [1195, 528, 1, 1],
+        "next": [
+            "Tacet_ClickTravel"
+        ],
+        "post_delay": 1000
+    },
+    "Tacet_ScrollTarget": {
+        "action": "Click",
+        "target": [1245, 265, 1, 1],
+        "next": [
+            "Tacet_ClickTargetBottom"
+        ],
+        "post_delay": 900
+    }
+}

@@ -16,7 +16,12 @@
                 "BossName",
                 "BossProfile",
                 "BossIndex",
-                "BossLevel"
+                "BossLevel",
+                "BossRepeatFarmCount",
+                "BossCombatWaitTime",
+                "BossEchoPickupMethod",
+                "BossEchoUseLiberation",
+                "BossEchoSwitchHealer"
             ]
         }
     ],
@@ -30,12 +35,22 @@
                     "name": "boss",
                     "label": "$option.BossType.cases.boss.label",
                     "pipeline_override": {
+                        "EchoFarm_PostReviveProfile": {
+                            "next": [
+                                "EchoFarm_ReviveOpenMap"
+                            ]
+                        },
+                        "EchoFarm_ReviveBackstep": {
+                            "next": [
+                                "EchoFarm_ReviveOpenBossBook"
+                            ]
+                        },
                         "EchoFarm_Main": {
                             "next": [
                                 "EchoFarm_TeleportBoss"
                             ]
                         },
-                        "EchoFarm_TeleportBoss": {
+                        "EchoFarm_SelectBossTarget": {
                             "custom_action_param": {
                                 "boss_type": "boss",
                                 "total_number": 20
@@ -52,12 +67,17 @@
                     "name": "weekly",
                     "label": "$option.BossType.cases.weekly.label",
                     "pipeline_override": {
+                        "EchoFarm_PostReviveProfile": {
+                            "next": [
+                                "EchoFarm_ReviveOpenMap"
+                            ]
+                        },
                         "EchoFarm_Main": {
                             "next": [
                                 "EchoFarm_TeleportBoss"
                             ]
                         },
-                        "EchoFarm_TeleportBoss": {
+                        "EchoFarm_SelectBossTarget": {
                             "custom_action_param": {
                                 "boss_type": "weekly",
                                 "total_number": 9
@@ -84,7 +104,7 @@
                 }
             ],
             "pipeline_override": {
-                "EchoFarm_TeleportBoss": {
+                "EchoFarm_SelectBossTarget": {
                     "custom_action_param": {
                         "boss_name": "{BossName}"
                     }
@@ -104,12 +124,22 @@
                     "name": "Fallacy",
                     "label": "$option.BossProfile.cases.Fallacy.label",
                     "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
+                        "EchoFarm_AfterRealmEnterProfile": {
+                            "next": [
+                                "EchoFarm_AfterRealmEnterFallacyWalkRight"
+                            ]
+                        },
+                        "EchoFarm_PostCombatProfile": {
+                            "next": [
+                                "EchoFarm_PostCombatFallacyReset"
+                            ]
+                        },
+                        "EchoFarm_AfterRealmEnterWaitCustom": {
                             "custom_action_param": {
-                                "boss_profile": "fallacy"
+                                "delay_seconds": 5
                             }
                         },
-                        "EchoFarm_EnterRealmFromF": {
+                        "EchoFarm_SelectBossTarget": {
                             "custom_action_param": {
                                 "boss_profile": "fallacy"
                             }
@@ -120,12 +150,17 @@
                     "name": "Fenrico",
                     "label": "$option.BossProfile.cases.Fenrico.label",
                     "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
-                            "custom_action_param": {
-                                "boss_profile": "fenrico"
-                            }
+                        "EchoFarm_AfterRealmEnterProfile": {
+                            "next": [
+                                "EchoFarm_AfterRealmEnterPromptRetryReset"
+                            ]
                         },
-                        "EchoFarm_EnterRealmFromF": {
+                        "EchoFarm_PostCombatProfile": {
+                            "next": [
+                                "EchoFarm_PostCombatFenricoReset"
+                            ]
+                        },
+                        "EchoFarm_SelectBossTarget": {
                             "custom_action_param": {
                                 "boss_profile": "fenrico"
                             }
@@ -136,15 +171,15 @@
                     "name": "Lorelei",
                     "label": "$option.BossProfile.cases.lorelei.label",
                     "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
+                        "EchoFarm_SelectBossTarget": {
                             "custom_action_param": {
                                 "boss_profile": "lorelei"
                             }
                         },
-                        "EchoFarm_EnterRealmFromF": {
-                            "custom_action_param": {
-                                "boss_profile": "lorelei"
-                            }
+                        "EchoFarm_TeleportBoss": {
+                            "next": [
+                                "EchoFarm_LoreleiOpenMenu"
+                            ]
                         }
                     }
                 },
@@ -152,12 +187,12 @@
                     "name": "LionessOfGlory",
                     "label": "$option.BossProfile.cases.lionessofglory.label",
                     "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
+                        "EchoFarm_AfterRealmEnterWaitCustom": {
                             "custom_action_param": {
-                                "boss_profile": "lioness_of_glory"
+                                "delay_seconds": 5
                             }
                         },
-                        "EchoFarm_EnterRealmFromF": {
+                        "EchoFarm_SelectBossTarget": {
                             "custom_action_param": {
                                 "boss_profile": "lioness_of_glory"
                             }
@@ -168,12 +203,17 @@
                     "name": "NamelessExplorer",
                     "label": "$option.BossProfile.cases.NamelessExplorer.label",
                     "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
-                            "custom_action_param": {
-                                "boss_profile": "nameless_explorer"
-                            }
+                        "EchoFarm_AfterRealmEnterProfile": {
+                            "next": [
+                                "EchoFarm_AfterRealmEnterNamelessWalkForward"
+                            ]
                         },
-                        "EchoFarm_EnterRealmFromF": {
+                        "EchoFarm_PostCombatProfile": {
+                            "next": [
+                                "EchoFarm_PostCombatNamelessAdvance"
+                            ]
+                        },
+                        "EchoFarm_SelectBossTarget": {
                             "custom_action_param": {
                                 "boss_profile": "nameless_explorer"
                             }
@@ -184,12 +224,13 @@
                     "name": "NightmareHecate",
                     "label": "$option.BossProfile.cases.nightmarehecate.label",
                     "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
-                            "custom_action_param": {
-                                "boss_profile": "nightmare_hecate"
-                            }
+                        "EchoFarm_WaitRealmState": {
+                            "next": [
+                                "EchoFarm_Combat",
+                                "EchoFarm_LocalStartNavigate"
+                            ]
                         },
-                        "EchoFarm_EnterRealmFromF": {
+                        "EchoFarm_SelectBossTarget": {
                             "custom_action_param": {
                                 "boss_profile": "nightmare_hecate"
                             }
@@ -200,12 +241,12 @@
                     "name": "SentryConstruct",
                     "label": "$option.BossProfile.cases.SentryConstruct.label",
                     "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
+                        "EchoFarm_AfterRealmEnterWaitCustom": {
                             "custom_action_param": {
-                                "boss_profile": "sentry_construct"
+                                "delay_seconds": 5
                             }
                         },
-                        "EchoFarm_EnterRealmFromF": {
+                        "EchoFarm_SelectBossTarget": {
                             "custom_action_param": {
                                 "boss_profile": "sentry_construct"
                             }
@@ -216,14 +257,35 @@
                     "name": "Hyvatia",
                     "label": "$option.BossProfile.cases.Hyvatia.label",
                     "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
+                        "EchoFarm_PostCombatProfile": {
+                            "next": [
+                                "EchoFarm_HyvatiaResume"
+                            ]
+                        },
+                        "EchoFarm_AfterRealmEnterWaitCustom": {
+                            "custom_action_param": {
+                                "delay_seconds": 7
+                            }
+                        },
+                        "EchoFarm_SelectBossTarget": {
                             "custom_action_param": {
                                 "boss_profile": "hyvatia"
                             }
+                        }
+                    }
+                },
+                {
+                    "name": "LadyOfTheSea",
+                    "label": "$option.BossProfile.cases.LadyOfTheSea.label",
+                    "pipeline_override": {
+                        "EchoFarm_PostCombatProfile": {
+                            "next": [
+                                "EchoFarm_HyvatiaResume"
+                            ]
                         },
-                        "EchoFarm_EnterRealmFromF": {
+                        "EchoFarm_SelectBossTarget": {
                             "custom_action_param": {
-                                "boss_profile": "hyvatia"
+                                "boss_profile": "lady_of_the_sea"
                             }
                         }
                     }
@@ -244,7 +306,7 @@
                 }
             ],
             "pipeline_override": {
-                "EchoFarm_TeleportBoss": {
+                "EchoFarm_SelectBossTarget": {
                     "custom_action_param": {
                         "serial_number": "{BossIndex}"
                     }
@@ -252,86 +314,145 @@
             }
         },
         "BossLevel": {
-            "type": "select",
+            "type": "input",
             "label": "$option.BossLevel.label",
-            "default_case": "80",
+            "inputs": [
+                {
+                    "name": "value",
+                    "default": "80",
+                    "pipeline_type": "string",
+                    "verify": "^(50|60|70|80|90)$"
+                }
+            ],
+            "pipeline_override": {
+                "EchoFarm_SelectBossTarget": {
+                    "custom_action_param": {
+                        "boss_level": "{value}"
+                    }
+                },
+                "EchoFarm_SelectRealmLevel": {
+                    "expected": "{value}"
+                }
+            }
+        },
+        "BossRepeatFarmCount": {
+            "type": "input",
+            "label": "刷多少次",
+            "inputs": [
+                {
+                    "name": "value",
+                    "default": "10000",
+                    "pipeline_type": "int",
+                    "verify": "[0-9]+"
+                }
+            ],
+            "pipeline_override": {
+                "EchoFarm_RoundGate": {
+                    "custom_recognition_param": {
+                        "counter_key": "echo_farm_round",
+                        "max_count": "{value}"
+                    }
+                }
+            }
+        },
+        "BossCombatWaitTime": {
+            "type": "input",
+            "label": "战斗开始前等待时间(秒)",
+            "inputs": [
+                {
+                    "name": "value",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "[0-9]+"
+                }
+            ],
+            "pipeline_override": {
+                "EchoFarm_AfterRealmEnterWaitCustom": {
+                    "custom_action_param": {
+                        "delay_seconds": "{value}"
+                    }
+                }
+            }
+        },
+        "BossEchoPickupMethod": {
+            "type": "select",
+            "label": "搜索声骸方法",
+            "default_case": "walk",
             "cases": [
                 {
-                    "name": "50",
-                    "label": "50 级",
+                    "name": "walk",
+                    "label": "后退再前进",
                     "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
+                        "EchoFarm_CollectMove": {
+                            "next": [
+                                "EchoFarm_CollectMoveWalkBack"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "run_in_circle",
+                    "label": "转圈奔跑",
+                    "pipeline_override": {
+                        "EchoFarm_CollectMove": {
+                            "next": [
+                                "EchoFarm_CollectMoveCircleForward"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "BossEchoUseLiberation": {
+            "type": "switch",
+            "label": "使用共鸣解放",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "EchoFarm_Fight": {
                             "custom_action_param": {
-                                "boss_level": "50"
-                            }
-                        },
-                        "EchoFarm_EnterRealmFromF": {
-                            "custom_action_param": {
-                                "boss_level": "50"
+                                "use_liberation": true
                             }
                         }
                     }
                 },
                 {
-                    "name": "60",
-                    "label": "60 级",
+                    "name": "No",
                     "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
+                        "EchoFarm_Fight": {
                             "custom_action_param": {
-                                "boss_level": "60"
+                                "use_liberation": false
                             }
-                        },
-                        "EchoFarm_EnterRealmFromF": {
+                        }
+                    }
+                }
+            ]
+        },
+        "BossEchoSwitchHealer": {
+            "type": "switch",
+            "label": "战斗结束后切换到治疗角色",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "label": "是",
+                    "pipeline_override": {
+                        "EchoFarm_Fight": {
                             "custom_action_param": {
-                                "boss_level": "60"
+                                "switch_healer": true
                             }
                         }
                     }
                 },
                 {
-                    "name": "70",
-                    "label": "70 级",
+                    "name": "No",
+                    "label": "否",
                     "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
+                        "EchoFarm_Fight": {
                             "custom_action_param": {
-                                "boss_level": "70"
-                            }
-                        },
-                        "EchoFarm_EnterRealmFromF": {
-                            "custom_action_param": {
-                                "boss_level": "70"
-                            }
-                        }
-                    }
-                },
-                {
-                    "name": "80",
-                    "label": "80 级",
-                    "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
-                            "custom_action_param": {
-                                "boss_level": "80"
-                            }
-                        },
-                        "EchoFarm_EnterRealmFromF": {
-                            "custom_action_param": {
-                                "boss_level": "80"
-                            }
-                        }
-                    }
-                },
-                {
-                    "name": "90",
-                    "label": "90 级",
-                    "pipeline_override": {
-                        "EchoFarm_TeleportBoss": {
-                            "custom_action_param": {
-                                "boss_level": "90"
-                            }
-                        },
-                        "EchoFarm_EnterRealmFromF": {
-                            "custom_action_param": {
-                                "boss_level": "90"
+                                "switch_healer": false
                             }
                         }
                     }

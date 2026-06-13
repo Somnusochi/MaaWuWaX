@@ -51,9 +51,10 @@
                 }
             ],
             "pipeline_override": {
-                "FiveToOne_LoopMerge": {
-                    "custom_action_param": {
-                        "max_rounds_per_set": "{MaxRoundsPerSet}"
+                "FiveToOne_RoundGate": {
+                    "custom_recognition_param": {
+                        "counter_key": "five_to_one_round",
+                        "max_count": "{MaxRoundsPerSet}"
                     }
                 }
             }

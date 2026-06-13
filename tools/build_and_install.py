@@ -327,6 +327,27 @@ def run_streaming_command(cmd: list[str], cwd: Path | None = None, env: dict[str
     return process.wait() == 0
 
 
+def run_streaming_command_capture(
+    cmd: list[str], cwd: Path | None = None, env: dict[str, str] | None = None
+) -> tuple[bool, str]:
+    print(f"  执行: {' '.join(cmd)}")
+    process = subprocess.Popen(
+        cmd,
+        cwd=cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+    )
+    assert process.stdout is not None
+    lines: list[str] = []
+    for line in process.stdout:
+        print(line, end="")
+        lines.append(line)
+    return process.wait() == 0, "".join(lines)
+
+
 def build_cpp_algo(
     root_dir: Path,
     install_dir: Path,
@@ -408,9 +429,18 @@ def build_cpp_algo(
             configure_cmd.append(f"-DCMAKE_OSX_ARCHITECTURES={osx_arch}")
 
         print(f"  Configure command: {' '.join(configure_cmd)}")
-        if run_streaming_command(configure_cmd, cwd=cpp_algo_dir):
+        ok_run, output = run_streaming_command_capture(configure_cmd, cwd=cpp_algo_dir)
+        if ok_run:
             configure_succeeded = True
             break
+
+        if "Does not match the generator used previously" in output:
+            fresh_cmd = configure_cmd[:1] + ["--fresh"] + configure_cmd[1:]
+            print(f"  {warn('警告')}: 检测到旧 CMake 生成器缓存，使用 --fresh 重试")
+            print(f"  Fresh configure command: {' '.join(fresh_cmd)}")
+            if run_streaming_command(fresh_cmd, cwd=cpp_algo_dir):
+                configure_succeeded = True
+                break
 
         print(f"  {warn('警告')}: preset {preset} 配置失败，尝试下一个")
 

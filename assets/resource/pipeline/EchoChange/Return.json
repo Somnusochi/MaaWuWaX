@@ -1,0 +1,17 @@
+{
+    "EchoChange_Esc": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": ["EchoChange_WaitReturn"],
+        "post_delay": 500
+    },
+    "EchoChange_WaitReturn": {
+        "recognition": "OCR",
+        "expected": "培养",
+        "roi": [1050, 620, 230, 100],
+        "next": ["EchoChange_LoopStart"],
+        "timeout": 5000,
+        "post_delay": 300,
+        "on_error": ["EchoChange_Esc"]
+    }
+}

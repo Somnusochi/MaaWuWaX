@@ -1,0 +1,159 @@
+{
+    "Rogue_FindGate": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "前往下一",
+                "roi": [50, 150, 200, 50]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "记忆区",
+                "roi": [50, 150, 200, 50]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "奇异的白猫",
+                "roi": [50, 150, 240, 60]
+            }
+        ],
+        "next": ["Rogue_GateRoute"],
+        "post_delay": 500
+    },
+    "Rogue_GateRoute": {
+        "next": [
+            "Rogue_PressF",
+            "Rogue_GateWalkLeft",
+            "Rogue_GateWalkRight",
+            "Rogue_GateWalkForward",
+            "Rogue_GateSearchReset"
+        ]
+    },
+    "Rogue_GateWalkLeft": {
+        "recognition": "Custom",
+        "custom_recognition": "RogueGatePosition",
+        "custom_recognition_param": {
+            "ocr_node": "RogueGate_OCR",
+            "queries": ["的记忆", "梦乡的", "记忆区", "前往下一", "奇异的白猫"],
+            "max_center_x": 447
+        },
+        "action": "Custom",
+        "custom_action": "DirectionWalk",
+        "custom_action_param": {
+            "direction": "left",
+            "duration_ms": 250,
+            "sprint": false
+        },
+        "next": ["Rogue_GateWalkForward"],
+        "post_delay": 100
+    },
+    "Rogue_GateWalkRight": {
+        "recognition": "Custom",
+        "custom_recognition": "RogueGatePosition",
+        "custom_recognition_param": {
+            "ocr_node": "RogueGate_OCR",
+            "queries": ["的记忆", "梦乡的", "记忆区", "前往下一", "奇异的白猫"],
+            "min_center_x": 833
+        },
+        "action": "Custom",
+        "custom_action": "DirectionWalk",
+        "custom_action_param": {
+            "direction": "right",
+            "duration_ms": 250,
+            "sprint": false
+        },
+        "next": ["Rogue_GateWalkForward"],
+        "post_delay": 100
+    },
+    "Rogue_GateWalkForward": {
+        "recognition": "Custom",
+        "custom_recognition": "RogueGatePosition",
+        "custom_recognition_param": {
+            "ocr_node": "RogueGate_OCR",
+            "queries": ["的记忆", "梦乡的", "记忆区", "前往下一", "奇异的白猫"]
+        },
+        "action": "Custom",
+        "custom_action": "DirectionWalk",
+        "custom_action_param": {
+            "direction": "forward",
+            "duration_ms": 1200,
+            "sprint": false
+        },
+        "next": ["Rogue_PressF", "Rogue_ResetIdleToFloor"],
+        "post_delay": 300
+    },
+    "Rogue_GateSearchReset": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "rogue_gate_search",
+            "value": 0
+        },
+        "next": ["Rogue_GateSearchLoop"]
+    },
+    "Rogue_GateSearchLoop": {
+        "next": [
+            "Rogue_PressF",
+            "Rogue_GateWalkLeft",
+            "Rogue_GateWalkRight",
+            "Rogue_GateWalkForward",
+            "Rogue_GateSearchCheck"
+        ]
+    },
+    "Rogue_GateSearchCheck": {
+        "recognition": "Custom",
+        "custom_recognition": "CounterCheckBelowLimit",
+        "custom_recognition_param": {
+            "counter_key": "rogue_gate_search",
+            "max_count": 4
+        },
+        "next": ["Rogue_GateSearchStrafe"],
+        "on_error": ["Rogue_GateFallbackForward"]
+    },
+    "Rogue_GateSearchStrafe": {
+        "action": "Custom",
+        "custom_action": "DirectionWalk",
+        "custom_action_param": {
+            "direction": "right",
+            "duration_ms": 300,
+            "sprint": false
+        },
+        "next": ["Rogue_GateSearchAdvance"],
+        "post_delay": 100
+    },
+    "Rogue_GateSearchAdvance": {
+        "action": "Custom",
+        "custom_action": "DirectionWalk",
+        "custom_action_param": {
+            "direction": "forward",
+            "duration_ms": 500,
+            "sprint": false
+        },
+        "next": ["Rogue_GateSearchCount"],
+        "post_delay": 300
+    },
+    "Rogue_GateSearchCount": {
+        "action": "Custom",
+        "custom_action": "CounterIncrement",
+        "custom_action_param": {
+            "counter_key": "rogue_gate_search",
+            "step": 1
+        },
+        "next": ["Rogue_GateSearchLoop"]
+    },
+    "Rogue_GateFallbackForward": {
+        "action": "Custom",
+        "custom_action": "DirectionWalk",
+        "custom_action_param": {
+            "direction": "forward",
+            "duration_ms": 2000,
+            "sprint": false
+        },
+        "next": ["Rogue_ResetIdleToFloor"]
+    },
+    "RogueGate_OCR": {
+        "recognition": "OCR",
+        "roi": [0, 0, 1280, 720]
+    }
+}

@@ -28,31 +28,16 @@
     },
     "EchoFarm_SelectBossTarget": {
         "action": "Custom",
-        "custom_action": "BossBookTargetSelect",
+        "custom_action": "BossBookRememberSelection",
+        "custom_action_param": {
+            "boss_type": "boss",
+            "serial_number": 1,
+            "total_number": 20
+        },
         "next": [
-            "EchoFarm_ClickProceed"
+            "EchoFarm_BossTargetTryPage1"
         ],
         "post_delay": 500
-    },
-    "EchoFarm_ClickProceed": {
-        "recognition": "TemplateMatch",
-        "template": "boss_proceed.png",
-        "threshold": 0.7,
-        "action": "Click",
-        "next": [
-            "EchoFarm_ClickTeleport"
-        ],
-        "post_delay": 1000
-    },
-    "EchoFarm_ClickTeleport": {
-        "recognition": "TemplateMatch",
-        "template": "gray_teleport.png",
-        "threshold": 0.7,
-        "action": "Click",
-        "next": [
-            "EchoFarm_WaitAfterTeleportWorld"
-        ],
-        "post_delay": 3000
     },
     "EchoFarm_WeeklyBossTab": {
         "action": "ClickKey",

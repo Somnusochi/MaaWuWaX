@@ -12,9 +12,17 @@
             "min_stars": 3
         },
         "next": [
-            "FarmMap_WaitWorld"
+            "FarmMap_CloseBigMap"
         ],
         "post_delay": 1000
+    },
+    "FarmMap_CloseBigMap": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": [
+            "FarmMap_WaitWorld"
+        ],
+        "post_delay": 1200
     },
     "FarmMap_WaitWorld": {
         "recognition": "TemplateMatch",
@@ -69,47 +77,6 @@
         ],
         "post_delay": 1000
     },
-    "FarmMap_Pickup": {
-        "recognition": "Or",
-        "any_of": [
-            {
-                "recognition": "TemplateMatch",
-                "template": "pick_up_f_hcenter_vcenter.png",
-                "threshold": 0.6
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "pick_up_f.png",
-                "threshold": 0.65
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "echo_orb.png",
-                "threshold": 0.6
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "treasure_icon.png",
-                "threshold": 0.6
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "absorb_zh_CN.png",
-                "threshold": 0.6
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "absorb_en_US.png",
-                "threshold": 0.6
-            }
-        ],
-        "next": [
-            "FarmMap_Collect",
-            "FarmMap_Combat",
-            "FarmMap_Walk"
-        ],
-        "post_delay": 500
-    },
     "FarmMap_Combat": {
         "recognition": "TemplateMatch",
         "template": "has_target.png",
@@ -138,7 +105,29 @@
         "custom_action_param": {
             "reach_distance": 24,
             "search_radius": 280,
-            "walk_ms": 850
+            "walk_ms": 850,
+            "stuck_steps": [
+                {
+                    "key": "SPACE",
+                    "step_ms": 80,
+                    "delay_ms": 250
+                },
+                {
+                    "key": "A",
+                    "step_ms": 700,
+                    "delay_ms": 250
+                },
+                {
+                    "key": "D",
+                    "step_ms": 700,
+                    "delay_ms": 250
+                },
+                {
+                    "key": "T",
+                    "step_ms": 80,
+                    "delay_ms": 250
+                }
+            ]
         },
         "next": [
             "FarmMap_Loop"
@@ -154,7 +143,29 @@
         "custom_action_param": {
             "reach_distance": 24,
             "search_radius": 280,
-            "walk_ms": 850
+            "walk_ms": 850,
+            "stuck_steps": [
+                {
+                    "key": "SPACE",
+                    "step_ms": 80,
+                    "delay_ms": 250
+                },
+                {
+                    "key": "A",
+                    "step_ms": 700,
+                    "delay_ms": 250
+                },
+                {
+                    "key": "D",
+                    "step_ms": 700,
+                    "delay_ms": 250
+                },
+                {
+                    "key": "T",
+                    "step_ms": 80,
+                    "delay_ms": 250
+                }
+            ]
         },
         "next": [
             "FarmMap_Loop"

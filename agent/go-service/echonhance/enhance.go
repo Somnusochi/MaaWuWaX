@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	counterpkg "github.com/MaaWuWaX/MaaWuWaX/agent/go-service/common/counter"
 	maa "github.com/MaaXYZ/maa-framework-go/v4"
 	"github.com/bytedance/sonic"
 	"github.com/rs/zerolog/log"
@@ -155,14 +156,24 @@ type EchoEnhanceAction struct {
 var _ maa.CustomActionRunner = &EchoEnhanceAction{}
 
 type echoEnhanceParam struct {
-	NeedDoubleCrit     bool     `json:"need_double_crit"`
-	DoubleCritMin      float64  `json:"double_crit_min"`
-	FirstCritMin       float64  `json:"first_crit_min"`
-	ValidStatsMin      int      `json:"valid_stats_min"`
-	FirstMustBeValid   bool     `json:"first_must_be_valid"`
-	AllValidBeforeCrit bool     `json:"all_valid_before_crit"`
-	ValidStats         []string `json:"valid_stats"`
-	PauseOnSuccess     bool     `json:"pause_on_success"`
+	NeedDoubleCrit     bool                `json:"need_double_crit"`
+	DoubleCritMin      float64             `json:"double_crit_min"`
+	FirstCritMin       float64             `json:"first_crit_min"`
+	ValidStatsMin      int                 `json:"valid_stats_min"`
+	MaxStatSlots       int                 `json:"max_stat_slots"`
+	FirstMustBeValid   bool                `json:"first_must_be_valid"`
+	AllValidBeforeCrit bool                `json:"all_valid_before_crit"`
+	ValidStats         []string            `json:"valid_stats"`
+	CritRateStat       string              `json:"crit_rate_stat"`
+	CritDmgStat        string              `json:"crit_dmg_stat"`
+	StatAliases        map[string][]string `json:"stat_aliases"`
+	TextFix            map[string]string   `json:"text_fix"`
+	StatsOCRNode       string              `json:"stats_ocr_node"`
+	KeepKey            string              `json:"keep_key"`
+	DiscardKey         string              `json:"discard_key"`
+	CaptureSuccess     bool                `json:"capture_success"`
+	CaptureFailure     bool                `json:"capture_failure"`
+	CaptureReadFail    bool                `json:"capture_read_fail"`
 }
 
 func defaultEchoEnhanceParam() echoEnhanceParam {
@@ -171,11 +182,29 @@ func defaultEchoEnhanceParam() echoEnhanceParam {
 		DoubleCritMin:      13.8,
 		FirstCritMin:       6.9,
 		ValidStatsMin:      3,
+		MaxStatSlots:       5,
 		FirstMustBeValid:   true,
 		AllValidBeforeCrit: true,
-		PauseOnSuccess:     true,
+		CritRateStat:       "暴击",
+		CritDmgStat:        "暴击伤害",
+		StatsOCRNode:       "EchoEnhance_StatsOCR",
+		KeepKey:            "C",
+		DiscardKey:         "Z",
+		CaptureSuccess:     true,
+		CaptureFailure:     true,
+		CaptureReadFail:    true,
 		ValidStats: []string{
 			"暴击", "暴击伤害", "攻击百分比",
+		},
+		StatAliases: map[string][]string{
+			"暴击":       {"暴击率"},
+			"攻击百分比":    {"攻击力百分比", "攻击%"},
+			"生命百分比":    {"生命值百分比", "生命%"},
+			"防御百分比":    {"防御力百分比", "防御%"},
+			"普攻伤害加成":   {"普攻加成"},
+			"重击伤害加成":   {"重击加成"},
+			"共鸣技能伤害加成": {"技能伤害加成"},
+			"共鸣解放伤害加成": {"解放伤害加成"},
 		},
 	}
 }
@@ -192,42 +221,40 @@ func (a *EchoEnhanceAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool
 	ctrl := ctx.GetTasker().GetController()
 
 	// Read echo stats.
-	detail, err := ctx.RunRecognition(
-		"EchoEnhance_StatsOCR",
-		nil,
-	)
+	detail, err := ctx.RunRecognition(param.StatsOCRNode, nil)
 	if err != nil || detail == nil || !detail.Hit {
 		a.failedCount++
 		log.Warn().Str("component", "EchoEnhance").Msg("failed to read echo stats, discarding")
-		a.captureEchoSnapshot(ctx, filepath.Join("failed", fmt.Sprintf("%03d_stats_read_failed.png", a.failedCount)))
+		if param.CaptureReadFail {
+			a.captureEchoSnapshot(ctx, filepath.Join("failed", fmt.Sprintf("%03d_stats_read_failed.png", a.failedCount)))
+		}
 		// Press Z (discard) directly — pipeline WaitDropped node handles the rest.
-		ctrl.PostClickKey(keycode.MustCode("Z")).Wait()
+		ctrl.PostClickKey(keycode.MustCode(param.DiscardKey)).Wait()
 		return true
 	}
 
-	stats := parseEchoStats(detail.DetailJson)
+	stats := normalizeEchoStats(parseEchoStats(detail.DetailJson), param)
 	keep, reason := evaluateEcho(stats, param)
 
 	if keep {
 		a.successCount++
-		a.captureEchoSnapshot(ctx, filepath.Join("success", fmt.Sprintf("%03d.png", a.successCount)))
+		if param.CaptureSuccess {
+			a.captureEchoSnapshot(ctx, filepath.Join("success", fmt.Sprintf("%03d.png", a.successCount)))
+		}
 		log.Info().
 			Str("component", "EchoEnhance").
 			Int("stats", len(stats)).
 			Int("success_count", a.successCount).
 			Int("failed_count", a.failedCount).
-			Bool("pause_on_success", param.PauseOnSuccess).
 			Str("result", "keep").
 			Msg("echo KEEP — locking (C key)")
 		// Press C (lock) — pipeline Esc node handles return.
-		ctrl.PostClickKey(keycode.MustCode("C")).Wait()
-		if param.PauseOnSuccess {
-			time.Sleep(500 * time.Millisecond)
-			ctx.GetTasker().PostStop().Wait()
-		}
+		ctrl.PostClickKey(keycode.MustCode(param.KeepKey)).Wait()
 	} else {
 		a.failedCount++
-		a.captureEchoSnapshot(ctx, filepath.Join("failed", fmt.Sprintf("%03d_%s.png", a.failedCount, sanitizeEchoFilename(reason))))
+		if param.CaptureFailure {
+			a.captureEchoSnapshot(ctx, filepath.Join("failed", fmt.Sprintf("%03d_%s.png", a.failedCount, sanitizeEchoFilename(reason))))
+		}
 		log.Info().
 			Str("component", "EchoEnhance").
 			Int("stats", len(stats)).
@@ -236,7 +263,7 @@ func (a *EchoEnhanceAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool
 			Str("reason", reason).
 			Msg("echo DISCARD (Z key)")
 		// Press Z (discard) — pipeline WaitDropped node handles confirmation.
-		ctrl.PostClickKey(keycode.MustCode("Z")).Wait()
+		ctrl.PostClickKey(keycode.MustCode(param.DiscardKey)).Wait()
 	}
 
 	return true
@@ -255,6 +282,9 @@ func parseEchoEnhanceParamCompat(raw string, param *echoEnhanceParam) {
 	}
 	if v, ok := readCompatInt(m, "valid_stats_min"); ok {
 		param.ValidStatsMin = v
+	}
+	if v, ok := readCompatInt(m, "max_stat_slots"); ok {
+		param.MaxStatSlots = v
 	}
 }
 
@@ -296,6 +326,18 @@ func evaluateEcho(stats []EchoStat, param echoEnhanceParam) (bool, string) {
 	if len(stats) == 0 {
 		return false, "empty_stats"
 	}
+	if param.MaxStatSlots <= 0 {
+		param.MaxStatSlots = 5
+	}
+
+	critRateStat := canonicalizeEchoEnhanceStatName(param.CritRateStat, param)
+	if critRateStat == "" {
+		critRateStat = "暴击"
+	}
+	critDmgStat := canonicalizeEchoEnhanceStatName(param.CritDmgStat, param)
+	if critDmgStat == "" {
+		critDmgStat = "暴击伤害"
+	}
 
 	totalCount := len(stats)
 	critRateVal := 0.0
@@ -308,17 +350,21 @@ func evaluateEcho(stats []EchoStat, param echoEnhanceParam) (bool, string) {
 
 	validSet := make(map[string]bool)
 	for _, s := range param.ValidStats {
-		validSet[s] = true
+		name := canonicalizeEchoEnhanceStatName(s, param)
+		if name == "" {
+			name = normalizeStatName(s)
+		}
+		validSet[name] = true
 	}
 
 	for _, stat := range stats {
 		name := stat.Name
 		val := stat.Value
-		isCritStat := name == "暴击" || name == "暴击伤害"
+		isCritStat := name == critRateStat || name == critDmgStat
 
 		// Check all-valid-before-crit rule.
 		if param.AllValidBeforeCrit &&
-			validSet["暴击"] && validSet["暴击伤害"] &&
+			validSet[critRateStat] && validSet[critDmgStat] &&
 			!hasEncounteredCrit {
 			if !isCritStat && !validSet[name] {
 				log.Debug().Str("stat", name).Msg("invalid stat before crit, discard")
@@ -334,20 +380,20 @@ func evaluateEcho(stats []EchoStat, param echoEnhanceParam) (bool, string) {
 			invalidCount++
 		}
 
-		if name == "暴击" {
+		if name == critRateStat {
 			hasCritRate = true
 			critRateVal += val
-			if validSet["暴击"] && !checkedFirstCrit {
+			if validSet[critRateStat] && !checkedFirstCrit {
 				checkedFirstCrit = true
 				if val < param.FirstCritMin {
 					log.Debug().Float64("val", val).Msg("first crit rate too low")
 					return false, "first_crit_rate_low"
 				}
 			}
-		} else if name == "暴击伤害" {
+		} else if name == critDmgStat {
 			hasCritDmg = true
 			critDmgVal += val
-			if validSet["暴击伤害"] && !checkedFirstCrit {
+			if validSet[critDmgStat] && !checkedFirstCrit {
 				checkedFirstCrit = true
 				if val/2 < param.FirstCritMin {
 					log.Debug().Float64("val", val).Msg("first crit dmg too low")
@@ -366,7 +412,7 @@ func evaluateEcho(stats []EchoStat, param echoEnhanceParam) (bool, string) {
 		if !hasCritDmg {
 			missing++
 		}
-		remaining := 5 - totalCount
+		remaining := param.MaxStatSlots - totalCount
 		if remaining < missing {
 			log.Debug().Int("missing", missing).Int("remaining", remaining).Msg("cannot get double crit")
 			return false, "cannot_complete_double_crit"
@@ -390,13 +436,59 @@ func evaluateEcho(stats []EchoStat, param echoEnhanceParam) (bool, string) {
 
 	// Valid stats count check.
 	validCount := totalCount - invalidCount
-	remainingSlots := 5 - totalCount
+	remainingSlots := param.MaxStatSlots - totalCount
 	if (validCount + remainingSlots) < param.ValidStatsMin {
 		log.Debug().Int("max_possible", validCount+remainingSlots).Msg("insufficient valid stats")
 		return false, "insufficient_valid_stats"
 	}
 
 	return true, "keep"
+}
+
+func normalizeEchoStats(stats []EchoStat, param echoEnhanceParam) []EchoStat {
+	for i := range stats {
+		stats[i].Name = canonicalizeEchoEnhanceStatName(stats[i].Name, param)
+	}
+	return stats
+}
+
+func canonicalizeEchoEnhanceStatName(name string, param echoEnhanceParam) string {
+	base := normalizeEchoEnhanceText(name, param.TextFix)
+	if base == "" {
+		return ""
+	}
+	for canonical, aliases := range param.StatAliases {
+		if textMatchesEchoEnhanceAlias(base, canonical, param.TextFix) {
+			return canonical
+		}
+		for _, alias := range aliases {
+			if textMatchesEchoEnhanceAlias(base, alias, param.TextFix) {
+				return canonical
+			}
+		}
+	}
+
+	fallback := normalizeStatName(base)
+	if fallback == "" {
+		return base
+	}
+	return fallback
+}
+
+func textMatchesEchoEnhanceAlias(text string, alias string, textFix map[string]string) bool {
+	alias = normalizeEchoEnhanceText(alias, textFix)
+	return alias != "" && strings.Contains(text, alias)
+}
+
+func normalizeEchoEnhanceText(text string, textFix map[string]string) string {
+	text = strings.TrimSpace(strings.ReplaceAll(text, " ", ""))
+	if len(textFix) == 0 {
+		return text
+	}
+	for from, to := range textFix {
+		text = strings.ReplaceAll(text, from, to)
+	}
+	return text
 }
 
 func (a *EchoEnhanceAction) captureEchoSnapshot(ctx *maa.Context, relativeName string) {
@@ -488,162 +580,17 @@ func sanitizeEchoFilename(name string) string {
 	return out
 }
 
-// ---------------------------------------------------------------------------
-// EchoChangeSelectAction — selects the target main stat for echo change.
-// ---------------------------------------------------------------------------
-
-type EchoChangeSelectAction struct{}
-
-var _ maa.CustomActionRunner = &EchoChangeSelectAction{}
-
-var echoChangeState struct {
-	successCount int
-}
-
-type echoChangeParam struct {
-	TargetStat string `json:"target_stat"`
-}
-
-type EchoChangeGuardRecognition struct{}
-
-var _ maa.CustomRecognitionRunner = &EchoChangeGuardRecognition{}
-
-func (r *EchoChangeGuardRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
-	param := echoChangeParam{TargetStat: "攻击"}
-	if arg.CustomRecognitionParam != "" {
-		if err := sonic.Unmarshal([]byte(arg.CustomRecognitionParam), &param); err != nil {
-			log.Warn().Err(err).Str("component", "EchoChangeGuard").Msg("failed to parse param")
-		}
-	}
-
-	detail, err := ctx.RunRecognition(
-		"EchoChange_CurrentMainOCR",
-		arg.Img,
-	)
-	if err != nil || detail == nil || !detail.Hit {
-		log.Warn().Str("component", "EchoChangeGuard").Msg("current main stat not found")
-		return nil, false
-	}
-
-	current := normalizeFiveToOneText(applyTextFix(detail.DetailJson))
-	target := normalizeFiveToOneText(param.TargetStat)
-	if target != "" && strings.Contains(current, target) {
-		log.Warn().
-			Str("component", "EchoChangeGuard").
-			Str("current", current).
-			Str("target", target).
-			Msg("target stat is already current stat")
-		return nil, false
-	}
-
-	payload, _ := sonic.Marshal(map[string]string{
-		"current": current,
-		"target":  target,
-	})
-	return &maa.CustomRecognitionResult{Box: detail.Box, Detail: string(payload)}, true
-}
-
-func (a *EchoChangeSelectAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	param := echoChangeParam{TargetStat: "攻击"}
-	if arg.CustomActionParam != "" {
-		if err := sonic.Unmarshal([]byte(arg.CustomActionParam), &param); err != nil {
-			log.Warn().Err(err).Str("component", "EchoChangeSelect").Msg("failed to parse param")
-		}
-	}
-
-	box, ok := a.findTargetStat(ctx, param.TargetStat)
-	if !ok {
-		log.Warn().Str("component", "EchoChangeSelect").Str("target", param.TargetStat).Msg("target stat not found")
-		return false
-	}
-
-	ctx.GetTasker().GetController().PostClick(
-		int32(box[0]+box[2]/2),
-		int32(box[1]+box[3]/2),
-	).Wait()
-
-	log.Info().
-		Str("component", "EchoChangeSelect").
-		Str("target", param.TargetStat).
-		Msg("selected target stat")
-
-	return true
-}
-
-func (a *EchoChangeSelectAction) findTargetStat(ctx *maa.Context, target string) (maa.Rect, bool) {
-	detail, err := ctx.RunRecognition(
-		"EchoChange_StatListOCR",
-		nil,
-	)
-	if err == nil && detail != nil && detail.Hit && detail.Results != nil {
-		if box, ok := findEchoChangeStatBox(detail, target); ok {
-			return box, true
-		}
-	}
-	return maa.Rect{}, false
-}
-
-func findEchoChangeStatBox(detail *maa.RecognitionDetail, target string) (maa.Rect, bool) {
-	results := detail.Results.Filtered
-	if len(results) == 0 {
-		results = detail.Results.All
-	}
-	for _, result := range results {
-		ocr, ok := result.AsOCR()
-		if !ok || ocr == nil {
-			continue
-		}
-		if echoChangeTextMatches(ocr.Text, target) {
-			return ocr.Box, true
-		}
-	}
-	return maa.Rect{}, false
-}
-
-func echoChangeTextMatches(text string, target string) bool {
-	text = applyTextFix(text)
-	text = normalizeFiveToOneText(text)
-	target = normalizeFiveToOneText(target)
-	if target == "暴击" && strings.Contains(text, "暴击伤害") {
-		return false
-	}
-	return strings.Contains(text, target)
-}
-
-type EchoChangeResetAction struct{}
-
-var _ maa.CustomActionRunner = &EchoChangeResetAction{}
-
-func (a *EchoChangeResetAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	echoChangeState.successCount = 0
-	log.Info().Str("component", "EchoChange").Msg("reset change-echo counters")
-	return true
-}
-
 type EchoChangeRecordSuccessAction struct{}
 
 var _ maa.CustomActionRunner = &EchoChangeRecordSuccessAction{}
 
 func (a *EchoChangeRecordSuccessAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	echoChangeState.successCount++
-	(&EchoEnhanceAction{}).captureEchoSnapshot(ctx, filepath.Join("change_success", fmt.Sprintf("%03d.png", echoChangeState.successCount)))
+	filename := fmt.Sprintf("%d.png", time.Now().UnixMilli())
+	(&EchoEnhanceAction{}).captureEchoSnapshot(ctx, filepath.Join("change_success", filename))
 	log.Info().
 		Str("component", "EchoChange").
-		Int("success_count", echoChangeState.successCount).
+		Str("snapshot", filename).
 		Msg("echo main stat changed")
-	return true
-}
-
-type EchoChangeSummaryAction struct{}
-
-var _ maa.CustomActionRunner = &EchoChangeSummaryAction{}
-
-func (a *EchoChangeSummaryAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	log.Info().
-		Str("component", "EchoChange").
-		Int("success_count", echoChangeState.successCount).
-		Str("snapshot_dir", filepath.Join("debug", "echo_enhance", "change_success")).
-		Msg("change-echo task finished")
 	return true
 }
 
@@ -653,24 +600,15 @@ func (a *EchoChangeSummaryAction) Run(ctx *maa.Context, arg *maa.CustomActionArg
 // ---------------------------------------------------------------------------
 
 type FiveToOnePrepareStepAction struct{}
-type FiveToOneCanContinueRoundRecognition struct{}
-type FiveToOneFirstConfirmRecognition struct{}
-type FiveToOneMarkConfirmHandledAction struct{}
-type FiveToOneRecordFusionAction struct{}
+type FiveToOneAdvanceStepAction struct{}
 type FiveToOneRecordShortageAction struct{}
-type FiveToOneSummaryAction struct{}
 
 var _ maa.CustomActionRunner = &FiveToOnePrepareStepAction{}
-var _ maa.CustomRecognitionRunner = &FiveToOneCanContinueRoundRecognition{}
-var _ maa.CustomRecognitionRunner = &FiveToOneFirstConfirmRecognition{}
-var _ maa.CustomActionRunner = &FiveToOneMarkConfirmHandledAction{}
-var _ maa.CustomActionRunner = &FiveToOneRecordFusionAction{}
+var _ maa.CustomActionRunner = &FiveToOneAdvanceStepAction{}
 var _ maa.CustomActionRunner = &FiveToOneRecordShortageAction{}
-var _ maa.CustomActionRunner = &FiveToOneSummaryAction{}
 
 var fiveToOneState struct {
 	setsProcessed int
-	fusions       int
 	shortages     int
 	initialized   bool
 	param         fiveToOneParam
@@ -678,40 +616,70 @@ var fiveToOneState struct {
 	step          int
 	currentSet    string
 	currentStep   int
-	currentRound  int
-	claimHandled  bool
 }
 
 type fiveToOneParam struct {
-	MaxRounds        int                 `json:"max_rounds"`
-	MaxRoundsPerSet  int                 `json:"max_rounds_per_set"`
 	Keep             map[string][]string `json:"keep"`
 	KeepConfig       string              `json:"keep_config"`
 	ContinueOnOCRErr bool                `json:"continue_on_ocr_error"`
+	StepOneChoiceCount int               `json:"step_one_choice_count"`
+	Sets             []string            `json:"sets"`
+	MainStats        []string            `json:"main_stats"`
+	FlatMainStats    []string            `json:"flat_main_stats"`
+	StepTwoStats     []string            `json:"step_two_stats"`
+	TextFix          map[string]string   `json:"text_fix"`
+	FilterOCRNode    string              `json:"filter_ocr_node"`
+	StatOCRNode      string              `json:"stat_ocr_node"`
+	Layout           fiveToOneLayout     `json:"layout"`
+	Timing           fiveToOneTiming     `json:"timing"`
+	ParseOK          bool                `json:"-"`
+}
+
+type fiveToOneLayout struct {
+	SelectRarity        [2]int32 `json:"select_rarity"`
+	SelectCostStep1     [2]int32 `json:"select_cost_step1"`
+	SelectMainStatLeft  [2]int32 `json:"select_main_stat_left"`
+	SelectMainStatMid   [2]int32 `json:"select_main_stat_mid"`
+	SelectMainStatRight [2]int32 `json:"select_main_stat_right"`
+	OpenSetFilter       [2]int32 `json:"open_set_filter"`
+	OpenStatFilter      [2]int32 `json:"open_stat_filter"`
+	ConfirmFilter       [2]int32 `json:"confirm_filter"`
+}
+
+type fiveToOneTiming struct {
+	SelectRarityDelayMs   int `json:"select_rarity_delay_ms"`
+	SelectCostDelayMs     int `json:"select_cost_delay_ms"`
+	SelectMainStatDelayMs int `json:"select_main_stat_delay_ms"`
+	OpenSetFilterDelayMs  int `json:"open_set_filter_delay_ms"`
+	AfterSetFilterDelayMs int `json:"after_set_filter_delay_ms"`
+	OpenStatFilterDelayMs int `json:"open_stat_filter_delay_ms"`
+	SelectStatDelayMs     int `json:"select_stat_delay_ms"`
+	ConfirmFilterDelayMs  int `json:"confirm_filter_delay_ms"`
 }
 
 func (a *FiveToOnePrepareStepAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
 	if !fiveToOneState.initialized {
 		fiveToOneState.param = parseFiveToOneParam(arg)
+		if !fiveToOneState.param.ParseOK {
+			fiveToOneState.initialized = false
+			return false
+		}
 		fiveToOneState.initialized = true
 		fiveToOneState.setIndex = 0
 		fiveToOneState.step = 1
 		fiveToOneState.currentSet = ""
 		fiveToOneState.currentStep = 0
-		fiveToOneState.currentRound = 0
-		fiveToOneState.claimHandled = false
 		fiveToOneState.setsProcessed = 0
-		fiveToOneState.fusions = 0
 		fiveToOneState.shortages = 0
 	}
 
 	param := fiveToOneState.param
-	for fiveToOneState.setIndex < len(fiveToOneSets) {
+	for fiveToOneState.setIndex < len(param.Sets) {
 		if ctx.GetTasker().Stopping() {
 			return false
 		}
 
-		setName := fiveToOneSets[fiveToOneState.setIndex]
+		setName := param.Sets[fiveToOneState.setIndex]
 		step := fiveToOneState.step
 		if !a.stepNeedsProcessing(setName, step, param) {
 			advanceFiveToOneStep()
@@ -727,7 +695,6 @@ func (a *FiveToOnePrepareStepAction) Run(ctx *maa.Context, arg *maa.CustomAction
 
 		fiveToOneState.currentSet = setName
 		fiveToOneState.currentStep = step
-		fiveToOneState.currentRound = 0
 		return true
 	}
 
@@ -737,10 +704,12 @@ func (a *FiveToOnePrepareStepAction) Run(ctx *maa.Context, arg *maa.CustomAction
 }
 
 func parseFiveToOneParam(arg *maa.CustomActionArg) fiveToOneParam {
-	param := fiveToOneParam{MaxRounds: 20, MaxRoundsPerSet: 20}
+	param := fiveToOneParam{ParseOK: true}
 	if arg != nil && arg.CustomActionParam != "" {
 		if err := sonic.Unmarshal([]byte(arg.CustomActionParam), &param); err != nil {
-			log.Warn().Err(err).Str("component", "FiveToOnePrepareStep").Msg("failed to parse param")
+			log.Error().Err(err).Str("component", "FiveToOnePrepareStep").Msg("failed to parse param")
+			param.ParseOK = false
+			return param
 		}
 	}
 	if param.Keep == nil {
@@ -749,33 +718,129 @@ func parseFiveToOneParam(arg *maa.CustomActionArg) fiveToOneParam {
 	if param.KeepConfig != "" {
 		var keep map[string][]string
 		if err := sonic.Unmarshal([]byte(param.KeepConfig), &keep); err != nil {
-			log.Warn().Err(err).Str("component", "FiveToOnePrepareStep").Msg("failed to parse keep_config")
+			log.Error().Err(err).Str("component", "FiveToOnePrepareStep").Msg("failed to parse keep_config")
+			param.ParseOK = false
+			return param
 		} else {
 			param.Keep = keep
 		}
 	}
-	if param.MaxRoundsPerSet <= 0 {
-		param.MaxRoundsPerSet = param.MaxRounds
+	param.Sets = normalizeFiveToOneStringList(param.Sets, defaultFiveToOneSets)
+	param.MainStats = normalizeFiveToOneStringList(param.MainStats, defaultFiveToOneMainStats)
+	param.FlatMainStats = normalizeFiveToOneStringList(param.FlatMainStats, defaultFiveToOneFlatMainStats)
+	param.StepTwoStats = normalizeFiveToOneStringList(param.StepTwoStats, defaultFiveToOneStepTwoStats)
+	param.TextFix = normalizeFiveToOneTextFix(param.TextFix)
+	if param.FilterOCRNode == "" {
+		param.FilterOCRNode = "FiveToOne_ClickOCR"
 	}
-	if param.MaxRoundsPerSet <= 0 {
-		param.MaxRoundsPerSet = 20
+	if param.StatOCRNode == "" {
+		param.StatOCRNode = "FiveToOne_StatOCR"
 	}
+	if param.StepOneChoiceCount <= 0 {
+		param.StepOneChoiceCount = 16
+	}
+	param.Layout = normalizeFiveToOneLayout(param.Layout)
+	param.Timing = normalizeFiveToOneTiming(param.Timing)
 	return param
+}
+
+func normalizeFiveToOneStringList(values []string, fallback []string) []string {
+	if len(values) == 0 {
+		return append([]string(nil), fallback...)
+	}
+	out := make([]string, 0, len(values))
+	for _, value := range values {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			continue
+		}
+		out = append(out, value)
+	}
+	if len(out) == 0 {
+		return append([]string(nil), fallback...)
+	}
+	return out
+}
+
+func normalizeFiveToOneTextFix(values map[string]string) map[string]string {
+	out := make(map[string]string, len(defaultFiveToOneTextFix))
+	for from, to := range defaultFiveToOneTextFix {
+		out[from] = to
+	}
+	for from, to := range values {
+		from = strings.TrimSpace(from)
+		to = strings.TrimSpace(to)
+		if from == "" || to == "" {
+			continue
+		}
+		out[from] = to
+	}
+	return out
+}
+
+func normalizeFiveToOneLayout(layout fiveToOneLayout) fiveToOneLayout {
+	if layout.SelectRarity == [2]int32{} {
+		layout.SelectRarity = [2]int32{51, 655}
+	}
+	if layout.SelectCostStep1 == [2]int32{} {
+		layout.SelectCostStep1 = [2]int32{794, 590}
+	}
+	if layout.SelectMainStatLeft == [2]int32{} {
+		layout.SelectMainStatLeft = [2]int32{256, 511}
+	}
+	if layout.SelectMainStatMid == [2]int32{} {
+		layout.SelectMainStatMid = [2]int32{602, 511}
+	}
+	if layout.SelectMainStatRight == [2]int32{} {
+		layout.SelectMainStatRight = [2]int32{909, 511}
+	}
+	if layout.OpenSetFilter == [2]int32{} {
+		layout.OpenSetFilter = [2]int32{1146, 396}
+	}
+	if layout.OpenStatFilter == [2]int32{} {
+		layout.OpenStatFilter = [2]int32{1146, 533}
+	}
+	if layout.ConfirmFilter == [2]int32{} {
+		layout.ConfirmFilter = [2]int32{1037, 605}
+	}
+	return layout
+}
+
+func normalizeFiveToOneTiming(timing fiveToOneTiming) fiveToOneTiming {
+	if timing.SelectRarityDelayMs <= 0 {
+		timing.SelectRarityDelayMs = 300
+	}
+	if timing.SelectCostDelayMs <= 0 {
+		timing.SelectCostDelayMs = 80
+	}
+	if timing.SelectMainStatDelayMs <= 0 {
+		timing.SelectMainStatDelayMs = 80
+	}
+	if timing.OpenSetFilterDelayMs <= 0 {
+		timing.OpenSetFilterDelayMs = 500
+	}
+	if timing.AfterSetFilterDelayMs <= 0 {
+		timing.AfterSetFilterDelayMs = 250
+	}
+	if timing.OpenStatFilterDelayMs <= 0 {
+		timing.OpenStatFilterDelayMs = 500
+	}
+	if timing.SelectStatDelayMs <= 0 {
+		timing.SelectStatDelayMs = 60
+	}
+	if timing.ConfirmFilterDelayMs <= 0 {
+		timing.ConfirmFilterDelayMs = 500
+	}
+	return timing
 }
 
 func (a *FiveToOnePrepareStepAction) stepNeedsProcessing(setName string, step int, param fiveToOneParam) bool {
 	keeps := param.Keep[setName]
-	if len(keeps) >= len(fiveToOneMainStats) {
+	if len(keeps) >= len(param.MainStats) {
 		log.Info().Str("component", "FiveToOnePrepareStep").Str("set", setName).Msg("all main stats kept, skipping")
 		return false
 	}
-	return step != 2 || containsAny(keeps, "攻击力百分比")
-}
-
-func (a *FiveToOneSummaryAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	logFiveToOneSummary()
-	fiveToOneState.initialized = false
-	return true
+	return step != 2 || containsAnyValue(keeps, param.StepTwoStats)
 }
 
 func logFiveToOneSummary() {
@@ -786,24 +851,25 @@ func logFiveToOneSummary() {
 	log.Info().
 		Str("component", "FiveToOneSummary").
 		Int("sets_processed", fiveToOneState.setsProcessed).
-		Int("fusions", fiveToOneState.fusions).
 		Int("shortages", fiveToOneState.shortages).
 		Msg("all configured sets processed")
 }
 
-var fiveToOneSets = []string{
+var defaultFiveToOneSets = []string{
 	"凝夜白霜", "熔山裂谷", "彻空冥雷", "啸谷长风", "浮星祛暗", "沉日劫明", "隐世回光", "轻云出月", "不绝余音",
 	"凌冽决断之心", "此间永驻之光", "幽夜隐匿之帷", "高天共奏之曲", "无惧浪涛之勇", "流云逝尽之空", "愿戴荣光之旅", "奔狼燎原之焰",
 }
 
-var fiveToOneMainStats = []string{
+var defaultFiveToOneMainStats = []string{
 	"攻击力百分比", "生命值百分比", "防御力百分比", "暴击率", "暴击伤害", "共鸣效率",
 	"冷凝伤害加成", "热熔伤害加成", "导电伤害加成", "气动伤害加成", "衍射伤害加成", "湮灭伤害加成", "治疗效果加成",
 }
 
-var fiveToOneFlatMainStats = []string{"主属性生命值", "主属性攻击力", "主属性防御力"}
+var defaultFiveToOneFlatMainStats = []string{"主属性生命值", "主属性攻击力", "主属性防御力"}
 
-var fiveToOneTextFix = map[string]string{
+var defaultFiveToOneStepTwoStats = []string{"攻击力百分比"}
+
+var defaultFiveToOneTextFix = map[string]string{
 	"凝夜自霜":      "凝夜白霜",
 	"主属性灭伤害加成":  "主属性湮灭伤害加成",
 	"灭伤害加成":     "主属性湮灭伤害加成",
@@ -812,6 +878,8 @@ var fiveToOneTextFix = map[string]string{
 
 func (a *FiveToOnePrepareStepAction) prepareFilters(ctx *maa.Context, setName string, step int, param fiveToOneParam) bool {
 	keeps := param.Keep[setName]
+	layout := param.Layout
+	timing := param.Timing
 	log.Info().
 		Str("component", "FiveToOnePrepareStep").
 		Str("set", setName).
@@ -820,36 +888,46 @@ func (a *FiveToOnePrepareStepAction) prepareFilters(ctx *maa.Context, setName st
 		Msg("processing set")
 
 	ctrl := ctx.GetTasker().GetController()
-	ctrl.PostClick(51, 655).Wait()
-	time.Sleep(300 * time.Millisecond)
+	ctrl.PostClick(layout.SelectRarity[0], layout.SelectRarity[1]).Wait()
+	time.Sleep(time.Duration(timing.SelectRarityDelayMs) * time.Millisecond)
 	if step == 1 {
-		ctrl.PostClick(794, 590).Wait()
-		time.Sleep(80 * time.Millisecond)
+		ctrl.PostClick(layout.SelectCostStep1[0], layout.SelectCostStep1[1]).Wait()
+		time.Sleep(time.Duration(timing.SelectCostDelayMs) * time.Millisecond)
 	}
-	ctrl.PostClick(256, 511).Wait()
-	time.Sleep(80 * time.Millisecond)
-	ctrl.PostClick(602, 511).Wait()
-	time.Sleep(80 * time.Millisecond)
+	ctrl.PostClick(layout.SelectMainStatLeft[0], layout.SelectMainStatLeft[1]).Wait()
+	time.Sleep(time.Duration(timing.SelectMainStatDelayMs) * time.Millisecond)
+	ctrl.PostClick(layout.SelectMainStatMid[0], layout.SelectMainStatMid[1]).Wait()
+	time.Sleep(time.Duration(timing.SelectMainStatDelayMs) * time.Millisecond)
 	if step == 1 {
-		ctrl.PostClick(909, 511).Wait()
-		time.Sleep(80 * time.Millisecond)
+		ctrl.PostClick(layout.SelectMainStatRight[0], layout.SelectMainStatRight[1]).Wait()
+		time.Sleep(time.Duration(timing.SelectMainStatDelayMs) * time.Millisecond)
 	}
 
 	if step == 1 {
-		ctrl.PostClick(1146, 396).Wait()
-		time.Sleep(500 * time.Millisecond)
-		if !a.clickOCR(ctx, setName, maa.Rect{141, 137, 972, 403}) {
+		ctrl.PostClick(layout.OpenSetFilter[0], layout.OpenSetFilter[1]).Wait()
+		time.Sleep(time.Duration(timing.OpenSetFilterDelayMs) * time.Millisecond)
+		if !a.clickOCR(ctx, setName) {
 			log.Warn().Str("component", "FiveToOnePrepareStep").Str("set", setName).Msg("set filter not found")
 			return false
 		}
-		time.Sleep(250 * time.Millisecond)
+		time.Sleep(time.Duration(timing.AfterSetFilterDelayMs) * time.Millisecond)
 	}
 
-	ctrl.PostClick(1146, 533).Wait()
-	time.Sleep(500 * time.Millisecond)
+	ctrl.PostClick(layout.OpenStatFilter[0], layout.OpenStatFilter[1]).Wait()
+	time.Sleep(time.Duration(timing.OpenStatFilterDelayMs) * time.Millisecond)
 	choices := a.ocrStatChoices(ctx)
 	if len(choices) == 0 {
 		log.Warn().Str("component", "FiveToOnePrepareStep").Str("set", setName).Int("step", step).Msg("stat OCR failed")
+		return false
+	}
+	if step == 1 && len(choices) != param.StepOneChoiceCount {
+		log.Warn().
+			Str("component", "FiveToOnePrepareStep").
+			Str("set", setName).
+			Int("step", step).
+			Int("expected_choices", param.StepOneChoiceCount).
+			Int("actual_choices", len(choices)).
+			Msg("stat OCR incomplete, aborting to avoid wrong fusion")
 		return false
 	}
 
@@ -865,12 +943,12 @@ func (a *FiveToOnePrepareStepAction) prepareFilters(ctx *maa.Context, setName st
 			if containsAny(keeps, normalizeFiveToOneText(choice.Text)) {
 				continue
 			}
-		} else if !strings.Contains(normalizeFiveToOneText(choice.Text), "攻击力百分比") {
+		} else if !containsAny(param.StepTwoStats, normalizeFiveToOneText(choice.Text)) {
 			continue
 		}
 		ctrl.PostClick(int32(choice.Box[0]+choice.Box[2]/2), int32(choice.Box[1]+choice.Box[3]/2)).Wait()
 		clicked++
-		time.Sleep(60 * time.Millisecond)
+		time.Sleep(time.Duration(timing.SelectStatDelayMs) * time.Millisecond)
 	}
 
 	log.Info().
@@ -880,8 +958,8 @@ func (a *FiveToOnePrepareStepAction) prepareFilters(ctx *maa.Context, setName st
 		Int("clicked_filters", clicked).
 		Msg("selected merge filters")
 
-	ctrl.PostClick(1037, 605).Wait()
-	time.Sleep(500 * time.Millisecond)
+	ctrl.PostClick(layout.ConfirmFilter[0], layout.ConfirmFilter[1]).Wait()
+	time.Sleep(time.Duration(timing.ConfirmFilterDelayMs) * time.Millisecond)
 	return true
 }
 
@@ -890,59 +968,16 @@ type fiveToOneChoice struct {
 	Box  maa.Rect
 }
 
-func (r *FiveToOneCanContinueRoundRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
-	if !fiveToOneState.initialized || fiveToOneState.currentSet == "" {
-		return nil, false
-	}
-	maxRounds := fiveToOneState.param.MaxRoundsPerSet
-	if maxRounds <= 0 {
-		maxRounds = 20
-	}
-	if fiveToOneState.currentRound >= maxRounds {
-		log.Info().
-			Str("component", "FiveToOneCanContinueRound").
-			Str("set", fiveToOneState.currentSet).
-			Int("step", fiveToOneState.currentStep).
-			Int("rounds", maxRounds).
-			Msg("max rounds reached")
-		advanceFiveToOneStep()
-		return nil, false
-	}
-	return &maa.CustomRecognitionResult{
-		Box:    maa.Rect{0, 0, 1, 1},
-		Detail: `{"can_continue":true}`,
-	}, true
-}
+const fiveToOneRoundCounterKey = "five_to_one_round"
 
-func (r *FiveToOneFirstConfirmRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
-	if fiveToOneState.claimHandled {
-		return nil, false
-	}
-	detail, err := ctx.RunRecognition("FiveToOne_ConfirmOCR", arg.Img)
-	if err != nil || detail == nil || !detail.Hit {
-		return nil, false
-	}
-	return &maa.CustomRecognitionResult{
-		Box:    detail.Box,
-		Detail: `{"first_confirm":true}`,
-	}, true
-}
-
-func (a *FiveToOneMarkConfirmHandledAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	fiveToOneState.claimHandled = true
-	return true
-}
-
-func (a *FiveToOneRecordFusionAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	fiveToOneState.fusions++
-	fiveToOneState.currentRound++
+func (a *FiveToOneAdvanceStepAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
 	log.Info().
-		Str("component", "FiveToOneRecordFusion").
+		Str("component", "FiveToOneAdvanceStep").
 		Str("set", fiveToOneState.currentSet).
 		Int("step", fiveToOneState.currentStep).
-		Int("round", fiveToOneState.currentRound).
-		Int("fusions", fiveToOneState.fusions).
-		Msg("fusion recorded")
+		Int("round", counterpkg.Peek(fiveToOneRoundCounterKey)).
+		Msg("advancing to next step after round limit")
+	advanceFiveToOneStep()
 	return true
 }
 
@@ -952,8 +987,7 @@ func (a *FiveToOneRecordShortageAction) Run(ctx *maa.Context, arg *maa.CustomAct
 		Str("component", "FiveToOneRecordShortage").
 		Str("set", fiveToOneState.currentSet).
 		Int("step", fiveToOneState.currentStep).
-		Int("round", fiveToOneState.currentRound).
-		Int("fusions", fiveToOneState.fusions).
+		Int("round", counterpkg.Peek(fiveToOneRoundCounterKey)).
 		Int("shortages", fiveToOneState.shortages).
 		Msg("not enough echoes")
 	advanceFiveToOneStep()
@@ -963,7 +997,6 @@ func (a *FiveToOneRecordShortageAction) Run(ctx *maa.Context, arg *maa.CustomAct
 func advanceFiveToOneStep() {
 	fiveToOneState.currentSet = ""
 	fiveToOneState.currentStep = 0
-	fiveToOneState.currentRound = 0
 	if fiveToOneState.step == 1 {
 		fiveToOneState.step = 2
 		return
@@ -973,8 +1006,8 @@ func advanceFiveToOneStep() {
 	fiveToOneState.setsProcessed = fiveToOneState.setIndex
 }
 
-func (a *FiveToOnePrepareStepAction) clickOCR(ctx *maa.Context, text string, roi maa.Rect) bool {
-	detail, err := ctx.RunRecognition("FiveToOne_ClickOCR", nil)
+func (a *FiveToOnePrepareStepAction) clickOCR(ctx *maa.Context, text string) bool {
+	detail, err := ctx.RunRecognition(fiveToOneState.param.FilterOCRNode, nil)
 	if err != nil || detail == nil || !detail.Hit || detail.Results == nil {
 		return false
 	}
@@ -990,7 +1023,7 @@ func (a *FiveToOnePrepareStepAction) clickOCR(ctx *maa.Context, text string, roi
 }
 
 func (a *FiveToOnePrepareStepAction) ocrStatChoices(ctx *maa.Context) []fiveToOneChoice {
-	detail, err := ctx.RunRecognition("FiveToOne_StatOCR", nil)
+	detail, err := ctx.RunRecognition(fiveToOneState.param.StatOCRNode, nil)
 	if err != nil || detail == nil || !detail.Hit || detail.Results == nil {
 		return nil
 	}
@@ -1037,7 +1070,11 @@ func findFiveToOneOCRBox(detail *maa.RecognitionDetail, text string) (maa.Rect, 
 
 func normalizeFiveToOneText(text string) string {
 	text = strings.TrimSpace(strings.ReplaceAll(text, " ", ""))
-	for from, to := range fiveToOneTextFix {
+	textFix := fiveToOneState.param.TextFix
+	if len(textFix) == 0 {
+		textFix = defaultFiveToOneTextFix
+	}
+	for from, to := range textFix {
 		text = strings.ReplaceAll(text, from, to)
 	}
 	return text
@@ -1053,9 +1090,22 @@ func containsAny(values []string, text string) bool {
 	return false
 }
 
+func containsAnyValue(values []string, targets []string) bool {
+	for _, value := range values {
+		if containsAny(targets, value) {
+			return true
+		}
+	}
+	return false
+}
+
 func isFiveToOneMainStat(text string) bool {
 	text = normalizeFiveToOneText(text)
-	for _, stat := range fiveToOneMainStats {
+	mainStats := fiveToOneState.param.MainStats
+	if len(mainStats) == 0 {
+		mainStats = defaultFiveToOneMainStats
+	}
+	for _, stat := range mainStats {
 		if strings.Contains(text, "主属性"+stat) || strings.Contains(text, stat) {
 			return true
 		}
@@ -1065,7 +1115,11 @@ func isFiveToOneMainStat(text string) bool {
 
 func isFiveToOneFlatStat(text string) bool {
 	text = normalizeFiveToOneText(text)
-	for _, stat := range fiveToOneFlatMainStats {
+	flatMainStats := fiveToOneState.param.FlatMainStats
+	if len(flatMainStats) == 0 {
+		flatMainStats = defaultFiveToOneFlatMainStats
+	}
+	for _, stat := range flatMainStats {
 		if strings.Contains(text, stat) && !strings.Contains(text, "百分比") {
 			return true
 		}
@@ -1078,32 +1132,4 @@ func isFiveToOneFlatStat(text string) bool {
 func checkLanguageSupport(component string, allowed ...string) bool {
 	log.Debug().Str("component", component).Strs("allowed", allowed).Msg("language guard: assuming zh_CN")
 	return true
-}
-
-// ── OCR text correction mapping (ok-ww: text_fix for ChangeEcho main stat) ──
-
-var textFixMap = map[string]string{
-	"凝夜自霜": "凝夜白霜",
-	"熔山裂合": "熔山裂谷",
-	"彻空真雷": "彻空冥雷",
-	"凌冽决断": "凌冽决断之心",
-	"此间永驻": "此间永驻之光",
-	"幽夜隐匿": "幽夜隐匿之帷",
-	"高天共奏": "高天共奏之曲",
-	"无惧浪涛": "无惧浪涛之勇",
-	"流云逝尽": "流云逝尽之空",
-	"愿戴荣光": "愿戴荣光之旅",
-	"奔狼燎原": "奔狼燎原之焰",
-}
-
-func applyTextFix(text string) string {
-	if fixed, ok := textFixMap[text]; ok {
-		return fixed
-	}
-	for wrong, correct := range textFixMap {
-		if strings.HasPrefix(text, wrong) || strings.HasPrefix(wrong, text) {
-			return correct
-		}
-	}
-	return text
 }

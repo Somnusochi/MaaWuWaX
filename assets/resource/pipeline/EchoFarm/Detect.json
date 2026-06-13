@@ -1,8 +1,9 @@
 {
-    "EchoFarm_EchoOrbDetect": {
+    "EchoFarm_BossCheckMinimap": {
         "recognition": "TemplateMatch",
-        "template": "echo_orb.png",
-        "threshold": 0.5
+        "template": "boss_check_mark_minimap.png",
+        "threshold": 0.5,
+        "roi": [1050, 20, 200, 160]
     },
     "EchoFarm_TeleportWalkCombat": {
         "recognition": "TemplateMatch",
@@ -32,6 +33,11 @@
                 "expected": "Challenge"
             }
         ]
+    },
+    "EchoFarm_TeleportWalkTreasure": {
+        "recognition": "TemplateMatch",
+        "template": "treasure_icon.png",
+        "threshold": 0.6
     },
     "EchoFarm_RealmLevelOCR": {
         "recognition": "OCR",

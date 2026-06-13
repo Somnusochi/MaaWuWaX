@@ -6,23 +6,56 @@
         "next": ["DailyBattlePass_FindTab"]
     },
     "DailyBattlePass_FindTab": {
-        "recognition": "OCR",
-        "expected": "先约电台",
-        "roi": [0, 0, 400, 720],
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "先约电台",
+                "roi": [0, 0, 400, 720]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Battle Pass",
+                "roi": [0, 0, 400, 720]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Pioneer Podcast",
+                "roi": [0, 0, 400, 720]
+            }
+        ],
         "action": "Click",
         "next": ["DailyBattlePass_Claim"],
         "post_delay": 1000
     },
     "DailyBattlePass_Claim": {
-        "recognition": "OCR",
-        "expected": "领取",
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "领取"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Claim"
+            }
+        ],
         "action": "Click",
         "next": ["DailyBattlePass_ClaimMore", "DailyBattlePass_Close"],
         "post_delay": 800
     },
     "DailyBattlePass_ClaimMore": {
-        "recognition": "OCR",
-        "expected": "领取",
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "领取"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Claim"
+            }
+        ],
         "action": "Click",
         "next": ["DailyBattlePass_Close"],
         "post_delay": 800

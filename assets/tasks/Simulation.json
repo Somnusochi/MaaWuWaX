@@ -27,9 +27,7 @@
                     "label": "$option.MaterialSelection.cases.resonator_exp.label",
                     "pipeline_override": {
                         "Simulation_SelectMaterial": {
-                            "custom_action_param": {
-                                "material": "resonator_exp"
-                            }
+                            "target": [282, 122, 1, 1]
                         }
                     }
                 },
@@ -38,9 +36,7 @@
                     "label": "$option.MaterialSelection.cases.weapon_exp.label",
                     "pipeline_override": {
                         "Simulation_SelectMaterial": {
-                            "custom_action_param": {
-                                "material": "weapon_exp"
-                            }
+                            "target": [282, 180, 1, 1]
                         }
                     }
                 },
@@ -49,9 +45,7 @@
                     "label": "$option.MaterialSelection.cases.shell_credit.label",
                     "pipeline_override": {
                         "Simulation_SelectMaterial": {
-                            "custom_action_param": {
-                                "material": "shell_credit"
-                            }
+                            "target": [282, 238, 1, 1]
                         }
                     }
                 }

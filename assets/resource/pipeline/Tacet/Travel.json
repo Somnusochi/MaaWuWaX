@@ -1,0 +1,67 @@
+{
+    "Tacet_ClickTravel": {
+        "recognition": "TemplateMatch",
+        "template": "gray_teleport.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": [
+            "Tacet_WaitLoad"
+        ],
+        "post_delay": 3000
+    },
+    "Tacet_WaitLoad": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "Tacet_WalkToDomain"
+        ],
+        "timeout": 30000,
+        "post_delay": 1000,
+        "on_error": [
+            "Tacet_RecoverToWorld"
+        ]
+    },
+    "Tacet_WalkToDomain": {
+        "action": "ClickKey",
+        "key": 13,
+        "next": [
+            "Tacet_EnterDomain"
+        ],
+        "post_delay": 5000
+    },
+    "Tacet_EnterDomain": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "gray_start_battle.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "gray_button_challenge.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "OCR",
+                "expected": "挑战"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge"
+            }
+        ],
+        "action": "Click",
+        "next": [
+            "Tacet_Fight"
+        ],
+        "post_delay": 3000
+    }
+}

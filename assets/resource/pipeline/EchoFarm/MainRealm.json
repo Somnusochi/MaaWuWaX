@@ -1,0 +1,10 @@
+{
+    "EchoFarm_EnterRealmFromF": {
+        "next": [
+            "EchoFarm_CheckRealmFPrompt"
+        ],
+        "on_error": [
+            "EchoFarm_NextRound"
+        ]
+    }
+}

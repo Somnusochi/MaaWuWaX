@@ -83,7 +83,7 @@
         "roi": [150, 100, 500, 440],
         "expected": "^(?:[0-9]|[1-9][0-9]|1[0-7][0-9])\\s*/",
         "next": ["Daily_CheckRewardPointsOCR"],
-        "on_error": ["Daily_ClaimRewards"],
+        "on_error": ["Daily_CheckProgressFallback"],
         "timeout": 8000
     },
     "Daily_CheckProgressFallback": {
@@ -97,25 +97,48 @@
         "roi": [150, 100, 500, 440],
         "expected": "^(?:[0-9]|[1-9][0-9]|1[0-7][0-9])\\s*/",
         "next": ["Daily_CheckRewardPointsOCR"],
-        "on_error": ["Daily_ClaimMail"],
+        "on_error": ["Daily_CheckRewardPointsFallback"],
         "timeout": 8000
+    },
+    "Daily_CheckRewardPointsFallback": {
+        "next": ["Daily_CheckRewardPointsOCR"]
     },
     "Daily_CheckRewardPointsOCR": {
         "recognition": "OCR",
         "roi": [243, 576, 141, 94],
         "expected": "^(?:[0-9]|[1-9][0-9])$",
-        "next": ["Daily_CheckNightmareParam", "Daily_SpendStamina", "Daily_ClaimRewards"],
+        "next": ["Daily_CheckNightmareExplicit", "Daily_CheckNightmareCapture", "Daily_SpendStamina", "Daily_ClaimRewards"],
         "on_error": ["Daily_ClaimRewardsOnError"]
+    },
+    "Daily_ProgressRawOCR": {
+        "recognition": "OCR",
+        "roi": [150, 100, 500, 440]
+    },
+    "Daily_PointsRawOCR": {
+        "recognition": "OCR",
+        "roi": [243, 576, 141, 94]
     },
     "Daily_ClaimRewardsOnError": {
         "next": ["Daily_ClaimRewards"]
     },
-    "Daily_CheckNightmareParam": {
+    "Daily_CheckNightmareExplicit": {
         "recognition": "Custom",
-        "custom_recognition": "DailyNeedsNightmare",
+        "custom_recognition": "DailyNeedNightmare",
         "custom_recognition_param": {
-            "nightmare_mode": "none"
+            "mode": "explicit",
+            "stamina_type": "tacet"
         },
+        "enabled": false,
+        "next": ["Daily_RunNightmare"]
+    },
+    "Daily_CheckNightmareCapture": {
+        "recognition": "Custom",
+        "custom_recognition": "DailyNeedNightmare",
+        "custom_recognition_param": {
+            "mode": "capture",
+            "stamina_type": "tacet"
+        },
+        "enabled": false,
         "next": ["Daily_RunNightmare"]
     },
     "Daily_RunNightmare": {
@@ -123,10 +146,8 @@
     },
     "Daily_SpendStamina": {
         "recognition": "Custom",
-        "custom_recognition": "DailyNeedsStamina",
-        "custom_recognition_param": {
-            "stamina_type": "tacet"
-        },
+        "custom_recognition": "DailyNeedStamina",
+        "enabled": true,
         "next": ["Daily_Stamina_Check"],
         "on_error": ["Daily_ClaimRewards"]
     },

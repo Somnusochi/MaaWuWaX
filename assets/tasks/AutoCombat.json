@@ -31,7 +31,17 @@
                     "pipeline_override": {
                         "Combat_Engage": {
                             "custom_action_param": {
-                                "auto_target": true
+                                "auto_target": true,
+                                "use_liberation": true,
+                                "switch_healer": false,
+                                "chisa_dps": false,
+                                "iuno_c6": false,
+                                "dodge_cooldown_ms": 500,
+                                "out_of_combat_switch_delay_ms": 2000,
+                                "low_health_switch_delay_ms": 3000,
+                                "concerto_switch_delay_ms": 8000,
+                                "action_interval_ms": 120,
+                                "auto_target_post_delay_ms": 200
                             }
                         }
                     }
@@ -41,7 +51,17 @@
                     "pipeline_override": {
                         "Combat_Engage": {
                             "custom_action_param": {
-                                "auto_target": false
+                                "auto_target": false,
+                                "use_liberation": true,
+                                "switch_healer": false,
+                                "chisa_dps": false,
+                                "iuno_c6": false,
+                                "dodge_cooldown_ms": 500,
+                                "out_of_combat_switch_delay_ms": 2000,
+                                "low_health_switch_delay_ms": 3000,
+                                "concerto_switch_delay_ms": 8000,
+                                "action_interval_ms": 120,
+                                "auto_target_post_delay_ms": 200
                             }
                         }
                     }
@@ -58,7 +78,17 @@
                     "pipeline_override": {
                         "Combat_Engage": {
                             "custom_action_param": {
-                                "use_liberation": true
+                                "auto_target": true,
+                                "use_liberation": true,
+                                "switch_healer": false,
+                                "chisa_dps": false,
+                                "iuno_c6": false,
+                                "dodge_cooldown_ms": 500,
+                                "out_of_combat_switch_delay_ms": 2000,
+                                "low_health_switch_delay_ms": 3000,
+                                "concerto_switch_delay_ms": 8000,
+                                "action_interval_ms": 120,
+                                "auto_target_post_delay_ms": 200
                             }
                         }
                     }
@@ -68,7 +98,17 @@
                     "pipeline_override": {
                         "Combat_Engage": {
                             "custom_action_param": {
-                                "use_liberation": false
+                                "auto_target": true,
+                                "use_liberation": false,
+                                "switch_healer": false,
+                                "chisa_dps": false,
+                                "iuno_c6": false,
+                                "dodge_cooldown_ms": 500,
+                                "out_of_combat_switch_delay_ms": 2000,
+                                "low_health_switch_delay_ms": 3000,
+                                "concerto_switch_delay_ms": 8000,
+                                "action_interval_ms": 120,
+                                "auto_target_post_delay_ms": 200
                             }
                         }
                     }
@@ -85,7 +125,17 @@
                     "pipeline_override": {
                         "Combat_Engage": {
                             "custom_action_param": {
-                                "switch_healer": true
+                                "auto_target": true,
+                                "use_liberation": true,
+                                "switch_healer": true,
+                                "chisa_dps": false,
+                                "iuno_c6": false,
+                                "dodge_cooldown_ms": 500,
+                                "out_of_combat_switch_delay_ms": 2000,
+                                "low_health_switch_delay_ms": 3000,
+                                "concerto_switch_delay_ms": 8000,
+                                "action_interval_ms": 120,
+                                "auto_target_post_delay_ms": 200
                             }
                         }
                     }
@@ -95,7 +145,17 @@
                     "pipeline_override": {
                         "Combat_Engage": {
                             "custom_action_param": {
-                                "switch_healer": false
+                                "auto_target": true,
+                                "use_liberation": true,
+                                "switch_healer": false,
+                                "chisa_dps": false,
+                                "iuno_c6": false,
+                                "dodge_cooldown_ms": 500,
+                                "out_of_combat_switch_delay_ms": 2000,
+                                "low_health_switch_delay_ms": 3000,
+                                "concerto_switch_delay_ms": 8000,
+                                "action_interval_ms": 120,
+                                "auto_target_post_delay_ms": 200
                             }
                         }
                     }
@@ -112,7 +172,17 @@
                     "pipeline_override": {
                         "Combat_Engage": {
                             "custom_action_param": {
-                                "chisa_dps": true
+                                "auto_target": true,
+                                "use_liberation": true,
+                                "switch_healer": false,
+                                "chisa_dps": true,
+                                "iuno_c6": false,
+                                "dodge_cooldown_ms": 500,
+                                "out_of_combat_switch_delay_ms": 2000,
+                                "low_health_switch_delay_ms": 3000,
+                                "concerto_switch_delay_ms": 8000,
+                                "action_interval_ms": 120,
+                                "auto_target_post_delay_ms": 200
                             }
                         }
                     }
@@ -122,7 +192,17 @@
                     "pipeline_override": {
                         "Combat_Engage": {
                             "custom_action_param": {
-                                "chisa_dps": false
+                                "auto_target": true,
+                                "use_liberation": true,
+                                "switch_healer": false,
+                                "chisa_dps": false,
+                                "iuno_c6": false,
+                                "dodge_cooldown_ms": 500,
+                                "out_of_combat_switch_delay_ms": 2000,
+                                "low_health_switch_delay_ms": 3000,
+                                "concerto_switch_delay_ms": 8000,
+                                "action_interval_ms": 120,
+                                "auto_target_post_delay_ms": 200
                             }
                         }
                     }
@@ -139,7 +219,17 @@
                     "pipeline_override": {
                         "Combat_Engage": {
                             "custom_action_param": {
-                                "iuno_c6": true
+                                "auto_target": true,
+                                "use_liberation": true,
+                                "switch_healer": false,
+                                "chisa_dps": false,
+                                "iuno_c6": true,
+                                "dodge_cooldown_ms": 500,
+                                "out_of_combat_switch_delay_ms": 2000,
+                                "low_health_switch_delay_ms": 3000,
+                                "concerto_switch_delay_ms": 8000,
+                                "action_interval_ms": 120,
+                                "auto_target_post_delay_ms": 200
                             }
                         }
                     }
@@ -149,7 +239,17 @@
                     "pipeline_override": {
                         "Combat_Engage": {
                             "custom_action_param": {
-                                "iuno_c6": false
+                                "auto_target": true,
+                                "use_liberation": true,
+                                "switch_healer": false,
+                                "chisa_dps": false,
+                                "iuno_c6": false,
+                                "dodge_cooldown_ms": 500,
+                                "out_of_combat_switch_delay_ms": 2000,
+                                "low_health_switch_delay_ms": 3000,
+                                "concerto_switch_delay_ms": 8000,
+                                "action_interval_ms": 120,
+                                "auto_target_post_delay_ms": 200
                             }
                         }
                     }

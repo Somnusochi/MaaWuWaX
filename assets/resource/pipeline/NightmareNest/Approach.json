@@ -1,0 +1,107 @@
+{
+    "NightmareNest_ApproachStart": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "nightmare_nest_approach",
+            "value": 0
+        },
+        "next": [
+            "NightmareNest_ApproachStepGate"
+        ]
+    },
+    "NightmareNest_ApproachStepGate": {
+        "recognition": "Custom",
+        "custom_recognition": "CounterCheckBelowLimit",
+        "custom_recognition_param": {
+            "counter_key": "nightmare_nest_approach",
+            "max_count": 24
+        },
+        "next": [
+            "NightmareNest_ApproachCheckCombat"
+        ],
+        "on_error": [
+            "NightmareNest_ApproachFailed"
+        ]
+    },
+    "NightmareNest_ApproachCheckCombat": {
+        "recognition": "TemplateMatch",
+        "template": "has_target.png",
+        "threshold": 0.6,
+        "roi": [400, 200, 800, 600],
+        "next": [
+            "NightmareNest_ApproachDone"
+        ],
+        "on_error": [
+            "NightmareNest_ApproachCheckPrompt"
+        ]
+    },
+    "NightmareNest_ApproachCheckPrompt": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f_hcenter_vcenter.png",
+                "threshold": 0.6
+            }
+        ],
+        "next": [
+            "NightmareNest_ApproachInteract"
+        ],
+        "on_error": [
+            "NightmareNest_ApproachWalkForward"
+        ]
+    },
+    "NightmareNest_ApproachInteract": {
+        "action": "ClickKey",
+        "key": 3,
+        "next": [
+            "NightmareNest_ApproachCountStep"
+        ],
+        "post_delay": 1500
+    },
+    "NightmareNest_ApproachWalkForward": {
+        "action": "KeyDown",
+        "key": 13,
+        "next": [
+            "NightmareNest_ApproachWalkForwardRelease"
+        ],
+        "post_delay": 500
+    },
+    "NightmareNest_ApproachWalkForwardRelease": {
+        "action": "KeyUp",
+        "key": 13,
+        "next": [
+            "NightmareNest_ApproachCountStep"
+        ]
+    },
+    "NightmareNest_ApproachCountStep": {
+        "action": "Custom",
+        "custom_action": "CounterIncrement",
+        "custom_action_param": {
+            "counter_key": "nightmare_nest_approach",
+            "step": 1
+        },
+        "next": [
+            "NightmareNest_ApproachStepGate"
+        ]
+    },
+    "NightmareNest_ApproachDone": {
+        "action": "DoNothing",
+        "next": [
+            "NightmareNest_EnterFight"
+        ],
+        "post_delay": 500
+    },
+    "NightmareNest_ApproachFailed": {
+        "action": "DoNothing",
+        "next": [
+            "NightmareNest_OpenBook"
+        ]
+    }
+}

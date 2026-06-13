@@ -1,0 +1,38 @@
+{
+    "NightmareNest_EnterFight": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "revive_confirm_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "has_target.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f.png",
+                "threshold": 0.6
+            }
+        ],
+        "next": [
+            "NightmareNest_Revive",
+            "NightmareNest_Fight",
+            "NightmareNest_PickEntry"
+        ],
+        "post_delay": 500
+    },
+    "NightmareNest_Revive": {
+        "recognition": "TemplateMatch",
+        "template": "revive_confirm_hcenter_vcenter.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": [
+            "NightmareNest_OpenBook"
+        ],
+        "post_delay": 3000
+    }
+}

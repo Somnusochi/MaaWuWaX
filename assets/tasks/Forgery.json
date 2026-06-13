@@ -27,10 +27,7 @@
                     "label": "凝素领域 1",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 1,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ClickTargetTop"]
                         }
                     }
                 },
@@ -39,10 +36,7 @@
                     "label": "凝素领域 2",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 2,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ClickTargetMiddleTop"]
                         }
                     }
                 },
@@ -51,10 +45,7 @@
                     "label": "凝素领域 3",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 3,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ClickTargetMiddleBottom"]
                         }
                     }
                 },
@@ -63,10 +54,7 @@
                     "label": "凝素领域 4",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 4,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ClickTargetBottom"]
                         }
                     }
                 },
@@ -75,10 +63,10 @@
                     "label": "凝素领域 5",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 5,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ScrollTarget"]
+                        },
+                        "Forgery_ScrollTarget": {
+                            "target": [1245, 286, 1, 1]
                         }
                     }
                 },
@@ -87,10 +75,10 @@
                     "label": "凝素领域 6",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 6,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ScrollTarget"]
+                        },
+                        "Forgery_ScrollTarget": {
+                            "target": [1245, 320, 1, 1]
                         }
                     }
                 },
@@ -99,10 +87,10 @@
                     "label": "凝素领域 7",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 7,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ScrollTarget"]
+                        },
+                        "Forgery_ScrollTarget": {
+                            "target": [1245, 355, 1, 1]
                         }
                     }
                 },
@@ -111,10 +99,10 @@
                     "label": "凝素领域 8",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 8,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ScrollTarget"]
+                        },
+                        "Forgery_ScrollTarget": {
+                            "target": [1245, 390, 1, 1]
                         }
                     }
                 },
@@ -123,10 +111,10 @@
                     "label": "凝素领域 9",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 9,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ScrollTarget"]
+                        },
+                        "Forgery_ScrollTarget": {
+                            "target": [1245, 425, 1, 1]
                         }
                     }
                 },
@@ -135,10 +123,10 @@
                     "label": "凝素领域 10",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 10,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ScrollTarget"]
+                        },
+                        "Forgery_ScrollTarget": {
+                            "target": [1245, 460, 1, 1]
                         }
                     }
                 },
@@ -147,10 +135,10 @@
                     "label": "凝素领域 11",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 11,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ScrollTarget"]
+                        },
+                        "Forgery_ScrollTarget": {
+                            "target": [1245, 494, 1, 1]
                         }
                     }
                 },
@@ -159,10 +147,10 @@
                     "label": "凝素领域 12",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 12,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ScrollTarget"]
+                        },
+                        "Forgery_ScrollTarget": {
+                            "target": [1245, 529, 1, 1]
                         }
                     }
                 },
@@ -171,10 +159,10 @@
                     "label": "凝素领域 13",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 13,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ScrollTarget"]
+                        },
+                        "Forgery_ScrollTarget": {
+                            "target": [1245, 564, 1, 1]
                         }
                     }
                 },
@@ -183,10 +171,10 @@
                     "label": "凝素领域 14",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 14,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ScrollTarget"]
+                        },
+                        "Forgery_ScrollTarget": {
+                            "target": [1245, 599, 1, 1]
                         }
                     }
                 },
@@ -195,10 +183,10 @@
                     "label": "凝素领域 15",
                     "pipeline_override": {
                         "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 15,
-                                "total_number": 15
-                            }
+                            "next": ["Forgery_ScrollTarget"]
+                        },
+                        "Forgery_ScrollTarget": {
+                            "target": [1245, 634, 1, 1]
                         }
                     }
                 }

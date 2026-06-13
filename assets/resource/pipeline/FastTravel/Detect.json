@@ -1,0 +1,40 @@
+{
+    "FastTravel_DetectCustomButton": {
+        "recognition": "TemplateMatch",
+        "template": "fast_travel_custom.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": [
+            "FastTravel_PreConfirmCustom"
+        ],
+        "post_delay": 800
+    },
+    "FastTravel_DetectGrayButton": {
+        "recognition": "TemplateMatch",
+        "template": "gray_teleport.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": [
+            "FastTravel_WaitLoad"
+        ],
+        "post_delay": 3000
+    },
+    "FastTravel_DetectCenterButton": {
+        "recognition": "TemplateMatch",
+        "template": "custom_teleport_hcenter_vcenter.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": [
+            "FastTravel_PreConfirmCustom"
+        ],
+        "post_delay": 800
+    },
+    "FastTravel_PreConfirmCustom": {
+        "action": "Click",
+        "target": [627, 396, 1, 1],
+        "next": [
+            "FastTravel_ConfirmTravel"
+        ],
+        "post_delay": 300
+    }
+}

@@ -1,0 +1,96 @@
+{
+    "NightmareNest_EnsureWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "NightmareNest_OpenBook"
+        ],
+        "post_delay": 500
+    },
+    "NightmareNest_OpenBook": {
+        "action": "ClickKey",
+        "key": 120,
+        "next": [
+            "NightmareNest_BookOpen"
+        ],
+        "post_delay": 2000
+    },
+    "NightmareNest_BookOpen": {
+        "recognition": "TemplateMatch",
+        "template": "gray_book_boss.png",
+        "threshold": 0.6,
+        "next": [
+            "NightmareNest_SelectMengyan"
+        ],
+        "post_delay": 500
+    },
+    "NightmareNest_SelectMengyan": {
+        "recognition": "TemplateMatch",
+        "template": "book_mengyan.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": [
+            "NightmareNest_FindNest"
+        ],
+        "post_delay": 500
+    },
+    "NightmareNest_FindNest": {
+        "recognition": "Custom",
+        "custom_recognition": "NightmareFindNest",
+        "custom_recognition_param": {
+            "denominators": [24, 36, 48],
+            "target_x": 1152,
+            "min_y": 110,
+            "fallback_y": 180,
+            "ocr_node": "NightmareNest_CountOCR"
+        },
+        "next": [
+            "NightmareNest_ClickNest"
+        ],
+        "post_delay": 500,
+        "timeout": 5000,
+        "on_error": [
+            "NightmareNest_ScrollMengyan"
+        ]
+    },
+    "NightmareNest_SelectCanxiang": {
+        "recognition": "TemplateMatch",
+        "template": "book_canxiang.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": [
+            "NightmareNest_FindCanxiangNest"
+        ],
+        "post_delay": 700,
+        "timeout": 5000,
+        "on_error": [
+            "NightmareNest_Done"
+        ]
+    },
+    "NightmareNest_FindCanxiangNest": {
+        "recognition": "Custom",
+        "custom_recognition": "NightmareFindNest",
+        "custom_recognition_param": {
+            "denominators": [24, 36, 48],
+            "target_x": 1152,
+            "min_y": 110,
+            "fallback_y": 180,
+            "ocr_node": "NightmareNest_CountOCR"
+        },
+        "next": [
+            "NightmareNest_ClickNest"
+        ],
+        "post_delay": 500,
+        "timeout": 5000,
+        "on_error": [
+            "NightmareNest_Done"
+        ]
+    }
+}

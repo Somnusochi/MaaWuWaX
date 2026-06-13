@@ -1,0 +1,115 @@
+{
+    "NightmareNest_ScrollMengyan": {
+        "action": "DoNothing",
+        "next": [
+            "NightmareNest_ScrollRememberPage"
+        ]
+    },
+    "NightmareNest_ScrollRememberPage": {
+        "action": "Custom",
+        "custom_action": "NightmareSaveScrollFingerprint",
+        "custom_action_param": {
+            "node": "NightmareNest_ScrollEndOCR"
+        },
+        "next": [
+            "NightmareNest_ScrollResetCounter"
+        ]
+    },
+    "NightmareNest_ScrollResetCounter": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "nightmare_nest_scroll",
+            "value": 0
+        },
+        "next": [
+            "NightmareNest_ScrollGate"
+        ]
+    },
+    "NightmareNest_ScrollGate": {
+        "recognition": "Custom",
+        "custom_recognition": "CounterCheckBelowLimit",
+        "custom_recognition_param": {
+            "counter_key": "nightmare_nest_scroll",
+            "max_count": 5
+        },
+        "next": [
+            "NightmareNest_ScrollStep"
+        ],
+        "on_error": [
+            "NightmareNest_ScrollExhausted"
+        ]
+    },
+    "NightmareNest_ScrollStep": {
+        "action": "Click",
+        "target": [1246, 389, 1, 1],
+        "next": [
+            "NightmareNest_ScrollCheckAdvanced"
+        ],
+        "post_delay": 1000
+    },
+    "NightmareNest_ScrollCheckAdvanced": {
+        "recognition": "Custom",
+        "custom_recognition": "NightmareScrollFingerprintAdvanced",
+        "custom_recognition_param": {
+            "node": "NightmareNest_ScrollEndOCR"
+        },
+        "next": [
+            "NightmareNest_ScrollFindNest"
+        ],
+        "on_error": [
+            "NightmareNest_ScrollExhausted"
+        ]
+    },
+    "NightmareNest_ScrollFindNest": {
+        "recognition": "Custom",
+        "custom_recognition": "NightmareFindNest",
+        "custom_recognition_param": {
+            "denominators": [24, 36, 48],
+            "target_x": 1152,
+            "min_y": 110,
+            "fallback_y": 180,
+            "ocr_node": "NightmareNest_ScrollOCR"
+        },
+        "next": [
+            "NightmareNest_ScrollFound"
+        ],
+        "on_error": [
+            "NightmareNest_ScrollCountStep"
+        ]
+    },
+    "NightmareNest_ScrollCountStep": {
+        "action": "Custom",
+        "custom_action": "CounterIncrement",
+        "custom_action_param": {
+            "counter_key": "nightmare_nest_scroll",
+            "step": 1
+        },
+        "next": [
+            "NightmareNest_ScrollRememberPageLoop"
+        ]
+    },
+    "NightmareNest_ScrollRememberPageLoop": {
+        "action": "Custom",
+        "custom_action": "NightmareSaveScrollFingerprint",
+        "custom_action_param": {
+            "node": "NightmareNest_ScrollEndOCR"
+        },
+        "next": [
+            "NightmareNest_ScrollGate"
+        ]
+    },
+    "NightmareNest_ScrollFound": {
+        "action": "DoNothing",
+        "next": [
+            "NightmareNest_ClickNest"
+        ],
+        "post_delay": 500
+    },
+    "NightmareNest_ScrollExhausted": {
+        "action": "DoNothing",
+        "next": [
+            "NightmareNest_SelectCanxiang"
+        ]
+    }
+}

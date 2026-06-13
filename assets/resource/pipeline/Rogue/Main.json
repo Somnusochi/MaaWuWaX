@@ -1,16 +1,158 @@
 {
+    "Rogue_Init": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "rogue_treasure_claims",
+            "value": 0
+        },
+        "next": ["Rogue_InitIdleCounter"]
+    },
+    "Rogue_InitIdleCounter": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "rogue_idle_stuck",
+            "value": 0
+        },
+        "next": ["Rogue_StartRun"]
+    },
+    "Rogue_StartRun": {
+        "next": [
+            "Rogue_ChallengeEnd",
+            "Rogue_RewardExitRouter",
+            "Rogue_HandleUI",
+            "Rogue_StartRunEntry",
+            "Rogue_StartRunConfirm",
+            "Rogue_GainEcho",
+            "Rogue_BuffSelect",
+            "Rogue_FloorRouter"
+        ],
+        "post_delay": 500
+    },
     "Rogue_Main": {
         "next": [
             "Rogue_ChallengeEnd",
+            "Rogue_RewardExitRouter",
             "Rogue_HandleUI",
-            "Rogue_EntranceTitle",
-            "Rogue_ContinueExplore",
             "Rogue_GainEcho",
             "Rogue_BuffSelect",
-            "Rogue_TreasureReward",
-            "Rogue_StaminaNotEnough",
-            "Rogue_InCombat"
+            "Rogue_FloorRouter"
         ],
         "post_delay": 500
+    },
+    "Rogue_FloorRouter": {
+        "next": [
+            "Rogue_InCombat",
+            "Rogue_NavigationRouter",
+            "Rogue_MainIdle"
+        ],
+        "post_delay": 500
+    },
+    "Rogue_NavigationRouter": {
+        "next": [
+            "Rogue_PressF",
+            "Rogue_StopOnTreasureFound",
+            "Rogue_FindGate",
+            "Rogue_WalkTreasure",
+            "Rogue_WalkPurple",
+            "Rogue_MainIdle"
+        ],
+        "post_delay": 300
+    },
+    "Rogue_RewardExitRouter": {
+        "next": [
+            "Rogue_TreasureReward",
+            "Rogue_ContinueExplore",
+            "Rogue_StaminaNotEnough"
+        ],
+        "post_delay": 500
+    },
+    "Rogue_MainIdle": {
+        "action": "DoNothing",
+        "next": ["Rogue_MainIdleCheck"],
+        "post_delay": 800
+    },
+    "Rogue_MainIdleCheck": {
+        "recognition": "Custom",
+        "custom_recognition": "CounterCheckBelowLimit",
+        "custom_recognition_param": {
+            "counter_key": "rogue_idle_stuck",
+            "max_count": 18
+        },
+        "next": ["Rogue_MainIdleCount"],
+        "on_error": ["Rogue_StopTask"]
+    },
+    "Rogue_MainIdleCount": {
+        "action": "Custom",
+        "custom_action": "CounterIncrement",
+        "custom_action_param": {
+            "counter_key": "rogue_idle_stuck",
+            "step": 1
+        },
+        "next": ["Rogue_Main"]
+    },
+    "Rogue_ResetIdleToMain": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "rogue_idle_stuck",
+            "value": 0
+        },
+        "next": ["Rogue_Main"]
+    },
+    "Rogue_ResetIdleToStartRun": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "rogue_idle_stuck",
+            "value": 0
+        },
+        "next": ["Rogue_StartRun"]
+    },
+    "Rogue_ResetIdleToFloor": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "rogue_idle_stuck",
+            "value": 0
+        },
+        "next": ["Rogue_FloorRouter"]
+    },
+    "Rogue_ResetIdleAfterStartRunEntry": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "rogue_idle_stuck",
+            "value": 0
+        },
+        "next": ["Rogue_StartRunConfirm", "Rogue_Main"]
+    },
+    "Rogue_ResetIdleAfterPostFight": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "rogue_idle_stuck",
+            "value": 0
+        },
+        "next": ["Rogue_PressF", "Rogue_RewardExitRouter", "Rogue_NavigationRouter", "Rogue_Main"]
+    },
+    "Rogue_ResetIdleAfterPressF": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "rogue_idle_stuck",
+            "value": 0
+        },
+        "next": ["Rogue_RewardExitRouter", "Rogue_FloorRouter", "Rogue_Main"]
+    },
+    "Rogue_ResetIdleAfterNoMoreF": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "rogue_idle_stuck",
+            "value": 0
+        },
+        "next": ["Rogue_FloorRouter", "Rogue_Main"]
     }
 }

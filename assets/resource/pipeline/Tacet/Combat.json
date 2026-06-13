@@ -1,0 +1,39 @@
+{
+    "Tacet_Fight": {
+        "action": "Custom",
+        "custom_action": "CombatMain",
+        "next": [
+            "Tacet_CheckComplete",
+            "Tacet_Loot",
+            "Tacet_DetectDead",
+            "Tacet_Fight"
+        ],
+        "post_delay": 500,
+        "timeout": 120000,
+        "on_error": [
+            "Tacet_RecoverToWorld"
+        ]
+    },
+    "Tacet_CheckComplete": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "挑战完成"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge Complete"
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "claim_btn.png",
+                "threshold": 0.6
+            }
+        ],
+        "next": [
+            "Tacet_HandleReward"
+        ],
+        "post_delay": 1000
+    }
+}

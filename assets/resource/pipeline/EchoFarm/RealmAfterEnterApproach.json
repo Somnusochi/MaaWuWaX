@@ -1,0 +1,67 @@
+{
+    "EchoFarm_AfterRealmEnterFenricoApproach": {
+        "action": "Custom",
+        "custom_action": "ForwardApproachUntil",
+        "custom_action_param": {
+            "direction": "forward",
+            "timeout_ms": 5000,
+            "step_ms": 600,
+            "sprint": true,
+            "center_camera_interval_ms": 1200,
+            "stop_on_combat": true,
+            "stop_on_f_prompt": true,
+            "stop_on_treasure": true,
+            "combat_node": "EchoFarm_TeleportWalkCombat",
+            "f_prompt_node": "EchoFarm_TeleportWalkFPrompt",
+            "treasure_node": "EchoFarm_TeleportWalkTreasure"
+        },
+        "next": ["EchoFarm_AfterRealmEnterApproachCombatResult"],
+        "post_delay": 100
+    },
+    "EchoFarm_AfterRealmEnterFallacyApproach": {
+        "action": "Custom",
+        "custom_action": "ForwardApproachUntil",
+        "custom_action_param": {
+            "direction": "forward",
+            "timeout_ms": 20000,
+            "step_ms": 600,
+            "sprint": true,
+            "center_camera_interval_ms": 1200,
+            "stop_on_combat": true,
+            "stop_on_f_prompt": true,
+            "stop_on_treasure": true,
+            "combat_node": "EchoFarm_TeleportWalkCombat",
+            "f_prompt_node": "EchoFarm_TeleportWalkFPrompt",
+            "treasure_node": "EchoFarm_TeleportWalkTreasure"
+        },
+        "next": ["EchoFarm_AfterRealmEnterApproachCombatResult"],
+        "post_delay": 100
+    },
+    "EchoFarm_AfterRealmEnterApproachCombatResult": {
+        "recognition": "Custom",
+        "custom_recognition": "ForwardApproachResult",
+        "custom_recognition_param": {
+            "expected": "combat"
+        },
+        "next": ["EchoFarm_Fight"],
+        "on_error": ["EchoFarm_AfterRealmEnterApproachPromptResult"]
+    },
+    "EchoFarm_AfterRealmEnterApproachPromptResult": {
+        "recognition": "Custom",
+        "custom_recognition": "ForwardApproachResult",
+        "custom_recognition_param": {
+            "expected": "f_prompt"
+        },
+        "next": ["EchoFarm_AfterRealmEnterPromptRetryReset"],
+        "on_error": ["EchoFarm_AfterRealmEnterApproachTreasureResult"]
+    },
+    "EchoFarm_AfterRealmEnterApproachTreasureResult": {
+        "recognition": "Custom",
+        "custom_recognition": "ForwardApproachResult",
+        "custom_recognition_param": {
+            "expected": "treasure"
+        },
+        "next": ["EchoFarm_PostCombatTreasureLoop"],
+        "on_error": ["EchoFarm_AfterRealmEnterWait"]
+    }
+}

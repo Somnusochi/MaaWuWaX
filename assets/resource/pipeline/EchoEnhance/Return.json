@@ -1,0 +1,86 @@
+{
+    "EchoEnhance_AfterEvaluate": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "echo_dropped.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "已弃置"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "已棄置"
+            }
+        ],
+        "next": ["EchoEnhance_Esc"],
+        "timeout": 5000,
+        "post_delay": 500,
+        "on_error": ["EchoEnhance_EscAfterLock"]
+    },
+    "EchoEnhance_StopOnLock": {
+        "action": "Custom",
+        "custom_action": "StopTask",
+        "next": [],
+        "post_delay": 500
+    },
+    "EchoEnhance_EscAfterLockThenStop": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": ["EchoEnhance_WaitReturnThenStop"],
+        "post_delay": 500
+    },
+    "EchoEnhance_WaitReturnThenStop": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "培养",
+                "roi": [1050, 620, 230, 100]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "培養",
+                "roi": [1050, 620, 230, 100]
+            }
+        ],
+        "next": ["EchoEnhance_StopOnLock"],
+        "timeout": 10000,
+        "post_delay": 300,
+        "on_error": ["EchoEnhance_EscAfterLockThenStop"]
+    },
+    "EchoEnhance_EscAfterLock": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": ["EchoEnhance_WaitReturn"],
+        "post_delay": 500
+    },
+    "EchoEnhance_Esc": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": ["EchoEnhance_WaitReturn"],
+        "post_delay": 500
+    },
+    "EchoEnhance_WaitReturn": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "培养",
+                "roi": [1050, 620, 230, 100]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "培養",
+                "roi": [1050, 620, 230, 100]
+            }
+        ],
+        "next": ["EchoEnhance_Main"],
+        "timeout": 10000,
+        "post_delay": 300,
+        "on_error": ["EchoEnhance_Esc"]
+    }
+}

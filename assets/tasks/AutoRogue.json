@@ -3,7 +3,7 @@
         {
             "name": "AutoRogue",
             "label": "$task.AutoRogue.label",
-            "entry": "Rogue_Main",
+            "entry": "Rogue_Init",
             "controller": [
                 "macOS",
                 "macOS-Global"
@@ -11,9 +11,34 @@
             "group": [
                 "daily"
             ],
+            "pipeline_override": {
+                "Rogue_BuffSelect": {
+                    "custom_action_param": {
+                        "whitelist": ["心流", "悲鸣纪", "余音贝", "齿轮之心", "全知之眼", "指南针", "医疗箱", "妄语的残谱", "激越的残谱"],
+                        "blacklist": ["雷暴", "旋风", "矛盾晶体"],
+                        "ocr_node": "RogueBuff_OCR",
+                        "fallback_index": 0,
+                        "fallback_target": [640, 430],
+                        "column_boundaries": [507, 773],
+                        "click_bounds": {
+                            "min_x": 373,
+                            "max_x": 907,
+                            "min_y": 395,
+                            "max_y": 455
+                        }
+                    }
+                },
+                "Rogue_TreasureCheckClaimLimit": {
+                    "custom_recognition_param": {
+                        "counter_key": "rogue_treasure_claims",
+                        "max_count": 2
+                    }
+                }
+            },
             "option": [
                 "RogueStopOnTreasure",
-                "RogueBuffFilter"
+                "RogueBuffFilter",
+                "RogueTreasureClaimLimit"
             ]
         }
     ],
@@ -26,21 +51,27 @@
                 {
                     "name": "Yes",
                     "pipeline_override": {
-                        "Rogue_TreasureReward": {
-                            "custom_action_param": {
-                                "stop_on_treasure": true,
-                                "max_claims": 2
-                            }
+                        "Rogue_StopOnTreasureFound": {
+                            "enabled": true
+                        },
+                        "Rogue_TreasureStopRouter": {
+                            "next": ["Rogue_StopTask"]
                         }
                     }
                 },
                 {
                     "name": "No",
                     "pipeline_override": {
-                        "Rogue_TreasureReward": {
-                            "custom_action_param": {
-                                "stop_on_treasure": false,
-                                "max_claims": 2
+                        "Rogue_StopOnTreasureFound": {
+                            "enabled": false
+                        },
+                        "Rogue_TreasureStopRouter": {
+                            "next": ["Rogue_TreasureStaminaNotEnough", "Rogue_TreasureCheckClaimLimit"]
+                        },
+                        "Rogue_TreasureCheckClaimLimit": {
+                            "custom_recognition_param": {
+                                "counter_key": "rogue_treasure_claims",
+                                "max_count": 2
                             }
                         }
                     }
@@ -68,7 +99,38 @@
                 "Rogue_BuffSelect": {
                     "custom_action_param": {
                         "whitelist": "{Whitelist}",
-                        "blacklist": "{Blacklist}"
+                        "blacklist": "{Blacklist}",
+                        "ocr_node": "RogueBuff_OCR",
+                        "fallback_index": 0,
+                        "fallback_target": [640, 430],
+                        "column_boundaries": [507, 773],
+                        "click_bounds": {
+                            "min_x": 373,
+                            "max_x": 907,
+                            "min_y": 395,
+                            "max_y": 455
+                        }
+                    }
+                }
+            }
+        },
+        "RogueTreasureClaimLimit": {
+            "type": "input",
+            "label": "宝箱奖励最多领取次数",
+            "inputs": [
+                {
+                    "name": "TreasureClaimLimit",
+                    "label": "领取上限",
+                    "pipeline_type": "int",
+                    "verify": "^[1-9]\\d*$",
+                    "default": "2"
+                }
+            ],
+            "pipeline_override": {
+                "Rogue_TreasureCheckClaimLimit": {
+                    "custom_recognition_param": {
+                        "counter_key": "rogue_treasure_claims",
+                        "max_count": "{TreasureClaimLimit}"
                     }
                 }
             }

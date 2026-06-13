@@ -6,9 +6,19 @@
         "next": ["DailyMail_FindTab"]
     },
     "DailyMail_FindTab": {
-        "recognition": "OCR",
-        "expected": "邮件",
-        "roi": [0, 0, 400, 720],
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "邮件",
+                "roi": [0, 0, 400, 720]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Mail",
+                "roi": [0, 0, 400, 720]
+            }
+        ],
         "action": "Click",
         "next": ["DailyMail_ClaimAll"],
         "post_delay": 1000

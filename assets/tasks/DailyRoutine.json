@@ -11,6 +11,17 @@
             "group": [
                 "daily"
             ],
+            "pipeline_override": {
+                "Daily_CheckNightmareExplicit": {
+                    "enabled": false
+                },
+                "Daily_CheckNightmareCapture": {
+                    "enabled": false
+                },
+                "Daily_SpendStamina": {
+                    "enabled": true
+                }
+            },
             "option": [
                 "ClaimMail",
                 "ClaimBattlePass",
@@ -73,24 +84,44 @@
         "DailyNightmareMode": {
             "type": "select",
             "label": "梦魇巢穴",
-            "default_case": "none",
+            "default_case": "capture",
             "cases": [
                 {
                     "name": "none",
-                    "label": "不刷"
+                    "label": "不刷",
+                    "pipeline_override": {
+                        "Daily_CheckNightmareExplicit": {
+                            "enabled": false
+                        },
+                        "Daily_CheckNightmareCapture": {
+                            "enabled": false
+                        }
+                    }
                 },
                 {
                     "name": "capture",
                     "label": "刷 1 个日常声骸",
                     "pipeline_override": {
-                        "Daily_CheckNightmareParam": {
-                            "custom_recognition_param": {
-                                "nightmare_mode": "capture",
-                                "stamina_type": "tacet"
-                            }
-                        },
                         "Daily_RunNightmare": {
                             "next": ["NightmareNest_MainCapture"]
+                        },
+                        "Daily_CheckNightmareExplicit": {
+                            "enabled": false
+                        },
+                        "Daily_CheckNightmareCapture": {
+                            "enabled": true
+                        },
+                        "NightmareNest_ScrollFound": {
+                            "next": ["NightmareNest_ClickNestCapture"]
+                        },
+                        "NightmareNest_ScrollExhausted": {
+                            "next": ["NightmareNest_SelectCanxiangCapture"]
+                        },
+                        "NightmareNest_ApproachDone": {
+                            "next": ["NightmareNest_EnterFightCapture"]
+                        },
+                        "NightmareNest_ApproachFailed": {
+                            "next": ["NightmareNest_OpenBookCapture"]
                         },
                         "NightmareNest_Done": {
                             "next": ["Daily_SpendStamina"]
@@ -101,14 +132,17 @@
                     "name": "nightmare",
                     "label": "仅刷梦魇拔除",
                     "pipeline_override": {
-                        "Daily_CheckNightmareParam": {
-                            "custom_recognition_param": {
-                                "nightmare_mode": "nightmare",
-                                "stamina_type": "tacet"
-                            }
-                        },
                         "Daily_RunNightmare": {
                             "next": ["NightmareNest_MainNightmare"]
+                        },
+                        "Daily_CheckNightmareExplicit": {
+                            "enabled": true
+                        },
+                        "Daily_CheckNightmareCapture": {
+                            "enabled": false
+                        },
+                        "NightmareNest_ScrollExhausted": {
+                            "next": ["NightmareNest_Done"]
                         },
                         "NightmareNest_Done": {
                             "next": ["Daily_SpendStamina"]
@@ -119,14 +153,14 @@
                     "name": "canxiang",
                     "label": "仅刷残像聚落",
                     "pipeline_override": {
-                        "Daily_CheckNightmareParam": {
-                            "custom_recognition_param": {
-                                "nightmare_mode": "canxiang",
-                                "stamina_type": "tacet"
-                            }
-                        },
                         "Daily_RunNightmare": {
                             "next": ["NightmareNest_MainCanxiang"]
+                        },
+                        "Daily_CheckNightmareExplicit": {
+                            "enabled": true
+                        },
+                        "Daily_CheckNightmareCapture": {
+                            "enabled": false
                         },
                         "NightmareNest_Done": {
                             "next": ["Daily_SpendStamina"]
@@ -137,14 +171,14 @@
                     "name": "all",
                     "label": "全部梦魇巢穴",
                     "pipeline_override": {
-                        "Daily_CheckNightmareParam": {
-                            "custom_recognition_param": {
-                                "nightmare_mode": "all",
-                                "stamina_type": "tacet"
-                            }
-                        },
                         "Daily_RunNightmare": {
                             "next": ["NightmareNest_Main"]
+                        },
+                        "Daily_CheckNightmareExplicit": {
+                            "enabled": true
+                        },
+                        "Daily_CheckNightmareCapture": {
+                            "enabled": false
                         },
                         "NightmareNest_Done": {
                             "next": ["Daily_SpendStamina"]
@@ -164,14 +198,23 @@
                         "TacetSuppressionIndex"
                     ],
                     "pipeline_override": {
-                        "Daily_SpendStamina": {
+                        "Daily_CheckNightmareExplicit": {
                             "custom_recognition_param": {
                                 "stamina_type": "tacet"
                             }
                         },
-                        "Daily_CheckNightmareParam": {
+                        "Daily_CheckNightmareCapture": {
                             "custom_recognition_param": {
                                 "stamina_type": "tacet"
+                            },
+                            "enabled": false
+                        },
+                        "Daily_SpendStamina": {
+                            "enabled": true
+                        },
+                        "Daily_Stamina_Check": {
+                            "custom_recognition_param": {
+                                "min_stamina": 60
                             }
                         },
                         "Daily_Stamina_Has": {
@@ -189,14 +232,22 @@
                         "ForgeryChallengeIndex"
                     ],
                     "pipeline_override": {
-                        "Daily_SpendStamina": {
+                        "Daily_CheckNightmareExplicit": {
                             "custom_recognition_param": {
                                 "stamina_type": "forgery"
                             }
                         },
-                        "Daily_CheckNightmareParam": {
+                        "Daily_CheckNightmareCapture": {
                             "custom_recognition_param": {
                                 "stamina_type": "forgery"
+                            }
+                        },
+                        "Daily_SpendStamina": {
+                            "enabled": true
+                        },
+                        "Daily_Stamina_Check": {
+                            "custom_recognition_param": {
+                                "min_stamina": 40
                             }
                         },
                         "Daily_Stamina_Has": {
@@ -214,14 +265,22 @@
                         "SimulationMaterial"
                     ],
                     "pipeline_override": {
-                        "Daily_SpendStamina": {
+                        "Daily_CheckNightmareExplicit": {
                             "custom_recognition_param": {
                                 "stamina_type": "simulation"
                             }
                         },
-                        "Daily_CheckNightmareParam": {
+                        "Daily_CheckNightmareCapture": {
                             "custom_recognition_param": {
                                 "stamina_type": "simulation"
+                            }
+                        },
+                        "Daily_SpendStamina": {
+                            "enabled": true
+                        },
+                        "Daily_Stamina_Check": {
+                            "custom_recognition_param": {
+                                "min_stamina": 40
                             }
                         },
                         "Daily_Stamina_Has": {
@@ -232,406 +291,73 @@
                         }
                     },
                     "label": "$task.DailyRoutine.option.StaminaType.cases.simulation.label"
+                },
+                {
+                    "name": "none",
+                    "pipeline_override": {
+                        "Daily_CheckNightmareExplicit": {
+                            "custom_recognition_param": {
+                                "stamina_type": "none"
+                            }
+                        },
+                        "Daily_CheckNightmareCapture": {
+                            "custom_recognition_param": {
+                                "stamina_type": "none"
+                            },
+                            "enabled": false
+                        },
+                        "Daily_SpendStamina": {
+                            "enabled": false
+                        },
+                        "Daily_Stamina_Check": {
+                            "custom_recognition_param": {
+                                "min_stamina": 60
+                            }
+                        }
+                    },
+                    "label": "$task.DailyRoutine.option.StaminaType.cases.none.label"
                 }
             ]
         },
         "TacetSuppressionIndex": {
-            "type": "select",
+            "type": "input",
             "label": "$task.DailyRoutine.option.TacetSuppressionIndex.label",
-            "default_case": "1",
-            "cases": [
+            "inputs": [
                 {
-                    "name": "1",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 1,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "1"
-                },
-                {
-                    "name": "2",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 2,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "2"
-                },
-                {
-                    "name": "3",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 3,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "3"
-                },
-                {
-                    "name": "4",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 4,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "4"
-                },
-                {
-                    "name": "5",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 5,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "5"
-                },
-                {
-                    "name": "6",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 6,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "6"
-                },
-                {
-                    "name": "7",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 7,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "7"
-                },
-                {
-                    "name": "8",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 8,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "8"
-                },
-                {
-                    "name": "9",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 9,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "9"
-                },
-                {
-                    "name": "10",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 10,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "10"
-                },
-                {
-                    "name": "11",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 11,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "11"
-                },
-                {
-                    "name": "12",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 12,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "12"
-                },
-                {
-                    "name": "13",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 13,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "13"
-                },
-                {
-                    "name": "14",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 14,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "14"
-                },
-                {
-                    "name": "15",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 15,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "15"
-                },
-                {
-                    "name": "16",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 16,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "16"
-                },
-                {
-                    "name": "17",
-                    "pipeline_override": {
-                        "Tacet_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 17,
-                                "total_number": 17
-                            }
-                        }
-                    },
-                    "label": "17"
+                    "name": "value",
+                    "default": "1",
+                    "pipeline_type": "int",
+                    "verify": "^(?:[1-9]|1[0-7])$"
                 }
-            ]
+            ],
+            "pipeline_override": {
+                "Tacet_SelectTarget": {
+                    "custom_action_param": {
+                        "serial_number": "{value}",
+                        "total_number": 17
+                    }
+                }
+            }
         },
         "ForgeryChallengeIndex": {
-            "type": "select",
+            "type": "input",
             "label": "$task.DailyRoutine.option.ForgeryChallengeIndex.label",
-            "default_case": "1",
-            "cases": [
+            "inputs": [
                 {
-                    "name": "1",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 1,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "1"
-                },
-                {
-                    "name": "2",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 2,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "2"
-                },
-                {
-                    "name": "3",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 3,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "3"
-                },
-                {
-                    "name": "4",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 4,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "4"
-                },
-                {
-                    "name": "5",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 5,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "5"
-                },
-                {
-                    "name": "6",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 6,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "6"
-                },
-                {
-                    "name": "7",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 7,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "7"
-                },
-                {
-                    "name": "8",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 8,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "8"
-                },
-                {
-                    "name": "9",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 9,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "9"
-                },
-                {
-                    "name": "10",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 10,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "10"
-                },
-                {
-                    "name": "11",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 11,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "11"
-                },
-                {
-                    "name": "12",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 12,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "12"
-                },
-                {
-                    "name": "13",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 13,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "13"
-                },
-                {
-                    "name": "14",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 14,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "14"
-                },
-                {
-                    "name": "15",
-                    "pipeline_override": {
-                        "Forgery_SelectTarget": {
-                            "custom_action_param": {
-                                "serial_number": 15,
-                                "total_number": 15
-                            }
-                        }
-                    },
-                    "label": "15"
+                    "name": "value",
+                    "default": "1",
+                    "pipeline_type": "int",
+                    "verify": "^(?:[1-9]|1[0-5])$"
                 }
-            ]
+            ],
+            "pipeline_override": {
+                "Forgery_SelectTarget": {
+                    "custom_action_param": {
+                        "serial_number": "{value}",
+                        "total_number": 15
+                    }
+                }
+            }
         },
         "SimulationMaterial": {
             "type": "select",
@@ -643,7 +369,8 @@
                     "pipeline_override": {
                         "Simulation_SelectMaterial": {
                             "custom_action_param": {
-                                "material": "resonator_exp"
+                                "material": "resonator_exp",
+                                "selection_index": 0
                             }
                         }
                     },
@@ -654,7 +381,8 @@
                     "pipeline_override": {
                         "Simulation_SelectMaterial": {
                             "custom_action_param": {
-                                "material": "weapon_exp"
+                                "material": "weapon_exp",
+                                "selection_index": 1
                             }
                         }
                     },
@@ -665,7 +393,8 @@
                     "pipeline_override": {
                         "Simulation_SelectMaterial": {
                             "custom_action_param": {
-                                "material": "shell_credit"
+                                "material": "shell_credit",
+                                "selection_index": 2
                             }
                         }
                     },

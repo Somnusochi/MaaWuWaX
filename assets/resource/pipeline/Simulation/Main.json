@@ -1,154 +1,68 @@
 {
-    "Simulation_Main": {
-        "next": [
-            "Simulation_EnsureWorld"
-        ]
-    },
-    "Simulation_EnsureWorld": {
-        "recognition": "TemplateMatch",
-        "template": "minimap.png",
-        "threshold": 0.7,
-        "roi": [
-            1050,
-            20,
-            200,
-            160
+    "Simulation_CheckComplete": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "挑战完成"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge Complete"
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "claim_btn.png",
+                "threshold": 0.6
+            }
         ],
         "next": [
-            "Simulation_OpenBook"
-        ],
-        "post_delay": 500,
-        "on_error": [
-            "Simulation_RecoverToWorld"
-        ]
-    },
-    "Simulation_OpenBook": {
-        "action": "ClickKey",
-        "key": 120,
-        "next": [
-            "Simulation_BookOpen"
-        ],
-        "post_delay": 2000
-    },
-    "Simulation_BookOpen": {
-        "recognition": "TemplateMatch",
-        "template": "gray_book_boss.png",
-        "threshold": 0.6,
-        "next": [
-            "Simulation_SelectSimTab"
-        ],
-        "post_delay": 500
-    },
-    "Simulation_SelectSimTab": {
-        "recognition": "TemplateMatch",
-        "template": "book_moni.png",
-        "threshold": 0.6,
-        "action": "Click",
-        "next": [
-            "Simulation_SelectTarget"
-        ],
-        "post_delay": 500
-    },
-    "Simulation_SelectTarget": {
-        "action": "Custom",
-        "custom_action": "BookTargetSelect",
-        "custom_action_param": {
-            "serial_number": 1,
-            "total_number": 1
-        },
-        "next": [
-            "Simulation_ClickTravel"
+            "Simulation_HandleReward"
         ],
         "post_delay": 1000
     },
-    "Simulation_ClickTravel": {
-        "recognition": "TemplateMatch",
-        "template": "boss_proceed.png",
-        "threshold": 0.7,
-        "action": "Click",
-        "next": [
-            "Simulation_WaitLoad"
-        ],
-        "post_delay": 3000
-    },
-    "Simulation_WaitLoad": {
-        "recognition": "TemplateMatch",
-        "template": "minimap.png",
-        "threshold": 0.7,
-        "roi": [
-            1050,
-            20,
-            200,
-            160
-        ],
-        "next": [
-            "Simulation_WalkToDomain"
-        ],
-        "timeout": 30000,
-        "post_delay": 1000,
-        "on_error": [
-            "Simulation_RecoverToWorld"
-        ]
-    },
-    "Simulation_WalkToDomain": {
-        "action": "ClickKey",
-        "key": 13,
-        "next": [
-            "Simulation_EnterDomain"
-        ],
-        "post_delay": 5000
-    },
-    "Simulation_EnterDomain": {
+    "Simulation_HandleReward": {
         "recognition": "Or",
         "any_of": [
             {
                 "recognition": "TemplateMatch",
-                "template": "gray_start_battle.png",
-                "threshold": 0.7
-            },
-            {
-                "recognition": "OCR",
-                "expected": "挑战"
-            },
-            {
-                "recognition": "OCR",
-                "expected": "Challenge"
-            }
-        ],
-        "action": "Click",
-        "next": [
-            "Simulation_SelectMaterial"
-        ],
-        "post_delay": 2000
-    },
-    "Simulation_SelectMaterial": {
-        "recognition": "Or",
-        "any_of": [
-            {
-                "recognition": "TemplateMatch",
-                "template": "btn_yellow_confirm.png",
+                "template": "gem_add_stamina.png",
                 "threshold": 0.6
             },
             {
                 "recognition": "OCR",
-                "expected": "选择"
+                "expected": "消耗体力"
             },
             {
                 "recognition": "OCR",
-                "expected": "Select"
+                "expected": "Spend Stamina"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "体力不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "结晶波片不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Insufficient"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Not enough"
             }
         ],
-        "action": "Custom",
-        "custom_action": "SimulationSelectMaterial",
-        "custom_action_param": {
-            "material": "shell_credit"
-        },
+        "action": "Click",
         "next": [
-            "Simulation_Fight"
+            "Simulation_NotEnoughStamina",
+            "Simulation_ConfirmStamina",
+            "Simulation_Done"
         ],
-        "post_delay": 3000
+        "post_delay": 1000
     },
-    "Simulation_ConfirmEnter": {
+    "Simulation_ConfirmStamina": {
         "recognition": "Or",
         "any_of": [
             {
@@ -159,31 +73,42 @@
             {
                 "recognition": "OCR",
                 "expected": "确认"
-            },
-            {
-                "recognition": "OCR",
-                "expected": "Confirm"
             }
         ],
         "action": "Click",
         "next": [
             "Simulation_Fight"
         ],
-        "post_delay": 3000
+        "post_delay": 2000
     },
-    "Simulation_Fight": {
-        "action": "Custom",
-        "custom_action": "CombatMain",
-        "next": [
-            "Simulation_CheckComplete",
-            "Simulation_Loot",
-            "Simulation_DetectDead",
-            "Simulation_Fight"
+    "Simulation_Done": {
+        "next": []
+    },
+    "Simulation_NotEnoughStamina": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "体力不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "结晶波片不足"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Insufficient"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Not enough"
+            }
         ],
-        "post_delay": 500,
-        "timeout": 120000,
-        "on_error": [
-            "Simulation_RecoverToWorld"
-        ]
+        "action": "ClickKey",
+        "key": 53,
+        "next": [
+            "Simulation_Done"
+        ],
+        "post_delay": 1000
     }
 }

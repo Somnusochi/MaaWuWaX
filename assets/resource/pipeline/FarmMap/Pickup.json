@@ -1,4 +1,45 @@
 {
+    "FarmMap_Pickup": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f_hcenter_vcenter.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f.png",
+                "threshold": 0.65
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "echo_orb.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "treasure_icon.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "absorb_zh_CN.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "absorb_en_US.png",
+                "threshold": 0.6
+            }
+        ],
+        "next": [
+            "FarmMap_Collect",
+            "FarmMap_Combat",
+            "FarmMap_Walk"
+        ],
+        "post_delay": 500
+    },
     "FarmMap_Collect": {
         "recognition": "TemplateMatch",
         "template": "pick_up_f.png",

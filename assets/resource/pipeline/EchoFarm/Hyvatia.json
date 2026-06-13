@@ -1,0 +1,99 @@
+{
+    "EchoFarm_HyvatiaResume": {
+        "next": ["EchoFarm_HyvatiaCheckCombat"],
+        "timeout": 12000,
+        "on_error": ["EchoFarm_LocalCheckCombat"]
+    },
+    "EchoFarm_HyvatiaCheckCombat": {
+        "recognition": "TemplateMatch",
+        "template": "has_target.png",
+        "threshold": 0.7,
+        "next": ["EchoFarm_Fight"],
+        "on_error": ["EchoFarm_HyvatiaCheckWorld"]
+    },
+    "EchoFarm_HyvatiaCheckWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": ["EchoFarm_HyvatiaCheckPrompt"],
+        "on_error": ["EchoFarm_HyvatiaExitRealm"]
+    },
+    "EchoFarm_HyvatiaExitRealm": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": ["EchoFarm_HyvatiaConfirmExit"],
+        "post_delay": 500
+    },
+    "EchoFarm_HyvatiaConfirmExit": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "confirm_btn_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_yellow_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            }
+        ],
+        "action": "Click",
+        "next": ["EchoFarm_HyvatiaWaitWorld"],
+        "post_delay": 2000,
+        "on_error": ["EchoFarm_HyvatiaWaitWorldFallback"]
+    },
+    "EchoFarm_HyvatiaWaitWorldFallback": {
+        "next": ["EchoFarm_HyvatiaWaitWorld"]
+    },
+    "EchoFarm_HyvatiaWaitWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": ["EchoFarm_HyvatiaCheckPrompt"],
+        "timeout": 30000,
+        "post_delay": 1000,
+        "on_error": ["EchoFarm_LocalCheckCombat"]
+    },
+    "EchoFarm_HyvatiaCheckPrompt": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f_hcenter_vcenter.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f.png",
+                "threshold": 0.65
+            },
+            {
+                "recognition": "OCR",
+                "expected": "挑战"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge"
+            }
+        ],
+        "next": ["EchoFarm_HyvatiaPressPrompt"],
+        "on_error": ["EchoFarm_LocalCheckCombat"]
+    },
+    "EchoFarm_HyvatiaPressPrompt": {
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["EchoFarm_HyvatiaResume"],
+        "post_delay": 2000
+    }
+}

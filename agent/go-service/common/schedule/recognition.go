@@ -4,10 +4,10 @@
 package schedule
 
 import (
-	"encoding/json"
 	"time"
 
 	maa "github.com/MaaXYZ/maa-framework-go/v4"
+	"github.com/bytedance/sonic"
 	"github.com/rs/zerolog/log"
 )
 
@@ -31,7 +31,7 @@ var _ maa.CustomRecognitionRunner = &ScheduleRecognition{}
 func (r *ScheduleRecognition) Run(ctx *maa.Context, arg *maa.CustomRecognitionArg) (*maa.CustomRecognitionResult, bool) {
 	param := scheduleParam{}
 	if arg.CustomRecognitionParam != "" {
-		if err := json.Unmarshal([]byte(arg.CustomRecognitionParam), &param); err != nil {
+		if err := sonic.Unmarshal([]byte(arg.CustomRecognitionParam), &param); err != nil {
 			log.Warn().Err(err).Str("component", "Schedule").Msg("failed to parse param, allowing")
 			return &maa.CustomRecognitionResult{Box: maa.Rect{0, 0, 1, 1}}, true
 		}

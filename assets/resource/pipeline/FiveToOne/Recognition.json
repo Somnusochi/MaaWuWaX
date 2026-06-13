@@ -1,13 +1,33 @@
 {
     "FiveToOne_ConfirmOCR": {
-        "recognition": "OCR",
-        "expected": "确认",
-        "roi": [760, 520, 420, 160]
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "确认",
+                "roi": [760, 520, 420, 160]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "確認",
+                "roi": [760, 520, 420, 160]
+            }
+        ]
     },
     "FiveToOne_ResultOCR": {
-        "recognition": "OCR",
-        "expected": "获得声骸",
-        "roi": [380, 0, 520, 120]
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "获得声骸",
+                "roi": [380, 0, 520, 120]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "獲得聲骸",
+                "roi": [380, 0, 520, 120]
+            }
+        ]
     },
     "FiveToOne_BatchFusionOCR": {
         "recognition": "OCR",

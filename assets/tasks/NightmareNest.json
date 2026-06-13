@@ -31,8 +31,8 @@
                     "name": "nightmare",
                     "label": "$option.NightmareNestType.cases.nightmare.label",
                     "pipeline_override": {
-                        "NightmareNest_ScrollMengyan": {
-                            "on_error": [
+                        "NightmareNest_ScrollExhausted": {
+                            "next": [
                                 "NightmareNest_Done"
                             ]
                         }

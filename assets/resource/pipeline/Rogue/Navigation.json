@@ -1,85 +1,107 @@
 {
-    "Rogue_FindGate": {
-        "recognition": "Or",
-        "any_of": [
-            {
-                "recognition": "OCR",
-                "expected": "前往下一",
-                "roi": [50, 150, 200, 50]
-            },
-            {
-                "recognition": "OCR",
-                "expected": "记忆区",
-                "roi": [50, 150, 200, 50]
-            },
-            {
-                "recognition": "OCR",
-                "expected": "奇异的白猫",
-                "roi": [50, 150, 240, 60]
-            }
-        ],
-        "action": "Custom",
-        "custom_action": "RogueWalkGate",
-        "next": ["Rogue_PressF", "Rogue_Main"],
-        "post_delay": 500
+    "Rogue_StopOnTreasureFound": {
+        "recognition": "TemplateMatch",
+        "template": "treasure_icon.png",
+        "threshold": 0.6,
+        "roi": [230, 72, 820, 510],
+        "enabled": false,
+        "next": ["Rogue_StopTask"],
+        "post_delay": 200
     },
     "Rogue_WalkTreasure": {
-        "recognition": "TemplateMatch",
-        "template": "treasure_icon.png",
-        "threshold": 0.6,
-        "roi": [230, 72, 820, 510],
-        "action": "Custom",
-        "custom_action": "RogueWalkToTarget",
-        "custom_action_param": {
-            "template": "treasure_icon.png",
-            "duration_ms": 1000
-        },
-        "next": ["Rogue_PressF", "Rogue_Main"],
-        "post_delay": 300
+        "next": ["Rogue_WalkTreasureLeft", "Rogue_WalkTreasureRight", "Rogue_WalkTreasureForward"]
     },
     "Rogue_WalkPurple": {
+        "next": ["Rogue_WalkPurpleLeft", "Rogue_WalkPurpleRight", "Rogue_WalkPurpleForward"]
+    },
+    "Rogue_WalkTreasureLeft": {
+        "recognition": "TemplateMatch",
+        "template": "treasure_icon.png",
+        "threshold": 0.6,
+        "roi": [230, 72, 310, 510],
+        "action": "Custom",
+        "custom_action": "DirectionWalk",
+        "custom_action_param": {
+            "direction": "left",
+            "duration_ms": 500,
+            "sprint": false
+        },
+        "next": ["Rogue_WalkTreasureForward"],
+        "post_delay": 100
+    },
+    "Rogue_WalkTreasureRight": {
+        "recognition": "TemplateMatch",
+        "template": "treasure_icon.png",
+        "threshold": 0.6,
+        "roi": [510, 72, 540, 510],
+        "action": "Custom",
+        "custom_action": "DirectionWalk",
+        "custom_action_param": {
+            "direction": "right",
+            "duration_ms": 500,
+            "sprint": false
+        },
+        "next": ["Rogue_WalkTreasureForward"],
+        "post_delay": 100
+    },
+    "Rogue_WalkTreasureForward": {
+        "recognition": "TemplateMatch",
+        "template": "treasure_icon.png",
+        "threshold": 0.6,
+        "roi": [230, 72, 820, 510],
+        "action": "Custom",
+        "custom_action": "DirectionWalk",
+        "custom_action_param": {
+            "direction": "forward",
+            "duration_ms": 1000,
+            "sprint": false
+        },
+        "next": ["Rogue_PressF", "Rogue_ResetIdleToFloor"],
+        "post_delay": 300
+    },
+    "Rogue_WalkPurpleLeft": {
+        "recognition": "TemplateMatch",
+        "template": "purple_target_distance_icon.png",
+        "threshold": 0.6,
+        "roi": [230, 72, 310, 510],
+        "action": "Custom",
+        "custom_action": "DirectionWalk",
+        "custom_action_param": {
+            "direction": "left",
+            "duration_ms": 450,
+            "sprint": false
+        },
+        "next": ["Rogue_WalkPurpleForward"],
+        "post_delay": 100
+    },
+    "Rogue_WalkPurpleRight": {
+        "recognition": "TemplateMatch",
+        "template": "purple_target_distance_icon.png",
+        "threshold": 0.6,
+        "roi": [510, 72, 540, 510],
+        "action": "Custom",
+        "custom_action": "DirectionWalk",
+        "custom_action_param": {
+            "direction": "right",
+            "duration_ms": 450,
+            "sprint": false
+        },
+        "next": ["Rogue_WalkPurpleForward"],
+        "post_delay": 100
+    },
+    "Rogue_WalkPurpleForward": {
         "recognition": "TemplateMatch",
         "template": "purple_target_distance_icon.png",
         "threshold": 0.6,
         "roi": [230, 72, 820, 510],
         "action": "Custom",
-        "custom_action": "RogueWalkToTarget",
+        "custom_action": "DirectionWalk",
         "custom_action_param": {
-            "template": "purple_target_distance_icon.png",
-            "duration_ms": 900
+            "direction": "forward",
+            "duration_ms": 900,
+            "sprint": false
         },
-        "next": ["Rogue_PressF", "Rogue_Main"],
+        "next": ["Rogue_PressF", "Rogue_ResetIdleToFloor"],
         "post_delay": 300
-    },
-    "RogueWalk_TargetTreasure": {
-        "recognition": "TemplateMatch",
-        "template": "treasure_icon.png",
-        "threshold": 0.6,
-        "roi": [230, 72, 820, 510]
-    },
-    "RogueWalk_TargetPurple": {
-        "recognition": "TemplateMatch",
-        "template": "purple_target_distance_icon.png",
-        "threshold": 0.6,
-        "roi": [230, 72, 820, 510]
-    },
-    "RogueGate_OCR": {
-        "recognition": "OCR",
-        "roi": [0, 0, 1280, 720]
-    },
-    "RogueGate_FPrompt": {
-        "recognition": "Or",
-        "any_of": [
-            {
-                "recognition": "TemplateMatch",
-                "template": "pick_up_f.png",
-                "threshold": 0.6
-            },
-            {
-                "recognition": "TemplateMatch",
-                "template": "pick_up_f_hcenter_vcenter.png",
-                "threshold": 0.6
-            }
-        ]
     }
 }

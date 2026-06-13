@@ -1,0 +1,85 @@
+{
+    "Forgery_ClickTravel": {
+        "recognition": "TemplateMatch",
+        "template": "gray_teleport.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": [
+            "Forgery_WaitLoad"
+        ],
+        "post_delay": 3000
+    },
+    "Forgery_WaitLoad": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "Forgery_WalkToDomain"
+        ],
+        "timeout": 30000,
+        "post_delay": 1000,
+        "on_error": [
+            "Forgery_RecoverToWorld"
+        ]
+    },
+    "Forgery_WalkToDomain": {
+        "action": "ClickKey",
+        "key": 13,
+        "next": [
+            "Forgery_EnterDomain"
+        ],
+        "post_delay": 5000
+    },
+    "Forgery_EnterDomain": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "gray_start_battle.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "挑战"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge"
+            }
+        ],
+        "action": "Click",
+        "next": [
+            "Forgery_ConfirmEnter"
+        ],
+        "post_delay": 2000
+    },
+    "Forgery_ConfirmEnter": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_yellow_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            }
+        ],
+        "action": "Click",
+        "next": [
+            "Forgery_Fight"
+        ],
+        "post_delay": 3000
+    }
+}

@@ -9,6 +9,9 @@ var multiAccountSwitcher = &MultiAccountState{}
 
 func Register() {
 	maa.AgentServerRegisterCustomRecognition("MultiAccountCanSwitch", &MultiAccountCanSwitchRecognition{})
+	maa.AgentServerRegisterCustomRecognition("MultiAccountDropdownExpanded", &MultiAccountDropdownExpandedRecognition{})
+	maa.AgentServerRegisterCustomRecognition("MultiAccountCurrentVisible", &MultiAccountCurrentVisibleRecognition{})
+	maa.AgentServerRegisterCustomAction("MultiAccountResetState", &MultiAccountResetStateAction{})
 	maa.AgentServerRegisterCustomAction("MultiAccountMarkCurrent", &MultiAccountMarkCurrentAction{})
 	maa.AgentServerRegisterCustomAction("MultiAccountSelectNext", &MultiAccountSelectNextAction{})
 	maa.AgentServerRegisterCustomRecognition("MultiAccountSelectedMatches", &MultiAccountSelectedMatchesRecognition{})

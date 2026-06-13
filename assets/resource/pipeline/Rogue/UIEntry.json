@@ -1,0 +1,60 @@
+{
+    "Rogue_StartRunEntry": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "千道门扉"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "异想"
+            }
+        ],
+        "action": "Click",
+        "target": [1050, 640, 100, 50],
+        "next": ["Rogue_ResetIdleAfterStartRunEntry"],
+        "post_delay": 2000
+    },
+    "Rogue_StartRunConfirm": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "开始挑战",
+                "roi": [880, 610, 260, 90]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "开始",
+                "roi": [880, 610, 260, 90]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Start",
+                "roi": [880, 610, 260, 90]
+            }
+        ],
+        "action": "Click",
+        "target": [1030, 645, 160, 60],
+        "next": ["Rogue_ResetIdleToMain"],
+        "post_delay": 2500
+    },
+    "Rogue_EntranceTitle": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "千道门扉"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "异想"
+            }
+        ],
+        "action": "Click",
+        "target": [1050, 640, 100, 50],
+        "next": ["Rogue_ResetIdleAfterStartRunEntry"],
+        "post_delay": 2000
+    }
+}

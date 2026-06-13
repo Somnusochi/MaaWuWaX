@@ -1,0 +1,17 @@
+{
+    "Forgery_Fight": {
+        "action": "Custom",
+        "custom_action": "CombatMain",
+        "next": [
+            "Forgery_CheckComplete",
+            "Forgery_Loot",
+            "Forgery_DetectDead",
+            "Forgery_Fight"
+        ],
+        "post_delay": 500,
+        "timeout": 120000,
+        "on_error": [
+            "Forgery_RecoverToWorld"
+        ]
+    }
+}

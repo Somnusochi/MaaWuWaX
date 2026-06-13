@@ -1,0 +1,155 @@
+{
+    "Rogue_GainEcho": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "获得",
+                "roi": [550, 130, 180, 80]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Gain",
+                "roi": [550, 130, 180, 80]
+            }
+        ],
+        "action": "Click",
+        "target": [640, 580, 100, 50],
+        "next": ["Rogue_ResetIdleToMain"],
+        "post_delay": 2000
+    },
+    "Rogue_BuffSelect": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "隐喻获得"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Metaphor"
+            }
+        ],
+        "action": "Custom",
+        "custom_action": "RogueBuffSelect",
+        "custom_action_param": {
+            "whitelist": ["心流", "悲鸣纪", "余音贝", "齿轮之心", "全知之眼", "指南针", "医疗箱", "妄语的残谱", "激越的残谱"],
+            "blacklist": ["雷暴", "旋风", "矛盾晶体"],
+            "ocr_node": "RogueBuff_OCR",
+            "fallback_index": 0,
+            "fallback_target": [640, 430],
+            "column_boundaries": [507, 773],
+            "click_bounds": {
+                "min_x": 373,
+                "max_x": 907,
+                "min_y": 395,
+                "max_y": 455
+            }
+        },
+        "next": ["Rogue_ConfirmBuff"],
+        "post_delay": 1000
+    },
+    "RogueBuff_OCR": {
+        "recognition": "OCR",
+        "roi": [240, 395, 800, 60]
+    },
+    "Rogue_ConfirmBuff": {
+        "action": "Click",
+        "target": [1050, 680, 100, 30],
+        "next": ["Rogue_ResetIdleToMain"],
+        "post_delay": 1000
+    },
+    "Rogue_TreasureReward": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "领取奖励",
+                "roi": [280, 200, 200, 80]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Claim Reward"
+            }
+        ],
+        "next": ["Rogue_TreasureStopRouter"],
+        "post_delay": 500
+    },
+    "Rogue_TreasureStopRouter": {
+        "next": ["Rogue_TreasureStaminaNotEnough", "Rogue_TreasureCheckClaimLimit"]
+    },
+    "Rogue_TreasureStaminaNotEnough": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "补充结晶"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "补充结晶波片"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Refill"
+            }
+        ],
+        "action": "ClickKey",
+        "key": 53,
+        "next": ["Rogue_ResetIdleToMain"],
+        "post_delay": 1500
+    },
+    "Rogue_TreasureCheckClaimLimit": {
+        "recognition": "Custom",
+        "custom_recognition": "CounterCheckBelowLimit",
+        "custom_recognition_param": {
+            "counter_key": "rogue_treasure_claims",
+            "max_count": 2
+        },
+        "next": ["Rogue_TreasureCheckFirstClaim"],
+        "on_error": ["Rogue_TreasureSkip"],
+        "post_delay": 200
+    },
+    "Rogue_TreasureCheckFirstClaim": {
+        "recognition": "Custom",
+        "custom_recognition": "CounterCheckEquals",
+        "custom_recognition_param": {
+            "counter_key": "rogue_treasure_claims",
+            "expected": 0
+        },
+        "next": ["Rogue_TreasureFirstClaim"],
+        "on_error": ["Rogue_TreasureRepeatClaim"]
+    },
+    "Rogue_TreasureFirstClaim": {
+        "action": "Click",
+        "target": [870, 454, 1, 1],
+        "next": ["Rogue_TreasureCountClaim"],
+        "post_delay": 1500
+    },
+    "Rogue_TreasureRepeatClaim": {
+        "action": "Click",
+        "target": [410, 446, 1, 1],
+        "next": ["Rogue_TreasureCountClaim"],
+        "post_delay": 1500
+    },
+    "Rogue_TreasureCountClaim": {
+        "action": "Custom",
+        "custom_action": "CounterIncrement",
+        "custom_action_param": {
+            "counter_key": "rogue_treasure_claims",
+            "step": 1
+        },
+        "next": ["Rogue_ResetIdleToMain"]
+    },
+    "Rogue_TreasureSkip": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": ["Rogue_ResetIdleToMain"],
+        "post_delay": 1500
+    },
+    "Rogue_StopTask": {
+        "action": "Custom",
+        "custom_action": "StopTask",
+        "next": []
+    }
+}

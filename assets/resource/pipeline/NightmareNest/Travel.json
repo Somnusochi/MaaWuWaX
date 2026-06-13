@@ -1,0 +1,38 @@
+{
+    "NightmareNest_ClickNest": {
+        "action": "Click",
+        "next": [
+            "NightmareNest_ClickTravel"
+        ],
+        "post_delay": 1000
+    },
+    "NightmareNest_ClickTravel": {
+        "recognition": "TemplateMatch",
+        "template": "gray_teleport.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": [
+            "NightmareNest_WaitLoad"
+        ],
+        "post_delay": 3000
+    },
+    "NightmareNest_WaitLoad": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "NightmareNest_ApproachStart"
+        ],
+        "timeout": 30000,
+        "post_delay": 1000,
+        "on_error": [
+            "NightmareNest_OpenBook"
+        ]
+    }
+}

@@ -80,10 +80,9 @@
         "next": ["RealTime_Main"]
     },
     "RealTime_Skip": {
-        "action": "Custom",
-        "custom_action": "SkipDialogAdvanced",
+        "next": ["SkipDialogStep_Main"],
         "enabled": true,
-        "next": ["RealTime_Main"]
+        "on_error": ["RealTime_Main"]
     },
     "RealTime_SkipConfirm": {
         "recognition": "TemplateMatch",

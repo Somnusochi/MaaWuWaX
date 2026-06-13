@@ -1,0 +1,130 @@
+{
+    "EchoFarm_CollectMoveWalkBack": {
+        "action": "KeyDown",
+        "key": 1,
+        "next": [
+            "EchoFarm_CollectMoveWalkBackRelease"
+        ],
+        "post_delay": 350
+    },
+    "EchoFarm_CollectMoveWalkBackRelease": {
+        "action": "KeyUp",
+        "key": 1,
+        "next": [
+            "EchoFarm_CollectMoveWalkForward"
+        ],
+        "post_delay": 120
+    },
+    "EchoFarm_CollectMoveWalkForward": {
+        "action": "KeyDown",
+        "key": 13,
+        "next": [
+            "EchoFarm_CollectMoveWalkForwardRelease"
+        ],
+        "post_delay": 900
+    },
+    "EchoFarm_CollectMoveWalkForwardRelease": {
+        "action": "KeyUp",
+        "key": 13,
+        "next": [
+            "EchoFarm_CollectAfterMove"
+        ],
+        "post_delay": 120
+    },
+    "EchoFarm_CollectMoveCircleForward": {
+        "action": "KeyDown",
+        "key": 13,
+        "next": [
+            "EchoFarm_CollectMoveCircleForwardRelease"
+        ],
+        "post_delay": 500
+    },
+    "EchoFarm_CollectMoveCircleForwardRelease": {
+        "action": "KeyUp",
+        "key": 13,
+        "next": [
+            "EchoFarm_CollectMoveCircleRight"
+        ],
+        "post_delay": 120
+    },
+    "EchoFarm_CollectMoveCircleRight": {
+        "action": "KeyDown",
+        "key": 2,
+        "next": [
+            "EchoFarm_CollectMoveCircleRightRelease"
+        ],
+        "post_delay": 1200
+    },
+    "EchoFarm_CollectMoveCircleRightRelease": {
+        "action": "KeyUp",
+        "key": 2,
+        "next": [
+            "EchoFarm_CollectMoveCircleForwardFinal"
+        ],
+        "post_delay": 120
+    },
+    "EchoFarm_CollectMoveCircleForwardFinal": {
+        "action": "KeyDown",
+        "key": 13,
+        "next": [
+            "EchoFarm_CollectMoveCircleForwardFinalRelease"
+        ],
+        "post_delay": 600
+    },
+    "EchoFarm_CollectMoveCircleForwardFinalRelease": {
+        "action": "KeyUp",
+        "key": 13,
+        "next": [
+            "EchoFarm_CollectAfterMove"
+        ],
+        "post_delay": 120
+    },
+    "EchoFarm_CollectMoveYoloLeft": {
+        "action": "KeyDown",
+        "key": 0,
+        "next": [
+            "EchoFarm_CollectMoveYoloLeftRelease"
+        ],
+        "post_delay": 350
+    },
+    "EchoFarm_CollectMoveYoloLeftRelease": {
+        "action": "KeyUp",
+        "key": 0,
+        "next": [
+            "EchoFarm_CollectMoveYoloRight"
+        ],
+        "post_delay": 120
+    },
+    "EchoFarm_CollectMoveYoloRight": {
+        "action": "KeyDown",
+        "key": 2,
+        "next": [
+            "EchoFarm_CollectMoveYoloRightRelease"
+        ],
+        "post_delay": 700
+    },
+    "EchoFarm_CollectMoveYoloRightRelease": {
+        "action": "KeyUp",
+        "key": 2,
+        "next": [
+            "EchoFarm_CollectMoveYoloLeftFinal"
+        ],
+        "post_delay": 120
+    },
+    "EchoFarm_CollectMoveYoloLeftFinal": {
+        "action": "KeyDown",
+        "key": 0,
+        "next": [
+            "EchoFarm_CollectMoveYoloLeftFinalRelease"
+        ],
+        "post_delay": 350
+    },
+    "EchoFarm_CollectMoveYoloLeftFinalRelease": {
+        "action": "KeyUp",
+        "key": 0,
+        "next": [
+            "EchoFarm_CollectAfterMove"
+        ],
+        "post_delay": 120
+    }
+}

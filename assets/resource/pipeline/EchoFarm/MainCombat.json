@@ -1,0 +1,49 @@
+{
+    "EchoFarm_Navigate": {
+        "recognition": "Custom",
+        "custom_recognition": "MinimapNavigate",
+        "next": [
+            "EchoFarm_DetectDead",
+            "EchoFarm_Combat",
+            "EchoFarm_ScanEcho",
+            "EchoFarm_Navigate"
+        ],
+        "post_delay": 500,
+        "timeout": 60000,
+        "on_error": [
+            "EchoFarm_NextRound"
+        ]
+    },
+    "EchoFarm_Combat": {
+        "recognition": "TemplateMatch",
+        "template": "has_target.png",
+        "threshold": 0.7,
+        "next": [
+            "EchoFarm_Fight",
+            "EchoFarm_ScanEcho"
+        ]
+    },
+    "EchoFarm_Fight": {
+        "action": "Custom",
+        "custom_action": "CombatMain",
+        "next": [
+            "EchoFarm_DetectDead",
+            "EchoFarm_ScanEcho",
+            "EchoFarm_Fight"
+        ],
+        "timeout": 120000,
+        "on_error": [
+            "EchoFarm_NextRound"
+        ]
+    },
+    "EchoFarm_DetectDead": {
+        "recognition": "TemplateMatch",
+        "template": "revive_confirm_hcenter_vcenter.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "next": [
+            "EchoFarm_PostReviveWaitWorld"
+        ],
+        "post_delay": 3000
+    }
+}

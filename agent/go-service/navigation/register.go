@@ -7,9 +7,13 @@ import (
 
 func Register() {
 	maa.AgentServerRegisterCustomRecognition("MinimapNavigate", &MinimapNavigateRecognition{})
+	maa.AgentServerRegisterCustomRecognition("BossBookTargetVisible", &BossBookTargetVisibleRecognition{})
+	maa.AgentServerRegisterCustomRecognition("ForwardApproachResult", &ForwardApproachResultRecognition{})
 	maa.AgentServerRegisterCustomAction("DirectionWalk", &DirectionWalkAction{})
-	maa.AgentServerRegisterCustomAction("ClickFastTravel", &ClickFastTravelAction{})
-	maa.AgentServerRegisterCustomAction("BossBookPrepareProfile", &BossBookPrepareProfileAction{})
-	maa.AgentServerRegisterCustomAction("BossBookTargetSelect", &BossBookTargetSelectAction{})
+	maa.AgentServerRegisterCustomAction("ForwardApproachUntil", &ForwardApproachUntilAction{})
+	maa.AgentServerRegisterCustomAction("BossBookRememberSelection", &BossBookRememberSelectionAction{})
+	maa.AgentServerRegisterCustomAction("BossBookScrollPage", &BossBookScrollPageAction{})
+	maa.AgentServerRegisterCustomAction("BossBookSelectByIndex", &BossBookSelectByIndexAction{})
+	maa.AgentServerRegisterCustomAction("BossBookInputSearchText", &BossBookInputSearchTextAction{})
 	log.Info().Str("component", "navigation").Msg("registered navigation components")
 }

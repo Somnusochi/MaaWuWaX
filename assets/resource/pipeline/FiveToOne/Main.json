@@ -17,8 +17,17 @@
         "post_delay": 1000
     },
     "FiveToOne_WaitMenu": {
-        "recognition": "OCR",
-        "expected": "数据坞",
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "数据坞"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "數據塢"
+            }
+        ],
         "next": ["FiveToOne_ClickDataDock"],
         "post_delay": 500
     },
@@ -28,9 +37,19 @@
         "post_delay": 1000
     },
     "FiveToOne_WaitDataDock": {
-        "recognition": "OCR",
-        "expected": "数据坞",
-        "roi": [0, 0, 200, 100],
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "数据坞",
+                "roi": [0, 0, 200, 100]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "數據塢",
+                "roi": [0, 0, 200, 100]
+            }
+        ],
         "next": ["FiveToOne_ClickFusionTab"],
         "post_delay": 500
     },
@@ -56,115 +75,5 @@
         "action": "Click",
         "next": ["FiveToOne_LoopMerge"],
         "post_delay": 1000
-    },
-    "FiveToOne_LoopMerge": {
-        "action": "Custom",
-        "custom_action": "FiveToOnePrepareStep",
-        "next": ["FiveToOne_RoundGate"],
-        "on_error": ["FiveToOne_Summary"],
-        "post_delay": 500
-    },
-    "FiveToOne_RoundGate": {
-        "recognition": "Custom",
-        "custom_recognition": "FiveToOneCanContinueRound",
-        "next": ["FiveToOne_ClickSelectAll"],
-        "on_error": ["FiveToOne_LoopMerge"]
-    },
-    "FiveToOne_ClickSelectAll": {
-        "action": "Click",
-        "target": [333, 655, 1, 1],
-        "next": ["FiveToOne_ClickFuse"],
-        "post_delay": 500
-    },
-    "FiveToOne_ClickFuse": {
-        "action": "Click",
-        "target": [998, 648, 1, 1],
-        "next": ["FiveToOne_FirstConfirm"],
-        "post_delay": 1200
-    },
-    "FiveToOne_FirstConfirm": {
-        "recognition": "Custom",
-        "custom_recognition": "FiveToOneFirstConfirm",
-        "action": "Click",
-        "next": ["FiveToOne_FirstConfirmCenter"],
-        "timeout": 1000,
-        "on_error": ["FiveToOne_CheckResult"]
-    },
-    "FiveToOne_FirstConfirmCenter": {
-        "action": "Click",
-        "target": [627, 396, 1, 1],
-        "next": ["FiveToOne_SecondConfirm"],
-        "post_delay": 200
-    },
-    "FiveToOne_SecondConfirm": {
-        "recognition": "OCR",
-        "expected": "确认",
-        "roi": [760, 520, 420, 160],
-        "action": "Click",
-        "next": ["FiveToOne_MarkConfirmHandled"],
-        "timeout": 1000,
-        "on_error": ["FiveToOne_CheckResult"]
-    },
-    "FiveToOne_MarkConfirmHandled": {
-        "action": "Custom",
-        "custom_action": "FiveToOneMarkConfirmHandled",
-        "next": ["FiveToOne_CheckResult"],
-        "post_delay": 800
-    },
-    "FiveToOne_CheckResult": {
-        "recognition": "OCR",
-        "expected": "获得声骸",
-        "roi": [380, 0, 520, 120],
-        "next": ["FiveToOne_CloseResult"],
-        "timeout": 1000,
-        "on_error": ["FiveToOne_CheckShortage"]
-    },
-    "FiveToOne_CheckShortage": {
-        "recognition": "OCR",
-        "expected": "批量融合",
-        "roi": [900, 600, 380, 120],
-        "next": ["FiveToOne_DeselectAllShortage"],
-        "timeout": 1000,
-        "on_error": ["FiveToOne_RoundWait"]
-    },
-    "FiveToOne_RoundWait": {
-        "action": "DoNothing",
-        "next": ["FiveToOne_RoundGate"],
-        "post_delay": 800
-    },
-    "FiveToOne_DeselectAllShortage": {
-        "action": "Click",
-        "target": [333, 655, 1, 1],
-        "next": ["FiveToOne_RecordShortage"]
-    },
-    "FiveToOne_RecordShortage": {
-        "action": "Custom",
-        "custom_action": "FiveToOneRecordShortage",
-        "next": ["FiveToOne_LoopMerge"]
-    },
-    "FiveToOne_CloseResult": {
-        "action": "Click",
-        "target": [678, 36, 1, 1],
-        "next": ["FiveToOne_ContinueAfterResult"],
-        "post_delay": 600
-    },
-    "FiveToOne_ContinueAfterResult": {
-        "action": "Click",
-        "target": [870, 655, 1, 1],
-        "next": ["FiveToOne_RecordFusion"],
-        "post_delay": 800
-    },
-    "FiveToOne_RecordFusion": {
-        "action": "Custom",
-        "custom_action": "FiveToOneRecordFusion",
-        "next": ["FiveToOne_RoundGate"]
-    },
-    "FiveToOne_Summary": {
-        "action": "Custom",
-        "custom_action": "FiveToOneSummary",
-        "next": ["FiveToOne_Done"]
-    },
-    "FiveToOne_Done": {
-        "next": []
     }
 }

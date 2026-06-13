@@ -1,0 +1,68 @@
+{
+    "Popup_GenericConfirm": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确定"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            }
+        ],
+        "action": "Click",
+        "post_delay": 800,
+        "next": []
+    },
+    "Popup_DontShowAgain": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "不再提示"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "不再显示"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Don't show"
+            }
+        ],
+        "action": "Click",
+        "post_delay": 500,
+        "next": ["Popup_GenericConfirm"]
+    },
+    "Popup_ReviveConfirm": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "revive_confirm_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "复活"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Revive"
+            }
+        ],
+        "action": "Click",
+        "post_delay": 3000,
+        "next": []
+    }
+}

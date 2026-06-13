@@ -1,0 +1,39 @@
+{
+    "Simulation_RecoverToWorld": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": [
+            "Simulation_ConfirmExit",
+            "Simulation_EnsureWorld"
+        ],
+        "post_delay": 1000
+    },
+    "Simulation_ConfirmExit": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "gray_confirm_exit_button.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_yellow_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            }
+        ],
+        "action": "Click",
+        "next": [
+            "Simulation_WaitLoad"
+        ],
+        "post_delay": 3000
+    }
+}

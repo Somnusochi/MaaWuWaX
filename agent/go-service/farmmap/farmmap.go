@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/common/counter"
 	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/pkg/keycode"
 	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/pkg/minicv"
 	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/pkg/mouse"
@@ -58,7 +59,6 @@ type stateData struct {
 	myBox        pointBox
 	miniMapBox   pointBox
 	lastDistance float64
-	stuckIndex   int
 	done         bool
 	tracker      *MotionTracker
 }
@@ -76,7 +76,6 @@ type persistedStateData struct {
 	MyBox        persistedPointBox   `json:"my_box"`
 	MiniMapBox   persistedPointBox   `json:"mini_map_box"`
 	LastDistance float64             `json:"last_distance"`
-	StuckIndex   int                 `json:"stuck_index"`
 	Done         bool                `json:"done"`
 }
 
@@ -84,6 +83,8 @@ var farmState = struct {
 	sync.Mutex
 	state stateData
 }{}
+
+const farmMapStuckCounterKey = "farmmap_stuck"
 
 func persistedFarmMapDir() string {
 	return filepath.Join("debug", "farmmap")
@@ -112,7 +113,6 @@ func toPersistedState(state stateData) persistedStateData {
 		MyBox:        toPersistedBox(state.myBox),
 		MiniMapBox:   toPersistedBox(state.miniMapBox),
 		LastDistance: state.lastDistance,
-		StuckIndex:   state.stuckIndex,
 		Done:         state.done,
 	}
 }
@@ -161,9 +161,16 @@ type loadPathParam struct {
 }
 
 type walkStepParam struct {
-	ReachDistance int `json:"reach_distance"`
-	SearchRadius  int `json:"search_radius"`
-	WalkMs        int `json:"walk_ms"`
+	ReachDistance int                     `json:"reach_distance"`
+	SearchRadius  int                     `json:"search_radius"`
+	WalkMs        int                     `json:"walk_ms"`
+	StuckSteps    []farmMapStuckStepParam `json:"stuck_steps"`
+}
+
+type farmMapStuckStepParam struct {
+	Key     string `json:"key"`
+	StepMs  int    `json:"step_ms"`
+	DelayMs int    `json:"delay_ms"`
 }
 
 type LoadPathAction struct{}
@@ -181,10 +188,10 @@ func (a *ResetTrackerAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) boo
 	if farmState.state.tracker != nil {
 		farmState.state.tracker.ForceLost()
 	}
-	farmState.state.stuckIndex = 0
 	farmState.state.lastDistance = 0
 	writePersistedFarmMapState(farmState.state)
 	farmState.Unlock()
+	counter.Reset(farmMapStuckCounterKey, 0)
 	log.Info().Str("component", "FarmMapResetTracker").Msg("tracker and movement state reset")
 	return true
 }
@@ -235,9 +242,7 @@ func (a *LoadPathAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
 	}
 	writePersistedFarmMapState(farmState.state)
 	farmState.Unlock()
-
-	ctx.GetTasker().GetController().PostClickKey(keycode.MustCode("ESC")).Wait()
-	time.Sleep(1200 * time.Millisecond)
+	counter.Reset(farmMapStuckCounterKey, 0)
 
 	log.Info().
 		Str("component", "FarmMapLoadPath").
@@ -391,7 +396,7 @@ func walkTowardTarget(ctx *maa.Context, state stateData, loc pointBox, param wal
 	if distance <= float64(param.ReachDistance) {
 		state.stars = state.stars[1:]
 		state.lastDistance = 0
-		state.stuckIndex = 0
+		counter.Reset(farmMapStuckCounterKey, 0)
 		state.myBox = target.scale(1.3)
 		if len(state.stars) == 0 {
 			state.done = true
@@ -407,8 +412,9 @@ func walkTowardTarget(ctx *maa.Context, state stateData, loc pointBox, param wal
 
 	ctrl := ctx.GetTasker().GetController()
 	if math.Abs(distance-state.lastDistance) < 1 {
-		doStuckStep(ctrl, state.stuckIndex)
-		state.stuckIndex++
+		stuckIndex := counter.Peek(farmMapStuckCounterKey)
+		doStuckStep(ctrl, stuckIndex, param.StuckSteps)
+		counter.Increment(farmMapStuckCounterKey, 1)
 	} else {
 		angle := angleClockwise(loc, target)
 		screen, _ := ctrl.CacheImage()
@@ -416,7 +422,7 @@ func walkTowardTarget(ctx *maa.Context, state stateData, loc pointBox, param wal
 		facing := detectFacingAngleEnhanced(screenImg, state.miniMapBox)
 		turn := angleBetween(facing, angle)
 		navigate(ctrl, turn, time.Duration(param.WalkMs)*time.Millisecond)
-		state.stuckIndex = 0
+		counter.Reset(farmMapStuckCounterKey, 0)
 		log.Debug().
 			Str("component", "FarmMapWalkStep").
 			Float64("distance", distance).
@@ -671,23 +677,27 @@ func navigate(ctrl *maa.Controller, turn float64, hold time.Duration) {
 	}
 }
 
-func doStuckStep(ctrl *maa.Controller, idx int) {
-	steps := []struct {
-		key string
-		ms  int
-	}{
-		{"SPACE", 80},
-		{"A", 700},
-		{"D", 700},
-		{"T", 80},
+func doStuckStep(ctrl *maa.Controller, idx int, steps []farmMapStuckStepParam) {
+	if len(steps) == 0 {
+		log.Warn().Str("component", "FarmMapWalkStep").Msg("no stuck recovery steps configured")
+		return
 	}
 	step := steps[idx%len(steps)]
-	code := keycode.MustCode(step.key)
+	if step.Key == "" || step.StepMs <= 0 {
+		log.Warn().
+			Str("component", "FarmMapWalkStep").
+			Int("index", idx%len(steps)).
+			Msg("invalid stuck recovery step")
+		return
+	}
+	code := keycode.MustCode(step.Key)
 	ctrl.PostKeyDown(code).Wait()
-	time.Sleep(time.Duration(step.ms) * time.Millisecond)
+	time.Sleep(time.Duration(step.StepMs) * time.Millisecond)
 	ctrl.PostKeyUp(code).Wait()
-	time.Sleep(250 * time.Millisecond)
-	log.Info().Str("component", "FarmMapWalkStep").Str("key", step.key).Msg("stuck recovery step")
+	if step.DelayMs > 0 {
+		time.Sleep(time.Duration(step.DelayMs) * time.Millisecond)
+	}
+	log.Info().Str("component", "FarmMapWalkStep").Str("key", step.Key).Msg("stuck recovery step")
 }
 
 func angleClockwise(from pointBox, to pointBox) float64 {

@@ -37,7 +37,7 @@
         "template": "revive_confirm_hcenter_vcenter.png",
         "threshold": 0.7,
         "action": "Click",
-        "next": ["Rogue_Main"],
+        "next": ["Rogue_ResetIdleToMain"],
         "post_delay": 3000
     },
     "Rogue_Fight": {
@@ -48,15 +48,7 @@
         "on_error": ["Rogue_Main"]
     },
     "Rogue_PostFight": {
-        "next": [
-            "Rogue_PressF",
-            "Rogue_FindGate",
-            "Rogue_WalkTreasure",
-            "Rogue_WalkPurple",
-            "Rogue_TreasureReward",
-            "Rogue_StaminaNotEnough",
-            "Rogue_Main"
-        ],
+        "next": ["Rogue_ResetIdleAfterPostFight"],
         "post_delay": 500
     },
     "Rogue_PressF": {
@@ -93,11 +85,11 @@
         "post_delay": 300
     },
     "Rogue_PressFDone": {
-        "next": ["Rogue_Main"],
+        "next": ["Rogue_ResetIdleAfterPressF"],
         "post_delay": 1000
     },
     "Rogue_PressFNoMore": {
-        "next": ["Rogue_Main"],
+        "next": ["Rogue_ResetIdleAfterNoMoreF"],
         "post_delay": 1000
     }
 }

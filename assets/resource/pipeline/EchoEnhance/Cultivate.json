@@ -1,0 +1,115 @@
+{
+    "EchoEnhance_FindCultivate": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "培养",
+                "roi": [1050, 620, 230, 100]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "培養",
+                "roi": [1050, 620, 230, 100]
+            }
+        ],
+        "next": ["EchoEnhance_ClickCultivate"],
+        "post_delay": 300
+    },
+    "EchoEnhance_ClickCultivate": {
+        "action": "Click",
+        "next": ["EchoEnhance_WaitEnhanceUI"],
+        "post_delay": 500
+    },
+    "EchoEnhance_WaitEnhanceUI": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "声骸强化"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "聲骸強化"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Echo Enhance"
+            }
+        ],
+        "next": ["EchoEnhance_AddMaterial"],
+        "post_delay": 500
+    },
+    "EchoEnhance_AddMaterial": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "阶段放入",
+                "roi": [100, 430, 380, 200]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "階段放入",
+                "roi": [100, 430, 380, 200]
+            }
+        ],
+        "action": "Click",
+        "next": ["EchoEnhance_MaterialAdded", "EchoEnhance_AddMaterial"],
+        "post_delay": 300
+    },
+    "EchoEnhance_MaterialAdded": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "强化并调谐"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "強化並調諧"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Enhance"
+            }
+        ],
+        "action": "Click",
+        "next": ["EchoEnhance_HandlePopups"],
+        "post_delay": 1500
+    },
+    "EchoEnhance_HandlePopups": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "不再提示"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "调谐成功"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "調諧成功"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "点击任"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "點擊任"
+            }
+        ],
+        "action": "Click",
+        "next": ["EchoEnhance_HandlePopups", "EchoEnhance_Evaluate"],
+        "post_delay": 500
+    },
+    "EchoEnhance_Evaluate": {
+        "action": "Custom",
+        "custom_action": "EchoEnhance",
+        "next": ["EchoEnhance_AfterEvaluate"],
+        "post_delay": 500
+    }
+}

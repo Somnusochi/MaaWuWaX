@@ -18,7 +18,13 @@
         "custom_action": "CombatMain",
         "custom_action_param": {
             "auto_target": true,
-            "use_liberation": true
+            "use_liberation": true,
+            "dodge_cooldown_ms": 500,
+            "out_of_combat_switch_delay_ms": 2000,
+            "low_health_switch_delay_ms": 3000,
+            "concerto_switch_delay_ms": 8000,
+            "action_interval_ms": 120,
+            "auto_target_post_delay_ms": 200
         },
         "next": ["Combat_CheckState", "Combat_Engage"]
     },

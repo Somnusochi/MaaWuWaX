@@ -1,0 +1,56 @@
+{
+    "Popup_MonthlyCard": {
+        "recognition": "TemplateMatch",
+        "template": "monthly_card.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "post_delay": 1500,
+        "next": []
+    },
+    "Popup_LoginReward": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "登录奖励"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Login Reward"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "签到"
+            }
+        ],
+        "action": "Click",
+        "post_delay": 1500,
+        "next": []
+    },
+    "Popup_ClaimReward": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "claim_btn.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "claim_cancel_button_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "领取"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Claim"
+            }
+        ],
+        "action": "Click",
+        "post_delay": 1200,
+        "next": []
+    }
+}

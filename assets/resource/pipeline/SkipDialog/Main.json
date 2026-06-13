@@ -132,18 +132,13 @@
         "recognition": "TemplateMatch",
         "template": "message_dialog.png",
         "threshold": 0.65,
-        "action": "Custom",
-        "custom_action": "SkipDialogMessageClick",
+        "action": "Click",
+        "target": [640, 710, 1, 1],
         "next": ["SkipDialog_Main"],
         "on_error": ["SkipDialog_NoTarget"],
         "post_delay": 200
     },
     "SkipDialog_NoTarget": {
         "next": ["SkipDialog_Main"]
-    },
-    "SkipDialog_MessageDialog": {
-        "recognition": "TemplateMatch",
-        "template": "message_dialog.png",
-        "threshold": 0.65
     }
 }

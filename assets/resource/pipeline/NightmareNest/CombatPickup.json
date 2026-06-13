@@ -1,0 +1,43 @@
+{
+    "NightmareNest_PickEntry": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.6,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["NightmareNest_PickEntry2"],
+        "on_error": ["NightmareNest_PickEntryDone"],
+        "post_delay": 300
+    },
+    "NightmareNest_PickEntry2": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.6,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["NightmareNest_PickEntry3"],
+        "on_error": ["NightmareNest_PickEntryDone"],
+        "post_delay": 300
+    },
+    "NightmareNest_PickEntry3": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.6,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["NightmareNest_PickEntryDone"],
+        "on_error": ["NightmareNest_PickEntryNoMore"],
+        "post_delay": 300
+    },
+    "NightmareNest_PickEntryDone": {
+        "next": ["NightmareNest_Fight"],
+        "post_delay": 1000
+    },
+    "NightmareNest_PickEntryNoMore": {
+        "next": ["NightmareNest_Fight"],
+        "post_delay": 1000
+    }
+}

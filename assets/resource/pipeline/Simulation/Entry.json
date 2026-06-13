@@ -1,0 +1,25 @@
+{
+    "Simulation_Main": {
+        "next": [
+            "Simulation_EnsureWorld"
+        ]
+    },
+    "Simulation_EnsureWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "Simulation_OpenBook"
+        ],
+        "post_delay": 500,
+        "on_error": [
+            "Simulation_RecoverToWorld"
+        ]
+    }
+}

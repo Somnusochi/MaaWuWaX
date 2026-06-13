@@ -1,193 +1,48 @@
 {
     "EchoEnhance_Main": {
-        "next": [
-            "EchoEnhance_CheckLevel0"
-        ],
+        "next": ["EchoEnhance_CheckLevel0"],
         "post_delay": 500
     },
     "EchoEnhance_CheckLevel0": {
-        "recognition": "OCR",
-        "expected": "声骸技能",
-        "roi": [
-            832,
-            252,
-            448,
-            158
-        ],
-        "next": [
-            "EchoEnhance_FindCultivate"
-        ],
-        "on_error": [
-            "EchoEnhance_Done"
-        ],
-        "post_delay": 300
-    },
-    "EchoEnhance_FindCultivate": {
-        "recognition": "OCR",
-        "expected": "培养",
-        "roi": [
-            1050,
-            620,
-            230,
-            100
-        ],
-        "next": [
-            "EchoEnhance_ClickCultivate"
-        ],
-        "post_delay": 300
-    },
-    "EchoEnhance_ClickCultivate": {
-        "action": "Click",
-        "next": [
-            "EchoEnhance_WaitEnhanceUI"
-        ],
-        "post_delay": 500
-    },
-    "EchoEnhance_WaitEnhanceUI": {
         "recognition": "Or",
         "any_of": [
             {
                 "recognition": "OCR",
-                "expected": "声骸强化"
+                "expected": "声骸技能",
+                "roi": [832, 252, 448, 158]
             },
             {
                 "recognition": "OCR",
-                "expected": "Echo Enhance"
+                "expected": "聲骸技能",
+                "roi": [832, 252, 448, 158]
             }
         ],
-        "next": [
-            "EchoEnhance_AddMaterial"
-        ],
-        "post_delay": 500
-    },
-    "EchoEnhance_AddMaterial": {
-        "recognition": "OCR",
-        "expected": "阶段放入",
-        "roi": [
-            100,
-            430,
-            380,
-            200
-        ],
-        "action": "Click",
-        "next": [
-            "EchoEnhance_MaterialAdded",
-            "EchoEnhance_AddMaterial"
-        ],
+        "next": ["EchoEnhance_FindCultivate"],
+        "on_error": ["EchoEnhance_CheckReadyState"],
         "post_delay": 300
     },
-    "EchoEnhance_MaterialAdded": {
+    "EchoEnhance_CheckReadyState": {
         "recognition": "Or",
         "any_of": [
             {
                 "recognition": "OCR",
-                "expected": "强化并调谐"
+                "expected": "培养",
+                "roi": [1050, 620, 230, 100]
             },
             {
                 "recognition": "OCR",
-                "expected": "Enhance"
+                "expected": "培養",
+                "roi": [1050, 620, 230, 100]
             }
         ],
-        "action": "Click",
-        "next": [
-            "EchoEnhance_HandlePopups"
-        ],
-        "post_delay": 1500
+        "next": ["EchoEnhance_Done"],
+        "on_error": ["EchoEnhance_InvalidStart"],
+        "post_delay": 300
     },
-    "EchoEnhance_HandlePopups": {
-        "recognition": "Or",
-        "any_of": [
-            {
-                "recognition": "OCR",
-                "expected": "不再提示"
-            },
-            {
-                "recognition": "OCR",
-                "expected": "调谐成功"
-            },
-            {
-                "recognition": "OCR",
-                "expected": "点击任"
-            }
-        ],
-        "action": "Click",
-        "next": [
-            "EchoEnhance_HandlePopups",
-            "EchoEnhance_ReadStats"
-        ],
-        "post_delay": 500
-    },
-    "EchoEnhance_ReadStats": {
-        "recognition": "Custom",
-        "custom_recognition": "EchoStatReader",
-        "next": [
-            "EchoEnhance_Evaluate"
-        ],
-        "post_delay": 200
-    },
-    "EchoEnhance_Evaluate": {
+    "EchoEnhance_InvalidStart": {
         "action": "Custom",
-        "custom_action": "EchoEnhance",
-        "next": [
-            "EchoEnhance_AfterEvaluate"
-        ],
-        "post_delay": 500
-    },
-    "EchoEnhance_AfterEvaluate": {
-        "recognition": "Or",
-        "any_of": [
-            {
-                "recognition": "TemplateMatch",
-                "template": "echo_dropped.png",
-                "threshold": 0.7
-            },
-            {
-                "recognition": "OCR",
-                "expected": "已弃置"
-            }
-        ],
-        "next": [
-            "EchoEnhance_Esc"
-        ],
-        "timeout": 5000,
-        "post_delay": 500,
-        "on_error": [
-            "EchoEnhance_EscAfterLock"
-        ]
-    },
-    "EchoEnhance_EscAfterLock": {
-        "action": "ClickKey",
-        "key": 53,
-        "next": [
-            "EchoEnhance_WaitReturn"
-        ],
-        "post_delay": 500
-    },
-    "EchoEnhance_Esc": {
-        "action": "ClickKey",
-        "key": 53,
-        "next": [
-            "EchoEnhance_WaitReturn"
-        ],
-        "post_delay": 500
-    },
-    "EchoEnhance_WaitReturn": {
-        "recognition": "OCR",
-        "expected": "培养",
-        "roi": [
-            1050,
-            620,
-            230,
-            100
-        ],
-        "next": [
-            "EchoEnhance_Main"
-        ],
-        "timeout": 10000,
-        "post_delay": 300,
-        "on_error": [
-            "EchoEnhance_Esc"
-        ]
+        "custom_action": "StopTask",
+        "next": []
     },
     "EchoEnhance_Done": {
         "next": []

@@ -1,0 +1,40 @@
+{
+    "Simulation_Fight": {
+        "action": "Custom",
+        "custom_action": "CombatMain",
+        "next": [
+            "Simulation_CheckComplete",
+            "Simulation_Loot",
+            "Simulation_DetectDead",
+            "Simulation_Fight"
+        ],
+        "post_delay": 500,
+        "timeout": 120000,
+        "on_error": [
+            "Simulation_RecoverToWorld"
+        ]
+    },
+    "Simulation_DetectDead": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "revive_confirm_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "复活"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Revive"
+            }
+        ],
+        "action": "Click",
+        "next": [
+            "Simulation_RecoverToWorld"
+        ],
+        "post_delay": 2000
+    }
+}

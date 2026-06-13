@@ -1,0 +1,173 @@
+{
+    "EchoFarm_AfterRealmEnter": {
+        "action": "DoNothing",
+        "next": ["EchoFarm_AfterRealmEnterProfile"]
+    },
+    "EchoFarm_AfterRealmEnterProfile": {
+        "action": "DoNothing",
+        "next": ["EchoFarm_AfterRealmEnterWait"]
+    },
+    "EchoFarm_AfterRealmEnterPromptRetryReset": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "echo_farm_realm_prompt",
+            "value": 0
+        },
+        "next": ["EchoFarm_AfterRealmEnterPromptRetryGate"]
+    },
+    "EchoFarm_AfterRealmEnterPromptRetryGate": {
+        "recognition": "Custom",
+        "custom_recognition": "CounterCheckBelowLimit",
+        "custom_recognition_param": {
+            "counter_key": "echo_farm_realm_prompt",
+            "max_count": 3
+        },
+        "next": ["EchoFarm_AfterRealmEnterCheckPrompt"],
+        "on_error": ["EchoFarm_AfterRealmEnterFenricoWalkForward"]
+    },
+    "EchoFarm_AfterRealmEnterCheckPrompt": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f_hcenter_vcenter.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f.png",
+                "threshold": 0.65
+            },
+            {
+                "recognition": "OCR",
+                "expected": "挑战"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge"
+            }
+        ],
+        "next": ["EchoFarm_AfterRealmEnterPressPrompt"],
+        "on_error": ["EchoFarm_AfterRealmEnterFenricoWalkForward"]
+    },
+    "EchoFarm_AfterRealmEnterPressPrompt": {
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["EchoFarm_AfterRealmEnterPromptRetryIncrement"],
+        "post_delay": 1000
+    },
+    "EchoFarm_AfterRealmEnterPromptRetryIncrement": {
+        "action": "Custom",
+        "custom_action": "CounterIncrement",
+        "custom_action_param": {
+            "counter_key": "echo_farm_realm_prompt",
+            "step": 1
+        },
+        "next": ["EchoFarm_AfterRealmEnterPromptRetryGate"]
+    },
+    "EchoFarm_AfterRealmEnterFallacyWalkRight": {
+        "action": "KeyDown",
+        "key": 2,
+        "next": ["EchoFarm_AfterRealmEnterFallacyWalkRightRelease"],
+        "post_delay": 250
+    },
+    "EchoFarm_AfterRealmEnterFallacyWalkRightRelease": {
+        "action": "KeyUp",
+        "key": 2,
+        "next": ["EchoFarm_AfterRealmEnterFallacyApproach"],
+        "post_delay": 120
+    },
+    "EchoFarm_AfterRealmEnterFallacyWalkForward": {
+        "action": "KeyDown",
+        "key": 13,
+        "next": ["EchoFarm_AfterRealmEnterFallacyWalkForwardRelease"],
+        "post_delay": 700
+    },
+    "EchoFarm_AfterRealmEnterFallacyWalkForwardRelease": {
+        "action": "KeyUp",
+        "key": 13,
+        "next": ["EchoFarm_AfterRealmEnterWait"]
+    },
+    "EchoFarm_AfterRealmEnterFenricoWalkForward": {
+        "action": "KeyDown",
+        "key": 13,
+        "next": ["EchoFarm_AfterRealmEnterFenricoWalkForwardRelease"],
+        "post_delay": 1200
+    },
+    "EchoFarm_AfterRealmEnterFenricoWalkForwardRelease": {
+        "action": "KeyUp",
+        "key": 13,
+        "next": ["EchoFarm_AfterRealmEnterFenricoApproach"]
+    },
+    "EchoFarm_AfterRealmEnterNamelessWalkForward": {
+        "action": "Custom",
+        "custom_action": "ForwardApproachUntil",
+        "custom_action_param": {
+            "direction": "forward",
+            "timeout_ms": 8000,
+            "step_ms": 600,
+            "sprint": true,
+            "center_camera_interval_ms": 1200,
+            "stop_on_combat": true,
+            "stop_on_f_prompt": true,
+            "stop_on_treasure": true,
+            "combat_node": "EchoFarm_TeleportWalkCombat",
+            "f_prompt_node": "EchoFarm_TeleportWalkFPrompt",
+            "treasure_node": "EchoFarm_TeleportWalkTreasure"
+        },
+        "next": ["EchoFarm_AfterRealmEnterNamelessCombatResult"],
+        "post_delay": 100
+    },
+    "EchoFarm_AfterRealmEnterNamelessCombatResult": {
+        "recognition": "Custom",
+        "custom_recognition": "ForwardApproachResult",
+        "custom_recognition_param": {
+            "expected": "combat"
+        },
+        "next": ["EchoFarm_Fight"],
+        "on_error": ["EchoFarm_AfterRealmEnterNamelessPromptResult"]
+    },
+    "EchoFarm_AfterRealmEnterNamelessPromptResult": {
+        "recognition": "Custom",
+        "custom_recognition": "ForwardApproachResult",
+        "custom_recognition_param": {
+            "expected": "f_prompt"
+        },
+        "next": ["EchoFarm_AfterRealmEnterPromptRetryReset"],
+        "on_error": ["EchoFarm_AfterRealmEnterWait"]
+    },
+    "EchoFarm_AfterRealmEnterWait": {
+        "action": "DoNothing",
+        "next": ["EchoFarm_AfterRealmEnterWaitCustom"]
+    },
+    "EchoFarm_AfterRealmEnterWaitCustom": {
+        "action": "Custom",
+        "custom_action": "Delay",
+        "custom_action_param": {
+            "delay_seconds": 0
+        },
+        "next": ["EchoFarm_WaitRealmState"],
+        "on_error": ["EchoFarm_NextRound"]
+    },
+    "EchoFarm_WaitRealmState": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "has_target.png",
+                "threshold": 0.7,
+                "roi": [400, 200, 800, 600]
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "minimap.png",
+                "threshold": 0.7,
+                "roi": [1050, 20, 200, 160]
+            }
+        ],
+        "next": ["EchoFarm_Combat", "EchoFarm_ScanEcho"],
+        "timeout": 30000,
+        "on_error": ["EchoFarm_NextRound"]
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "EchoFarm_TeleportBoss": {
+        "action": "DoNothing",
+        "next": [
+            "EchoFarm_OpenBook"
+        ],
+        "post_delay": 500
+    }
+}

@@ -1,0 +1,74 @@
+{
+    "Rogue_HandleUI": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "交易",
+                "roi": [10, 20, 180, 80]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Trade",
+                "roi": [10, 20, 180, 80]
+            }
+        ],
+        "action": "ClickKey",
+        "key": 53,
+        "post_delay": 2000,
+        "next": ["Rogue_ResetIdleToMain"]
+    },
+    "Rogue_ContinueExplore": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "退出确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Exit Confirm"
+            }
+        ],
+        "action": "Click",
+        "target": [860, 440, 100, 50],
+        "next": ["Rogue_ResetIdleToStartRun"],
+        "post_delay": 2000
+    },
+    "Rogue_ChallengeEnd": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "挑战结束"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge End"
+            }
+        ],
+        "next": [],
+        "post_delay": 1000
+    },
+    "Rogue_StaminaNotEnough": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "补充结晶"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "补充结晶波片"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Refill"
+            }
+        ],
+        "action": "ClickKey",
+        "key": 53,
+        "next": ["Rogue_ResetIdleToStartRun"],
+        "post_delay": 1000
+    }
+}

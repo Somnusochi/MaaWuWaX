@@ -1,0 +1,167 @@
+{
+    "EchoFarm_PostCombat": {
+        "next": ["EchoFarm_PostCombatCheckClaim"]
+    },
+    "EchoFarm_PostCombatCheckClaim": {
+        "recognition": "TemplateMatch",
+        "template": "claim_btn.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["EchoFarm_PostCombat"],
+        "post_delay": 1500,
+        "on_error": ["EchoFarm_PostCombatCheckExitReward"]
+    },
+    "EchoFarm_PostCombatCheckExitReward": {
+        "recognition": "TemplateMatch",
+        "template": "claim_cancel_button_hcenter_vcenter.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["EchoFarm_PostCombatWaitWorld"],
+        "post_delay": 1500,
+        "on_error": ["EchoFarm_PostCombatCheckChallenge"]
+    },
+    "EchoFarm_PostCombatCheckChallenge": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "gray_button_challenge.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "OCR",
+                "expected": "挑战"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Challenge"
+            }
+        ],
+        "action": "Click",
+        "next": ["EchoFarm_PostCombatCheckStartBattle"],
+        "post_delay": 1000,
+        "on_error": ["EchoFarm_PostCombatSkipChallenge"]
+    },
+    "EchoFarm_PostCombatSkipChallenge": {
+        "next": ["EchoFarm_PostCombatCheckStartBattle"]
+    },
+    "EchoFarm_PostCombatCheckStartBattle": {
+        "recognition": "TemplateMatch",
+        "template": "gray_start_battle.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["EchoFarm_PostCombatWaitBattleLoad"],
+        "post_delay": 3000,
+        "on_error": ["EchoFarm_PostCombatCheckConfirmExit"]
+    },
+    "EchoFarm_PostCombatCheckConfirmExit": {
+        "recognition": "TemplateMatch",
+        "template": "gray_confirm_exit_button.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "next": ["EchoFarm_PostCombatWaitWorld"],
+        "post_delay": 3000,
+        "on_error": ["EchoFarm_PostCombatCheckConfirm"]
+    },
+    "EchoFarm_PostCombatCheckConfirm": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "confirm_btn_hcenter_vcenter.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "btn_yellow_confirm.png",
+                "threshold": 0.7
+            },
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            }
+        ],
+        "action": "Click",
+        "next": ["EchoFarm_PostCombat"],
+        "post_delay": 1500,
+        "on_error": ["EchoFarm_PostCombatCheckTreasure"]
+    },
+    "EchoFarm_PostCombatCheckTreasure": {
+        "recognition": "TemplateMatch",
+        "template": "treasure_icon.png",
+        "threshold": 0.6,
+        "next": ["EchoFarm_PostCombatTreasureLoop"],
+        "on_error": ["EchoFarm_PostCombatCheckRealmPrompt"]
+    },
+    "EchoFarm_PostCombatWaitWorld": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": ["EchoFarm_PostCombatResume"],
+        "timeout": 30000,
+        "post_delay": 1000,
+        "on_error": ["EchoFarm_PostCombatResumeFallback"]
+    },
+    "EchoFarm_PostCombatWaitBattleLoad": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [1050, 20, 200, 160],
+        "next": ["EchoFarm_AfterRealmEnter"],
+        "timeout": 30000,
+        "post_delay": 1000,
+        "on_error": ["EchoFarm_PostCombatResume"]
+    },
+    "EchoFarm_PostCombatResumeFallback": {
+        "next": ["EchoFarm_PostCombatResume"]
+    },
+    "EchoFarm_PostCombatResume": {
+        "next": ["EchoFarm_PostCombatProfile"]
+    },
+    "EchoFarm_PostCombatProfile": {
+        "next": ["EchoFarm_LocalCheckCombat"]
+    },
+    "EchoFarm_PostCombatFenricoReset": {
+        "next": ["EchoFarm_TeleportBoss"],
+        "post_delay": 1000
+    },
+    "EchoFarm_PostCombatFallacyReset": {
+        "next": ["EchoFarm_TeleportBoss"],
+        "post_delay": 1000
+    },
+    "EchoFarm_PostCombatNamelessAdvance": {
+        "next": ["EchoFarm_PostCombatNamelessCheckCombat"],
+        "timeout": 10000,
+        "on_error": ["EchoFarm_LocalCheckCombat"]
+    },
+    "EchoFarm_PostCombatNamelessCheckCombat": {
+        "recognition": "TemplateMatch",
+        "template": "has_target.png",
+        "threshold": 0.7,
+        "next": ["EchoFarm_Fight"],
+        "on_error": ["EchoFarm_PostCombatNamelessStep"]
+    },
+    "EchoFarm_PostCombatNamelessStep": {
+        "action": "Click",
+        "target": [640, 360, 1, 1],
+        "next": ["EchoFarm_PostCombatNamelessForward"],
+        "post_delay": 100
+    },
+    "EchoFarm_PostCombatNamelessForward": {
+        "action": "KeyDown",
+        "key": 13,
+        "next": ["EchoFarm_PostCombatNamelessForwardRelease"],
+        "post_delay": 900
+    },
+    "EchoFarm_PostCombatNamelessForwardRelease": {
+        "action": "KeyUp",
+        "key": 13,
+        "next": ["EchoFarm_PostCombatNamelessAdvance"],
+        "post_delay": 120
+    }
+}

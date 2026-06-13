@@ -1,0 +1,114 @@
+{
+    "EchoChange_FindCultivate": {
+        "recognition": "OCR",
+        "expected": "培养",
+        "roi": [1050, 620, 230, 100],
+        "next": ["EchoChange_ClickCultivate"],
+        "post_delay": 300
+    },
+    "EchoChange_ClickCultivate": {
+        "action": "Click",
+        "next": ["EchoChange_WaitEnhanceUI"],
+        "post_delay": 500
+    },
+    "EchoChange_WaitEnhanceUI": {
+        "recognition": "OCR",
+        "expected": "声骸强化",
+        "next": ["EchoChange_CheckCurrentStat"],
+        "post_delay": 500
+    },
+    "EchoChange_CheckCurrentStat": {
+        "recognition": "OCR",
+        "expected": "^(?:攻击|攻击力)$",
+        "roi": [115, 144, 80, 44],
+        "next": ["EchoChange_Done"],
+        "on_error": ["EchoChange_CheckCurrentStatOther"],
+        "post_delay": 300
+    },
+    "EchoChange_CheckCurrentStatOther": {
+        "recognition": "OCR",
+        "expected": ".+",
+        "roi": [115, 144, 80, 44],
+        "next": ["EchoChange_ClickMainStat"],
+        "on_error": ["EchoChange_Done"],
+        "post_delay": 300
+    },
+    "EchoChange_ClickMainStat": {
+        "action": "Click",
+        "target": [50, 300, 30, 30],
+        "next": ["EchoChange_WaitMainStatList"],
+        "post_delay": 800
+    },
+    "EchoChange_WaitMainStatList": {
+        "recognition": "OCR",
+        "expected": "主音属性",
+        "next": ["EchoChange_ClickDropdown"],
+        "post_delay": 500
+    },
+    "EchoChange_ClickDropdown": {
+        "action": "Click",
+        "target": [660, 510, 100, 30],
+        "next": ["EchoChange_SelectTarget"],
+        "post_delay": 500
+    },
+    "EchoChange_SelectTarget": {
+        "recognition": "OCR",
+        "expected": "^(?:攻击|攻击力)$",
+        "roi": [100, 300, 800, 400],
+        "action": "Click",
+        "next": ["EchoChange_Confirm"],
+        "post_delay": 500
+    },
+    "EchoChange_Confirm": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "确认"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Confirm"
+            }
+        ],
+        "action": "Click",
+        "next": ["EchoChange_ClickRestructure"],
+        "post_delay": 2000
+    },
+    "EchoChange_ClickRestructure": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "数据重构"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Restructure"
+            }
+        ],
+        "action": "Click",
+        "next": ["EchoChange_WaitResult"],
+        "post_delay": 500
+    },
+    "EchoChange_WaitResult": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "获得声骸"
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Got Echo"
+            }
+        ],
+        "next": ["EchoChange_RecordSuccess"],
+        "post_delay": 500
+    },
+    "EchoChange_RecordSuccess": {
+        "action": "Custom",
+        "custom_action": "EchoChangeRecordSuccess",
+        "next": ["EchoChange_Esc"]
+    }
+}

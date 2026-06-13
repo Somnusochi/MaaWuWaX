@@ -7,7 +7,7 @@ import (
 
 func Register() {
 	maa.AgentServerRegisterCustomRecognition("NightmareFindNest", &FindNestRecognition{})
-	maa.AgentServerRegisterCustomRecognition("NestScroll", &NestScrollRecognition{})
-	maa.AgentServerRegisterCustomAction("NightmareApproachNest", &ApproachNestAction{})
+	maa.AgentServerRegisterCustomAction("NightmareSaveScrollFingerprint", &SaveNightmareScrollFingerprintAction{})
+	maa.AgentServerRegisterCustomRecognition("NightmareScrollFingerprintAdvanced", &NightmareScrollFingerprintAdvancedRecognition{})
 	log.Info().Str("component", "nightmare").Msg("registered nightmare components")
 }

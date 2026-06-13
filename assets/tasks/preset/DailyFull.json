@@ -17,8 +17,12 @@
                         "ClaimMail": "Yes",
                         "ClaimBattlePass": "Yes",
                         "StaminaType": "tacet",
-                        "TacetSuppressionIndex": "1",
-                        "ForgeryChallengeIndex": "1",
+                        "TacetSuppressionIndex": {
+                            "value": "1"
+                        },
+                        "ForgeryChallengeIndex": {
+                            "value": "1"
+                        },
                         "SimulationMaterial": "shell_credit"
                     }
                 }

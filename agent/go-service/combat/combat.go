@@ -69,11 +69,37 @@ type CombatMainAction struct {
 }
 
 type combatMainParam struct {
-	UseLiberation bool `json:"use_liberation"`
-	AutoTarget    bool `json:"auto_target"`
-	SwitchHealer  bool `json:"switch_healer"`
-	ChisaDPS      bool `json:"chisa_dps"`
-	IunoC6        bool `json:"iuno_c6"`
+	UseLiberation             bool `json:"use_liberation"`
+	AutoTarget                bool `json:"auto_target"`
+	SwitchHealer              bool `json:"switch_healer"`
+	ChisaDPS                  bool `json:"chisa_dps"`
+	IunoC6                    bool `json:"iuno_c6"`
+	DodgeCooldownMs           int  `json:"dodge_cooldown_ms"`
+	OutOfCombatSwitchDelayMs  int  `json:"out_of_combat_switch_delay_ms"`
+	LowHealthSwitchDelayMs    int  `json:"low_health_switch_delay_ms"`
+	ConcertoSwitchDelayMs     int  `json:"concerto_switch_delay_ms"`
+	ActionIntervalMs          int  `json:"action_interval_ms"`
+	AutoTargetPostDelayMs     int  `json:"auto_target_post_delay_ms"`
+}
+
+func defaultCombatMainParam() combatMainParam {
+	return combatMainParam{
+		UseLiberation:            true,
+		AutoTarget:               true,
+		DodgeCooldownMs:          500,
+		OutOfCombatSwitchDelayMs: 2000,
+		LowHealthSwitchDelayMs:   3000,
+		ConcertoSwitchDelayMs:    8000,
+		ActionIntervalMs:         120,
+		AutoTargetPostDelayMs:    200,
+	}
+}
+
+func (p combatMainParam) durationFromMs(ms int, fallback int) time.Duration {
+	if ms <= 0 {
+		ms = fallback
+	}
+	return time.Duration(ms) * time.Millisecond
 }
 
 type switchPriority int
@@ -85,7 +111,7 @@ const (
 )
 
 func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
-	param := combatMainParam{UseLiberation: true, AutoTarget: true}
+	param := defaultCombatMainParam()
 	a.currentTaskName = arg.CurrentTaskName
 	if arg.CustomActionParam != "" {
 		if err := sonic.Unmarshal([]byte(arg.CustomActionParam), &param); err != nil {
@@ -96,6 +122,12 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 
 	now := time.Now()
 	roi := maa.Rect{0, 0, 1, 1}
+	dodgeCooldown := param.durationFromMs(param.DodgeCooldownMs, 500)
+	outOfCombatSwitchDelay := param.durationFromMs(param.OutOfCombatSwitchDelayMs, 2000)
+	lowHealthSwitchDelay := param.durationFromMs(param.LowHealthSwitchDelayMs, 3000)
+	concertoSwitchDelay := param.durationFromMs(param.ConcertoSwitchDelayMs, 8000)
+	actionInterval := param.durationFromMs(param.ActionIntervalMs, 120)
+	autoTargetPostDelay := param.durationFromMs(param.AutoTargetPostDelayMs, 200)
 
 	ctrl := ctx.GetTasker().GetController()
 	ctrl.PostScreencap().Wait()
@@ -109,7 +141,7 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 	}
 
 	// ── Dodge ──
-	if screenAnalyzer.HasDodge && time.Since(a.lastDodge) > 500*time.Millisecond {
+	if screenAnalyzer.HasDodge && time.Since(a.lastDodge) > dodgeCooldown {
 		pendingAction = "dodge"
 		a.lastDodge = now
 		return true
@@ -124,7 +156,7 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 		a.hasLavitator = false
 		screenAnalyzer.FreezeDuration = 0
 		screenAnalyzer.LastFrameTime = 0
-		if param.SwitchHealer && time.Since(a.lastSwitch) > 2*time.Second {
+		if param.SwitchHealer && time.Since(a.lastSwitch) > outOfCombatSwitchDelay {
 			current := a.currentSlot()
 			if a.effectiveRole(current) != roleHealer {
 				for i, slot := range screenAnalyzer.CharSlots {
@@ -145,7 +177,7 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 		if param.AutoTarget && !screenAnalyzer.HasTarget {
 			// Auto-target: middle-click to lock on to nearest enemy (ok-ww: target_enemy)
 			ctrl.PostClick(640, 360).Wait()
-			time.Sleep(200 * time.Millisecond)
+			time.Sleep(autoTargetPostDelay)
 		}
 		return true
 	}
@@ -156,7 +188,7 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 	}
 
 	// ── Health-based switch: if current char is low HP, switch to healer ──
-	if screenAnalyzer.HasHealthLow() && time.Since(a.lastSwitch) > 3*time.Second {
+	if screenAnalyzer.HasHealthLow() && time.Since(a.lastSwitch) > lowHealthSwitchDelay {
 		for i, slot := range screenAnalyzer.CharSlots {
 			if a.effectiveRole(slot) == roleHealer && slot.Alive && i != screenAnalyzer.CurrentIdx {
 				a.performCharacterStrategy(ctx, param) // quick perform then switch
@@ -169,7 +201,7 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 	}
 
 	// ── Concerto switch ──
-	if time.Since(a.lastSwitch) > 8*time.Second && screenAnalyzer.ConcertoPct >= 1.0 {
+	if time.Since(a.lastSwitch) > concertoSwitchDelay && screenAnalyzer.ConcertoPct >= 1.0 {
 		target := a.chooseSwitchTarget(now, true)
 		if target >= 0 {
 			pendingAction = "switch"
@@ -188,7 +220,7 @@ func (a *CombatMainAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool 
 		}
 	}
 
-	if time.Since(a.lastAction) <= 120*time.Millisecond {
+	if time.Since(a.lastAction) <= actionInterval {
 		return true
 	}
 

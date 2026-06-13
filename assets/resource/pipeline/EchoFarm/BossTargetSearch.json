@@ -1,0 +1,88 @@
+{
+    "EchoFarm_BossTargetTryPage1": {
+        "recognition": "Custom",
+        "custom_recognition": "BossBookTargetVisible",
+        "action": "Click",
+        "next": ["EchoFarm_ClickProceed"],
+        "on_error": ["EchoFarm_BossTargetScrollPage2"],
+        "post_delay": 1000
+    },
+    "EchoFarm_BossTargetScrollPage2": {
+        "action": "Custom",
+        "custom_action": "BossBookScrollPage",
+        "custom_action_param": {
+            "page": 2
+        },
+        "next": ["EchoFarm_BossTargetTryPage2"],
+        "on_error": ["EchoFarm_BossTargetIndexFallback"],
+        "post_delay": 800
+    },
+    "EchoFarm_BossTargetTryPage2": {
+        "recognition": "Custom",
+        "custom_recognition": "BossBookTargetVisible",
+        "action": "Click",
+        "next": ["EchoFarm_ClickProceed"],
+        "on_error": ["EchoFarm_BossTargetScrollPage3"],
+        "post_delay": 1000
+    },
+    "EchoFarm_BossTargetScrollPage3": {
+        "action": "Custom",
+        "custom_action": "BossBookScrollPage",
+        "custom_action_param": {
+            "page": 3
+        },
+        "next": ["EchoFarm_BossTargetTryPage3"],
+        "on_error": ["EchoFarm_BossTargetIndexFallback"],
+        "post_delay": 800
+    },
+    "EchoFarm_BossTargetTryPage3": {
+        "recognition": "Custom",
+        "custom_recognition": "BossBookTargetVisible",
+        "action": "Click",
+        "next": ["EchoFarm_ClickProceed"],
+        "on_error": ["EchoFarm_BossTargetScrollPage4"],
+        "post_delay": 1000
+    },
+    "EchoFarm_BossTargetScrollPage4": {
+        "action": "Custom",
+        "custom_action": "BossBookScrollPage",
+        "custom_action_param": {
+            "page": 4
+        },
+        "next": ["EchoFarm_BossTargetTryPage4"],
+        "on_error": ["EchoFarm_BossTargetIndexFallback"],
+        "post_delay": 800
+    },
+    "EchoFarm_BossTargetTryPage4": {
+        "recognition": "Custom",
+        "custom_recognition": "BossBookTargetVisible",
+        "action": "Click",
+        "next": ["EchoFarm_ClickProceed"],
+        "on_error": ["EchoFarm_BossTargetScrollPage5"],
+        "post_delay": 1000
+    },
+    "EchoFarm_BossTargetScrollPage5": {
+        "action": "Custom",
+        "custom_action": "BossBookScrollPage",
+        "custom_action_param": {
+            "page": 5
+        },
+        "next": ["EchoFarm_BossTargetTryPage5"],
+        "on_error": ["EchoFarm_BossTargetIndexFallback"],
+        "post_delay": 800
+    },
+    "EchoFarm_BossTargetTryPage5": {
+        "recognition": "Custom",
+        "custom_recognition": "BossBookTargetVisible",
+        "action": "Click",
+        "next": ["EchoFarm_ClickProceed"],
+        "on_error": ["EchoFarm_BossTargetIndexFallback"],
+        "post_delay": 1000
+    },
+    "EchoFarm_BossTargetIndexFallback": {
+        "action": "Custom",
+        "custom_action": "BossBookSelectByIndex",
+        "next": ["EchoFarm_ClickProceed"],
+        "post_delay": 1000
+    }
+}

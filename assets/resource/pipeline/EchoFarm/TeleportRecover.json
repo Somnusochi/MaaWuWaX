@@ -1,0 +1,29 @@
+{
+    "EchoFarm_HandleTeleportFailure": {
+        "next": ["EchoFarm_TeleportRetryGate"]
+    },
+    "EchoFarm_TeleportRetryGate": {
+        "recognition": "Custom",
+        "custom_recognition": "CounterCheckBelowLimit",
+        "custom_recognition_param": {
+            "counter_key": "echo_farm_teleport_retry",
+            "max_count": 2
+        },
+        "next": ["EchoFarm_TeleportRetryIncrement"],
+        "on_error": ["EchoFarm_TeleportRetryFallback"]
+    },
+    "EchoFarm_TeleportRetryIncrement": {
+        "action": "Custom",
+        "custom_action": "CounterIncrement",
+        "custom_action_param": {
+            "counter_key": "echo_farm_teleport_retry",
+            "step": 1
+        },
+        "next": ["EchoFarm_TeleportBoss"],
+        "post_delay": 1000
+    },
+    "EchoFarm_TeleportRetryFallback": {
+        "next": ["EchoFarm_ReviveOpenBossBook"],
+        "post_delay": 500
+    }
+}

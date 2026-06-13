@@ -1,0 +1,69 @@
+{
+    "NightmareNest_CollectEcho": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["NightmareNest_CollectEcho2"],
+        "on_error": ["NightmareNest_CollectEchoDone"],
+        "post_delay": 300
+    },
+    "NightmareNest_CollectEcho2": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["NightmareNest_CollectEcho3"],
+        "on_error": ["NightmareNest_CollectEchoDone"],
+        "post_delay": 300
+    },
+    "NightmareNest_CollectEcho3": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["NightmareNest_CollectEcho4"],
+        "on_error": ["NightmareNest_CollectEchoDone"],
+        "post_delay": 300
+    },
+    "NightmareNest_CollectEcho4": {
+        "recognition": "TemplateMatch",
+        "template": "pick_up_f.png",
+        "threshold": 0.65,
+        "roi": [300, 200, 680, 480],
+        "action": "ClickKey",
+        "key": 3,
+        "next": ["NightmareNest_CollectEchoDone"],
+        "on_error": ["NightmareNest_CollectEchoNoMore"],
+        "post_delay": 300
+    },
+    "NightmareNest_CollectEchoDone": {
+        "next": ["NightmareNest_CheckMore"],
+        "post_delay": 1000
+    },
+    "NightmareNest_CollectEchoNoMore": {
+        "next": ["NightmareNest_CheckMore"],
+        "post_delay": 1000
+    },
+    "NightmareNest_CheckMore": {
+        "recognition": "TemplateMatch",
+        "template": "minimap.png",
+        "threshold": 0.7,
+        "roi": [
+            1050,
+            20,
+            200,
+            160
+        ],
+        "next": [
+            "NightmareNest_OpenBook"
+        ],
+        "post_delay": 500
+    }
+}

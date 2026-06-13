@@ -35,23 +35,16 @@
         "recognition": "Custom",
         "custom_recognition": "NightmareFindNest",
         "custom_recognition_param": {
-            "denominators": [24, 36, 48]
+            "denominators": [24, 36, 48],
+            "target_x": 1152,
+            "min_y": 110,
+            "fallback_y": 180,
+            "ocr_node": "NightmareNest_CountOCR"
         },
         "next": ["NightmareNest_ClickNest"],
         "post_delay": 500,
         "timeout": 5000,
-        "on_error": ["NightmareNest_ScrollMengyanNightmare"]
-    },
-    "NightmareNest_ScrollMengyanNightmare": {
-        "recognition": "Custom",
-        "custom_recognition": "NestScroll",
-        "custom_recognition_param": {
-            "max_pages": 5
-        },
-        "next": ["NightmareNest_ClickNest"],
-        "post_delay": 500,
-        "timeout": 15000,
-        "on_error": ["NightmareNest_Done"]
+        "on_error": ["NightmareNest_ScrollMengyan"]
     },
     "NightmareNest_MainCanxiang": {
         "next": ["NightmareNest_EnsureWorldCanxiang"]
@@ -113,23 +106,16 @@
         "recognition": "Custom",
         "custom_recognition": "NightmareFindNest",
         "custom_recognition_param": {
-            "denominators": [24, 36, 48]
+            "denominators": [24, 36, 48],
+            "target_x": 1152,
+            "min_y": 110,
+            "fallback_y": 180,
+            "ocr_node": "NightmareNest_CountOCR"
         },
         "next": ["NightmareNest_ClickNestCapture"],
         "post_delay": 500,
         "timeout": 5000,
-        "on_error": ["NightmareNest_ScrollMengyanCapture"]
-    },
-    "NightmareNest_ScrollMengyanCapture": {
-        "recognition": "Custom",
-        "custom_recognition": "NestScroll",
-        "custom_recognition_param": {
-            "max_pages": 5
-        },
-        "next": ["NightmareNest_ClickNestCapture"],
-        "post_delay": 500,
-        "timeout": 15000,
-        "on_error": ["NightmareNest_SelectCanxiangCapture"]
+        "on_error": ["NightmareNest_ScrollMengyan"]
     },
     "NightmareNest_SelectCanxiangCapture": {
         "recognition": "TemplateMatch",
@@ -145,7 +131,11 @@
         "recognition": "Custom",
         "custom_recognition": "NightmareFindNest",
         "custom_recognition_param": {
-            "denominators": [24, 36, 48]
+            "denominators": [24, 36, 48],
+            "target_x": 1152,
+            "min_y": 110,
+            "fallback_y": 180,
+            "ocr_node": "NightmareNest_CountOCR"
         },
         "next": ["NightmareNest_ClickNestCapture"],
         "post_delay": 500,

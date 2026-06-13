@@ -1,0 +1,146 @@
+{
+    "FiveToOne_LoopMerge": {
+        "action": "Custom",
+        "custom_action": "FiveToOnePrepareStep",
+        "custom_action_param": {
+            "sets": ["凝夜白霜", "熔山裂谷", "彻空冥雷", "啸谷长风", "浮星祛暗", "沉日劫明", "隐世回光", "轻云出月", "不绝余音", "凌冽决断之心", "此间永驻之光", "幽夜隐匿之帷", "高天共奏之曲", "无惧浪涛之勇", "流云逝尽之空", "愿戴荣光之旅", "奔狼燎原之焰"],
+            "main_stats": ["攻击力百分比", "生命值百分比", "防御力百分比", "暴击率", "暴击伤害", "共鸣效率", "冷凝伤害加成", "热熔伤害加成", "导电伤害加成", "气动伤害加成", "衍射伤害加成", "湮灭伤害加成", "治疗效果加成"],
+            "flat_main_stats": ["主属性生命值", "主属性攻击力", "主属性防御力"],
+            "step_two_stats": ["攻击力百分比"],
+            "filter_ocr_node": "FiveToOne_ClickOCR",
+            "stat_ocr_node": "FiveToOne_StatOCR",
+            "text_fix": {
+                "凝夜自霜": "凝夜白霜",
+                "主属性灭伤害加成": "主属性湮灭伤害加成",
+                "灭伤害加成": "主属性湮灭伤害加成",
+                "主属性行射伤害加成": "主属性衍射伤害加成"
+            },
+            "layout": {
+                "select_rarity": [51, 655],
+                "select_cost_step1": [794, 590],
+                "select_main_stat_left": [256, 511],
+                "select_main_stat_mid": [602, 511],
+                "select_main_stat_right": [909, 511],
+                "open_set_filter": [1146, 396],
+                "open_stat_filter": [1146, 533],
+                "confirm_filter": [1037, 605]
+            },
+            "timing": {
+                "select_rarity_delay_ms": 300,
+                "select_cost_delay_ms": 80,
+                "select_main_stat_delay_ms": 80,
+                "open_set_filter_delay_ms": 500,
+                "after_set_filter_delay_ms": 250,
+                "open_stat_filter_delay_ms": 500,
+                "select_stat_delay_ms": 60,
+                "confirm_filter_delay_ms": 500
+            }
+        },
+        "next": ["FiveToOne_ResetRoundCounter"],
+        "on_error": ["FiveToOne_Summary"],
+        "post_delay": 500
+    },
+    "FiveToOne_ResetRoundCounter": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "five_to_one_round",
+            "value": 0
+        },
+        "next": ["FiveToOne_RoundGate"]
+    },
+    "FiveToOne_RoundGate": {
+        "recognition": "Custom",
+        "custom_recognition": "CounterCheckBelowLimit",
+        "custom_recognition_param": {
+            "counter_key": "five_to_one_round",
+            "max_count": 20
+        },
+        "next": ["FiveToOne_ClickSelectAll"],
+        "on_error": ["FiveToOne_AdvanceStep"]
+    },
+    "FiveToOne_ClickSelectAll": {
+        "action": "Click",
+        "target": [333, 655, 1, 1],
+        "next": ["FiveToOne_ClickFuse"],
+        "post_delay": 500
+    },
+    "FiveToOne_ClickFuse": {
+        "action": "Click",
+        "target": [998, 648, 1, 1],
+        "next": ["FiveToOne_FirstConfirm"],
+        "post_delay": 1200
+    },
+    "FiveToOne_FirstConfirm": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "确认",
+                "roi": [760, 520, 420, 160]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "確認",
+                "roi": [760, 520, 420, 160]
+            }
+        ],
+        "action": "Click",
+        "next": ["FiveToOne_FirstConfirmCenter"],
+        "timeout": 1000,
+        "on_error": ["FiveToOne_CheckResult"]
+    },
+    "FiveToOne_FirstConfirmCenter": {
+        "action": "Click",
+        "target": [627, 396, 1, 1],
+        "next": ["FiveToOne_SecondConfirm"],
+        "post_delay": 200
+    },
+    "FiveToOne_SecondConfirm": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "确认",
+                "roi": [760, 520, 420, 160]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "確認",
+                "roi": [760, 520, 420, 160]
+            }
+        ],
+        "action": "Click",
+        "next": ["FiveToOne_CheckResult"],
+        "timeout": 1000
+    },
+    "FiveToOne_RoundWait": {
+        "action": "DoNothing",
+        "next": ["FiveToOne_RoundGate"],
+        "post_delay": 800
+    },
+    "FiveToOne_AdvanceStep": {
+        "action": "Custom",
+        "custom_action": "FiveToOneAdvanceStep",
+        "next": ["FiveToOne_LoopMerge"]
+    },
+    "FiveToOne_DeselectAllShortage": {
+        "action": "Click",
+        "target": [333, 655, 1, 1],
+        "next": ["FiveToOne_RecordShortage"]
+    },
+    "FiveToOne_RecordShortage": {
+        "action": "Custom",
+        "custom_action": "FiveToOneRecordShortage",
+        "next": ["FiveToOne_LoopMerge"]
+    },
+    "FiveToOne_RecordFusion": {
+        "action": "Custom",
+        "custom_action": "CounterIncrement",
+        "custom_action_param": {
+            "counter_key": "five_to_one_round",
+            "step": 1
+        },
+        "next": ["FiveToOne_RoundGate"]
+    }
+}

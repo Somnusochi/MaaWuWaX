@@ -1,0 +1,74 @@
+{
+    "EchoFarm_LoreleiOpenMenu": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": [
+            "EchoFarm_LoreleiOpenTimeMenu"
+        ],
+        "post_delay": 1000
+    },
+    "EchoFarm_LoreleiOpenTimeMenu": {
+        "action": "Click",
+        "target": [909, 691, 1, 1],
+        "next": [
+            "EchoFarm_LoreleiSelectNight"
+        ],
+        "post_delay": 2000
+    },
+    "EchoFarm_LoreleiSelectNight": {
+        "action": "Click",
+        "target": [243, 101, 1, 1],
+        "next": [
+            "EchoFarm_LoreleiAdvance1"
+        ],
+        "post_delay": 1000
+    },
+    "EchoFarm_LoreleiAdvance1": {
+        "action": "Click",
+        "target": [1050, 382, 1, 1],
+        "next": [
+            "EchoFarm_LoreleiAdvance2"
+        ],
+        "post_delay": 1000
+    },
+    "EchoFarm_LoreleiAdvance2": {
+        "action": "Click",
+        "target": [1050, 382, 1, 1],
+        "next": [
+            "EchoFarm_LoreleiAdvance3"
+        ],
+        "post_delay": 1000
+    },
+    "EchoFarm_LoreleiAdvance3": {
+        "action": "Click",
+        "target": [1050, 382, 1, 1],
+        "next": [
+            "EchoFarm_LoreleiConfirmTime"
+        ],
+        "post_delay": 1000
+    },
+    "EchoFarm_LoreleiConfirmTime": {
+        "action": "Click",
+        "target": [666, 648, 1, 1],
+        "next": [
+            "EchoFarm_LoreleiCloseMenu1"
+        ],
+        "post_delay": 6000
+    },
+    "EchoFarm_LoreleiCloseMenu1": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": [
+            "EchoFarm_LoreleiCloseMenu2"
+        ],
+        "post_delay": 1000
+    },
+    "EchoFarm_LoreleiCloseMenu2": {
+        "action": "ClickKey",
+        "key": 53,
+        "next": [
+            "EchoFarm_OpenBook"
+        ],
+        "post_delay": 1000
+    }
+}

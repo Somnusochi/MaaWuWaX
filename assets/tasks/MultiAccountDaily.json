@@ -3,7 +3,7 @@
         {
             "name": "MultiAccountDaily",
             "label": "$task.MultiAccountDaily.label",
-            "entry": "Daily_Main",
+            "entry": "MultiAccountDaily_Init",
             "controller": [
                 "macOS",
                 "macOS-Global"
@@ -12,18 +12,35 @@
                 "daily"
             ],
             "option": [
-                "MultiAccountCount"
+                "DailyNightmareMode",
+                "StaminaType",
+                "MultiAccountCount",
+                "MultiAccountSelectionRetries"
             ],
             "pipeline_override": {
                 "Daily_Done": {
                     "next": [
-                        "MultiAccountDaily_Switch"
+                        "MultiAccountDaily_SwitchGate"
                     ]
                 },
                 "Login_AfterAction": {
                     "next": [
                         "MultiAccountDaily_Login"
                     ]
+                },
+                "Daily_CheckNightmareExplicit": {
+                    "enabled": false
+                },
+                "Daily_CheckNightmareCapture": {
+                    "enabled": false
+                },
+                "Daily_SpendStamina": {
+                    "enabled": true
+                },
+                "MultiAccountDaily_Switch": {
+                    "custom_recognition_param": {
+                        "max_accounts": 2
+                    }
                 }
             }
         }
@@ -32,19 +49,25 @@
         "MultiAccountCount": {
             "type": "select",
             "label": "$option.MultiAccountCount.label",
-            "default_case": "2",
+            "default_case": "all",
             "cases": [
+                {
+                    "name": "all",
+                    "label": "全部账号",
+                    "pipeline_override": {
+                        "MultiAccountDaily_Switch": {
+                            "custom_recognition_param": {
+                                "max_accounts": 0
+                            }
+                        }
+                    }
+                },
                 {
                     "name": "2",
                     "label": "2 个账号",
                     "pipeline_override": {
                         "MultiAccountDaily_Switch": {
                             "custom_recognition_param": {
-                                "max_accounts": 2
-                            }
-                        },
-                        "MultiAccountDaily_SkipFailed": {
-                            "custom_action_param": {
                                 "max_accounts": 2
                             }
                         }
@@ -58,11 +81,6 @@
                             "custom_recognition_param": {
                                 "max_accounts": 3
                             }
-                        },
-                        "MultiAccountDaily_SkipFailed": {
-                            "custom_action_param": {
-                                "max_accounts": 3
-                            }
                         }
                     }
                 },
@@ -74,15 +92,30 @@
                             "custom_recognition_param": {
                                 "max_accounts": 4
                             }
-                        },
-                        "MultiAccountDaily_SkipFailed": {
-                            "custom_action_param": {
-                                "max_accounts": 4
-                            }
                         }
                     }
                 }
             ]
+        },
+        "MultiAccountSelectionRetries": {
+            "type": "input",
+            "label": "账号切换重试次数",
+            "inputs": [
+                {
+                    "name": "SelectionRetryLimit",
+                    "default": "5",
+                    "pipeline_type": "int",
+                    "verify": "^[1-9]\\d*$"
+                }
+            ],
+            "pipeline_override": {
+                "MultiAccountDaily_SelectionRetryGate": {
+                    "custom_recognition_param": {
+                        "counter_key": "multi_account_select_retry",
+                        "max_count": "{SelectionRetryLimit}"
+                    }
+                }
+            }
         }
     }
 }

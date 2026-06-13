@@ -1,0 +1,46 @@
+{
+    "FiveToOne_CheckResult": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "获得声骸",
+                "roi": [380, 0, 520, 120]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "獲得聲骸",
+                "roi": [380, 0, 520, 120]
+            }
+        ],
+        "next": ["FiveToOne_CloseResult"],
+        "timeout": 1000,
+        "on_error": ["FiveToOne_CheckShortage"]
+    },
+    "FiveToOne_CheckShortage": {
+        "recognition": "OCR",
+        "expected": "批量融合",
+        "roi": [900, 600, 380, 120],
+        "next": ["FiveToOne_DeselectAllShortage"],
+        "timeout": 1000,
+        "on_error": ["FiveToOne_RoundWait"]
+    },
+    "FiveToOne_CloseResult": {
+        "action": "Click",
+        "target": [678, 36, 1, 1],
+        "next": ["FiveToOne_ContinueAfterResult"],
+        "post_delay": 600
+    },
+    "FiveToOne_ContinueAfterResult": {
+        "action": "Click",
+        "target": [870, 655, 1, 1],
+        "next": ["FiveToOne_RecordFusion"],
+        "post_delay": 800
+    },
+    "FiveToOne_Summary": {
+        "next": ["FiveToOne_Done"]
+    },
+    "FiveToOne_Done": {
+        "next": []
+    }
+}

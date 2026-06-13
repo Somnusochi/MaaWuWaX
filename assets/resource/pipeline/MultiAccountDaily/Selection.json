@@ -1,0 +1,99 @@
+{
+    "MultiAccountDaily_ResetSelectionRetry": {
+        "action": "Custom",
+        "custom_action": "CounterReset",
+        "custom_action_param": {
+            "counter_key": "multi_account_select_retry",
+            "value": 0
+        },
+        "next": ["MultiAccountDaily_OpenDropdown"]
+    },
+    "MultiAccountDaily_OpenDropdown": {
+        "recognition": "TemplateMatch",
+        "template": "account_drop_down.png",
+        "threshold": 0.6,
+        "action": "Click",
+        "post_delay": 1000,
+        "next": ["MultiAccountDaily_AfterOpenDropdown"],
+        "timeout": 5000,
+        "on_error": ["MultiAccountDaily_CheckDropdownExpanded"]
+    },
+    "MultiAccountDaily_AfterOpenDropdown": {
+        "next": ["MultiAccountDaily_CheckDropdownExpanded"]
+    },
+    "MultiAccountDaily_CheckDropdownExpanded": {
+        "recognition": "Custom",
+        "custom_recognition": "MultiAccountDropdownExpanded",
+        "custom_recognition_param": {
+            "min_accounts": 2
+        },
+        "next": ["MultiAccountDaily_SelectNextAccount"],
+        "timeout": 5000,
+        "on_error": ["MultiAccountDaily_MarkSelectionRetry"]
+    },
+    "MultiAccountDaily_SelectNextAccount": {
+        "action": "Custom",
+        "custom_action": "MultiAccountSelectNext",
+        "next": ["MultiAccountDaily_VerifySelected"],
+        "post_delay": 2000,
+        "on_error": ["MultiAccountDaily_MarkSelectionRetry"]
+    },
+    "MultiAccountDaily_VerifySelected": {
+        "recognition": "Custom",
+        "custom_recognition": "MultiAccountSelectedMatches",
+        "next": ["MultiAccountDaily_ClickLogin"],
+        "timeout": 5000,
+        "on_error": ["MultiAccountDaily_MarkSelectionRetry"]
+    },
+    "MultiAccountDaily_MarkSelectionRetry": {
+        "action": "Custom",
+        "custom_action": "CounterIncrement",
+        "custom_action_param": {
+            "counter_key": "multi_account_select_retry",
+            "value": 1
+        },
+        "next": ["MultiAccountDaily_SelectionRetryGate"],
+        "post_delay": 1000
+    },
+    "MultiAccountDaily_SelectionRetryGate": {
+        "recognition": "Custom",
+        "custom_recognition": "CounterCheckBelowLimit",
+        "custom_recognition_param": {
+            "counter_key": "multi_account_select_retry",
+            "max_count": 5
+        },
+        "next": ["MultiAccountDaily_OpenDropdown"],
+        "on_error": ["MultiAccountDaily_SkipFailed"]
+    },
+    "MultiAccountDaily_ClickLogin": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "expected": "登录",
+                "roi": [384, 300, 512, 288]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "Login",
+                "roi": [384, 300, 512, 288]
+            },
+            {
+                "recognition": "OCR",
+                "expected": "登入",
+                "roi": [384, 300, 512, 288]
+            }
+        ],
+        "action": "Click",
+        "post_delay": 3000,
+        "next": ["MultiAccountDaily_Login"],
+        "timeout": 5000,
+        "on_error": ["MultiAccountDaily_LoginFallback"]
+    },
+    "MultiAccountDaily_LoginFallback": {
+        "action": "Click",
+        "target": [640, 409, 1, 1],
+        "post_delay": 3000,
+        "next": ["MultiAccountDaily_Login"]
+    }
+}

@@ -11,6 +11,67 @@
             "group": [
                 "echo"
             ],
+            "pipeline_override": {
+                "EchoEnhance_Evaluate": {
+                    "custom_action_param": {
+                        "need_double_crit": true,
+                        "double_crit_min": 13.8,
+                        "first_crit_min": 6.9,
+                        "valid_stats_min": 3,
+                        "max_stat_slots": 5,
+                        "first_must_be_valid": true,
+                        "all_valid_before_crit": true,
+                        "valid_stats": [
+                            "暴击",
+                            "暴击伤害",
+                            "攻击百分比"
+                        ],
+                        "stats_ocr_node": "EchoEnhance_StatsOCR",
+                        "keep_key": "C",
+                        "discard_key": "Z",
+                        "crit_rate_stat": "暴击",
+                        "crit_dmg_stat": "暴击伤害",
+                        "stat_aliases": {
+                            "暴击": [
+                                "暴击率"
+                            ],
+                            "攻击百分比": [
+                                "攻击力百分比",
+                                "攻击%"
+                            ],
+                            "生命百分比": [
+                                "生命值百分比",
+                                "生命%"
+                            ],
+                            "防御百分比": [
+                                "防御力百分比",
+                                "防御%"
+                            ],
+                            "普攻伤害加成": [
+                                "普攻加成"
+                            ],
+                            "重击伤害加成": [
+                                "重击加成"
+                            ],
+                            "共鸣技能伤害加成": [
+                                "技能伤害加成"
+                            ],
+                            "共鸣解放伤害加成": [
+                                "解放伤害加成"
+                            ]
+                        },
+                        "text_fix": {},
+                        "capture_success": true,
+                        "capture_failure": true,
+                        "capture_read_fail": true
+                    }
+                },
+                "EchoEnhance_AfterEvaluate": {
+                    "on_error": [
+                        "EchoEnhance_EscAfterLockThenStop"
+                    ]
+                }
+            },
             "option": [
                 "EchoNeedDoubleCrit",
                 "EchoDoubleCritMin",
@@ -223,20 +284,20 @@
                 {
                     "name": "Yes",
                     "pipeline_override": {
-                        "EchoEnhance_Evaluate": {
-                            "custom_action_param": {
-                                "pause_on_success": true
-                            }
+                        "EchoEnhance_AfterEvaluate": {
+                            "on_error": [
+                                "EchoEnhance_EscAfterLockThenStop"
+                            ]
                         }
                     }
                 },
                 {
                     "name": "No",
                     "pipeline_override": {
-                        "EchoEnhance_Evaluate": {
-                            "custom_action_param": {
-                                "pause_on_success": false
-                            }
+                        "EchoEnhance_AfterEvaluate": {
+                            "on_error": [
+                                "EchoEnhance_EscAfterLock"
+                            ]
                         }
                     }
                 }

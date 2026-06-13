@@ -39,7 +39,6 @@ func (a *SnapshotAction) Run(ctx *maa.Context, arg *maa.CustomActionArg) bool {
 		Str("character_detect", detailJSONString(charDetectDetail)).
 		Str("stamina", detailJSONString(staminaDetail)).
 		Msg("diagnosis snapshot")
-	time.Sleep(500 * time.Millisecond)
 	return true
 }
 

@@ -1,0 +1,61 @@
+{
+    "EchoFarm_ScanEcho": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "TemplateMatch",
+                "template": "echo_orb.png",
+                "threshold": 0.5
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "echo_orb.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "treasure_icon.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f_hcenter_vcenter.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "pick_up_f.png",
+                "threshold": 0.65
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "absorb_zh_CN.png",
+                "threshold": 0.6
+            },
+            {
+                "recognition": "TemplateMatch",
+                "template": "absorb_en_US.png",
+                "threshold": 0.6
+            }
+        ],
+        "next": [
+            "EchoFarm_Collect",
+            "EchoFarm_CheckNext",
+            "EchoFarm_Navigate"
+        ],
+        "post_delay": 1000,
+        "timeout": 30000,
+        "on_error": [
+            "EchoFarm_PostCombat",
+            "EchoFarm_NextRound"
+        ]
+    },
+    "EchoFarm_CheckNext": {
+        "recognition": "TemplateMatch",
+        "template": "boss_check_mark.png",
+        "threshold": 0.7,
+        "next": [
+            "EchoFarm_PostCombat"
+        ]
+    }
+}

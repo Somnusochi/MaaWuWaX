@@ -2,8 +2,11 @@ package main
 
 import (
 	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/combat"
+	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/common/counter"
+	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/common/delay"
 	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/common/falseaction"
 	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/common/schedule"
+	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/common/stoptask"
 	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/daily"
 	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/diagnosis"
 	"github.com/MaaWuWaX/MaaWuWaX/agent/go-service/dialogskip"
@@ -26,8 +29,11 @@ func registerAll() {
 	resource.EnsureResourcePathSink()
 
 	// ── Tier 2: Common Primitives ─────────────────────────────────────
+	counter.Register()
+	delay.Register()
 	falseaction.Register()
 	schedule.Register()
+	stoptask.Register()
 
 	// ── Tier 3: Business Modules ──────────────────────────────────────
 	combat.Register()
